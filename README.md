@@ -34,15 +34,16 @@ Learn more | User Guide | API Document | Examples
 Note: Not yet released in public maven repository.
 To use it, you need build from source and publish to local repository (mvn install)
 
+
+####Maven dependency
+
+##Release
       <dependency>
             <groupId>com.nflabs.zeppelin</groupId>
             <artifactId>zeppelin-core</artifactId>
             <packaging>jar</packaging>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
       </dependency>
-
-
-
 
 
 ###Build
