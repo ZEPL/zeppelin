@@ -11,7 +11,7 @@
    * Central archive of library called **ZAN** (Zeppelin Archivce Network)
    * On top of Hive (or any Hive compatible system like Spark)
 
-To know more about Zeppelin, visit our web site http://nflabs.github.io/zeppelin
+To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
 ###Build
 
