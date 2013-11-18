@@ -269,6 +269,11 @@ public abstract class Z {
 	 */
 	public abstract boolean isWebEnabled();
 	
+	
+	protected abstract void preProcess() throws ZException;
+	
+	protected abstract void postProcess() throws ZException;
+	
 	protected abstract void initialize() throws ZException;
 	
 	/**
@@ -322,6 +327,12 @@ public abstract class Z {
 		if(prev()!=null){
 			prev().execute();
 		}		
+		
+		// run pre processing
+		preProcess();
+		
+		
+		// run query
 		String query = getQuery();
 		if (query!=null){
 			String[] queries = Util.split(query, ';');
@@ -351,6 +362,8 @@ public abstract class Z {
 		}
 		webEnabled = isWebEnabled();
 		executed = true;
+		
+		postProcess();
 		return this;
 	}
 	

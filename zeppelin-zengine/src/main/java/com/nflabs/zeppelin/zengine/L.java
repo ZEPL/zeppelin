@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.spark.SparkEngine;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
@@ -34,6 +35,7 @@ public class L extends Q {
 	transient private Path dir;
 	transient private Path webDir;
 	transient private Path erbFile;
+	transient private Path sparkFile;
 	transient private FileSystem fs;
 	transient private boolean initialized = false;
 	
@@ -90,6 +92,12 @@ public class L extends Q {
 			if(fs.isFile(erbFile) == false){
 				erbFile = null;
 			}
+
+			this.sparkFile = new Path(libUri.toString()+"/spark.scala");
+
+			if(fs.isFile(sparkFile) == false){
+				sparkFile = null;
+			}			
 			
 			this.webDir = new Path(libUri+"/web");
 		} catch (IOException e) {
@@ -98,6 +106,40 @@ public class L extends Q {
 		
 		initialized = true;
 	}
+	
+	@Override
+	protected void preProcess() throws ZException {
+		initialize();
+		
+		if(sparkFile==null){
+			return;
+		}
+		
+		FSDataInputStream ins;
+		SparkEngine se = null;
+		try {
+			ins = fs.open(sparkFile);
+			BufferedReader spark = new BufferedReader(new InputStreamReader(ins));
+			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+			
+			se = new SparkEngine(conf(), id, null);
+			se.bind("z", zContext);
+			String line = null;
+			while((line = spark.readLine())!=null){
+				se.interpret(line);
+			}
+			ins.close();
+		} catch (Exception e) {
+			throw new ZException(e);
+		} finally {
+			if(se!=null){
+				se.stop();
+			}
+		}
+		
+	
+	}
+
 
 	/**
 	 * Get query to be executed.
@@ -127,6 +169,10 @@ public class L extends Q {
 		}
 
 		return q;
+	}
+	
+	@Override
+	protected void postProcess() throws ZException {
 	}
 	
 	/**

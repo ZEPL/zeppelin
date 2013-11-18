@@ -246,4 +246,12 @@ public class Q extends Z {
 		return paramInfos;
 	}
 
+	@Override
+	protected void preProcess() throws ZException {
+	}
+
+	@Override
+	protected void postProcess() throws ZException {
+	}
+
 }
