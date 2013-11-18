@@ -331,7 +331,20 @@
         </exclusion>                                                                  
       </exclusions>		
 	</dependency>
-	
+
+	<dependency>
+		<groupId>org.apache.spark</groupId>
+		<artifactId>spark-mllib_2.9.3</artifactId>
+		<version>0.8.0-incubating</version>
+		<exclusions>
+		  <exclusion>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+          </exclusion>                                                                  
+        </exclusions>		
+	</dependency>
+            
+            	
 	<dependency>
 		<groupId>org.scala-lang</groupId>
 		<artifactId>scala-library</artifactId>
