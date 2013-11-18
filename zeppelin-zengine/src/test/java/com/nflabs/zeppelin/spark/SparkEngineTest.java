@@ -2,6 +2,8 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +22,23 @@ public class SparkEngineTest {
 	}
 
 	@Test
-	public void test() throws ZException {
+	public void testInit() throws ZException {
 		Z.configure();
 		SparkEngine se = new SparkEngine(Z.conf(), "test", null);
 		se.interpret("println(\"HELLO world!\");");
+		se.stop();
+	}
+
+	
+	@Test
+	public void testBind() throws ZException {
+		Z.configure();
+		SparkEngine se = new SparkEngine(Z.conf(), "test", null);
+		AtomicLong a = new AtomicLong(0);
+		assertEquals(0, a.get());
+		se.bind("v1", a);
+		se.interpret("v1.incrementAndGet()");
+		assertEquals(1, a.get());
 		se.stop();
 	}
 
