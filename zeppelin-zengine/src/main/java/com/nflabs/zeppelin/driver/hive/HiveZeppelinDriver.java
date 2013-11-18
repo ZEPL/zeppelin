@@ -50,6 +50,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
 		try {
 			Connection con; 
+			HiveConf conf;
 			if (client!=null){ // create connection with given client instance
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
