@@ -192,6 +192,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
 		ZEPPELIN_DRIVER				("zeppelin.driver.class", "com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver"),
+		
+		SPARK_MASTER				("spark.master", "local"),
+		SPARK_HOME					("spark.home", "../spark");
 		;
 		
 		

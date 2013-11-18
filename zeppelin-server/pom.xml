@@ -70,7 +70,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
-          <artifactId>*</artifactId>
+          <artifactId>jetty-server</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
