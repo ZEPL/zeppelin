@@ -120,7 +120,7 @@ public class L extends Q {
 		try {
 			ins = fs.open(sparkFile);
 			BufferedReader spark = new BufferedReader(new InputStreamReader(ins));
-			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+			ZContext zContext = getZContext(query);
 			
 			se = new SparkEngine(conf(), id, null);
 			se.bind("z", zContext);
@@ -161,7 +161,7 @@ public class L extends Q {
 			FSDataInputStream ins = fs.open(erbFile);
 			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 			
-			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
+			ZContext zContext = getZContext(query);			
 			q = getQuery(erb, zContext);
 			ins.close();
 		} catch (IOException e1) {
@@ -319,7 +319,7 @@ public class L extends Q {
 				ins = fs.open(erbFile);
 				BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 				
-				zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
+				zContext = getZContext(query);			
 				getQuery(erb, zContext);
 				ins.close();
 			} catch (IOException e1) {

@@ -123,6 +123,7 @@ public class Q extends Z {
 		return evalErb(erb, zWebContext);
 	}
 
+	
 	/**
 	 * Get query to be executed.
 	 * Template is evaluated with ZContext.
@@ -133,7 +134,7 @@ public class Q extends Z {
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 		
-		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+		ZContext zContext = getZContext(query);
 				
 		String q = getQuery(erb, zContext);
 		try {ins.close();} catch (IOException e) {}
@@ -208,7 +209,7 @@ public class Q extends Z {
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 		
-		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+		ZContext zContext = getZContext(query);
 				
 		try {
 			getQuery(erb, zContext);
