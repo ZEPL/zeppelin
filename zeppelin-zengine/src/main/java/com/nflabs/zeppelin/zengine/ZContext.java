@@ -3,6 +3,8 @@ package com.nflabs.zeppelin.zengine;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.spark.SparkContext;
+
 import com.nflabs.zeppelin.driver.TableInfo;
 
 /**
@@ -17,6 +19,7 @@ public class ZContext {
 	private Map<String, Object> params;
 	public TableInfo inInfo;
 	public TableInfo outInfo;
+	public SparkContext sc;
 	
 	Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
 	/**
@@ -105,6 +108,10 @@ public class ZContext {
 
 	public void setOutInfo(TableInfo outInfo) {
 		this.outInfo = outInfo;
+	}
+	
+	public SparkContext sc(){
+		return sc;
 	}
 	
 	

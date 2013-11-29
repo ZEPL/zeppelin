@@ -60,6 +60,10 @@ public class SparkEngine implements SparkListener {
 		interpreter.close();
 	}
 
+	public SparkContext sc(){
+		return sparkContext;
+	}
+	
 	@Override
 	public void onJobEnd(SparkListenerJobEnd arg0) {
 		

@@ -121,9 +121,12 @@ public class L extends Q {
 			ins = fs.open(sparkFile);
 			BufferedReader spark = new BufferedReader(new InputStreamReader(ins));
 			ZContext zContext = getZContext(query);
-			
+
 			se = new SparkEngine(conf(), id, null);
 			se.bind("z", zContext);
+			
+			zContext.sc = se.sc();
+			
 			String line = null;
 			while((line = spark.readLine())!=null){
 				se.interpret(line);
@@ -190,7 +193,7 @@ public class L extends Q {
 			path = "index.erb";
 		}
 		try {
-			if(fs.getFileStatus(webDir).isDir() == false){
+			if(fs.exists(webDir)==false || fs.getFileStatus(webDir).isDir() == false){
 				return super.readWebResource(path);
 			}
 			
@@ -303,6 +306,14 @@ public class L extends Q {
 			return z;
 		} else {
 			return super.pipe(z);
+		}
+	}
+	
+	@Override
+	public void setPrev(Z prev){
+		super.setPrev(prev);
+		if(sparkFile!=null){
+			prev.withTable(true);
 		}
 	}
 	
