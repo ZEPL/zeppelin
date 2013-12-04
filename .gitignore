@@ -6,8 +6,8 @@
 *.ear
 
 # conf file
-conf/zeppelin-env.sh
-conf/zeppelin-site.xml
+zeppelin-package/conf/zeppelin-env.sh
+zeppelin-package/conf/zeppelin-site.xml
 
 logs/
 run/
