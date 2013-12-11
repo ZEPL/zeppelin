@@ -16,17 +16,14 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>bin</directory>
+      <directory>zeppelin-package/bin</directory>
     </fileSet>
     <fileSet>
       <directory>zan-repo</directory>
     </fileSet>
     <fileSet>
       <includes>
-        <include>conf/configuration.xsl</include>
-        <include>conf/log4j.properties</include>
-        <include>conf/zeppelin-env.sh.template</include>
-        <include>conf/zeppelin-site.xml.template</include>
+        <include>zeppelin-package/conf</include>
       </includes>
     </fileSet>
 
