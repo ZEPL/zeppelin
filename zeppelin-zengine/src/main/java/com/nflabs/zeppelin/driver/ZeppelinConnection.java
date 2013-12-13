@@ -69,4 +69,12 @@ public interface ZeppelinConnection {
 	 * @throws ZeppelinDriverException
 	 */
 	public Result dropTable(String tableName) throws ZeppelinDriverException;
+	
+	/**
+	 * Get information of the table
+	 * @param tableName
+	 * @return
+	 * @throws ZeppelinDriverException
+	 */
+	public TableInfo getTableInfo(String tableName) throws ZeppelinDriverException;
 }

@@ -3,6 +3,10 @@ package com.nflabs.zeppelin.zengine;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.spark.SparkContext;
+
+import com.nflabs.zeppelin.driver.TableInfo;
+
 /**
  * Zeppelin Context. This context is passed to Zeppelin UDF's ZQL template
  * @author moon
@@ -13,6 +17,10 @@ public class ZContext {
 	public String out;
 	public String arg;
 	private Map<String, Object> params;
+	public TableInfo inInfo;
+	public TableInfo outInfo;
+	public SparkContext sc;
+	
 	Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
 	/**
 	 * Initialize Zeppelin Context
@@ -21,9 +29,11 @@ public class ZContext {
 	 * @param arg arguments
 	 * @param params parameters to UDF
 	 */
-	public ZContext(String tableIn, String tableOut, String arg, Map<String, Object> params){
+	public ZContext(String tableIn, TableInfo inInfo, String tableOut, TableInfo outInfo, String arg, Map<String, Object> params){
 		this.in = tableIn;
 		this.out = tableOut;
+		this.inInfo = inInfo;
+		this.outInfo = outInfo;
 		this.arg = arg;
 		this.params = params;
 	}
@@ -83,4 +93,26 @@ public class ZContext {
 	public String arg(){
 		return arg;
 	}
+
+	public TableInfo getInInfo() {
+		return inInfo;
+	}
+
+	public void setInInfo(TableInfo inInfo) {
+		this.inInfo = inInfo;
+	}
+
+	public TableInfo getOutInfo() {
+		return outInfo;
+	}
+
+	public void setOutInfo(TableInfo outInfo) {
+		this.outInfo = outInfo;
+	}
+	
+	public SparkContext sc(){
+		return sc;
+	}
+	
+	
 }

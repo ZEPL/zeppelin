@@ -222,6 +222,19 @@
 
     <pluginManagement>
       <plugins>
+        <!-- for unit testing -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.16</version>
+	  <configuration>
+            <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=512m</argLine>
+            <forkCount>1</forkCount>
+            <reuseForks>false</reuseForks>
+            <parallel>methods</parallel>
+            <threadCount>1</threadCount>
+          </configuration>
+        </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>

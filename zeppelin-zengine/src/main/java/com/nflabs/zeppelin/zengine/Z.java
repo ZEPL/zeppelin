@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.TableInfo;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
@@ -269,6 +270,11 @@ public abstract class Z {
 	 */
 	public abstract boolean isWebEnabled();
 	
+	
+	protected abstract void preProcess() throws ZException;
+	
+	protected abstract void postProcess() throws ZException;
+	
 	protected abstract void initialize() throws ZException;
 	
 	/**
@@ -322,6 +328,12 @@ public abstract class Z {
 		if(prev()!=null){
 			prev().execute();
 		}		
+		
+		// run pre processing
+		preProcess();
+		
+		
+		// run query
 		String query = getQuery();
 		if (query!=null){
 			String[] queries = Util.split(query, ';');
@@ -351,6 +363,8 @@ public abstract class Z {
 		}
 		webEnabled = isWebEnabled();
 		executed = true;
+		
+		postProcess();
 		return this;
 	}
 	
@@ -371,6 +385,22 @@ public abstract class Z {
 		this.paramInfos = infos;
 		return this;
 	}
+	
+	
+	
+	protected ZContext getZContext(String query) throws ZException{
+		ZeppelinConnection conn = connection();
+
+		try {
+			return new ZContext( (prev()==null) ? null : prev().name(), 
+								 (prev()==null) ? null : conn.getTableInfo(prev().name()),
+								  name(),
+								  conn.getTableInfo(name()),
+								  query, params);
+		} catch (ZeppelinDriverException e) {
+			throw new ZException(e);
+		}
+	}	
 	
 	protected abstract Map<String, ParamInfo> extractParams() throws ZException;
 	
