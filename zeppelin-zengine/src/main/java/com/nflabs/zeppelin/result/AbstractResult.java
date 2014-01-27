@@ -11,6 +11,7 @@ public abstract class AbstractResult {
 	private static final long DEFAULT_RESULT_NUM_LIMIT = 100;
     private ColumnDef [] columnDef;
 	private long max;
+	private Object raw;     // optional raw result data
 	
 	transient private ResultSet res;
 	transient Exception e;
@@ -199,5 +200,13 @@ public abstract class AbstractResult {
 
 	public ColumnDef [] getColumnDef(){
 		return columnDef;
+	}
+	
+	public Object getRaw(){
+		return raw;
+	}
+	
+	public void setRaw(Object raw){
+		this.raw = raw;
 	}
 }
