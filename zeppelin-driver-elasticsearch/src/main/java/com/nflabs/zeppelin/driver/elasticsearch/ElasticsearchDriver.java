@@ -24,6 +24,6 @@ public class ElasticsearchDriver extends ZeppelinDriver {
 	protected ZeppelinConnection getConnection() throws ZeppelinDriverException {
 		URI connectionUri = getUri();
 
-		return new ElasticsearchConnection();
+		return new ElasticsearchConnection(connectionUri);
 	}
 }
