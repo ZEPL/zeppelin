@@ -55,6 +55,11 @@ public abstract class AbstractResult {
 		}
 	}
 	
+	public AbstractResult(ColumnDef [] columnDef) {
+		this.code = 0;
+		this.columnDef = columnDef;
+	}
+	
 	public AbstractResult(int code, String [] message) throws ResultDataException {
 		this.code = code;
 		
