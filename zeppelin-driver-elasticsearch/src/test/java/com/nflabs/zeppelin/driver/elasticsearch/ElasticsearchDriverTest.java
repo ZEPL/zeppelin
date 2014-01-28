@@ -19,6 +19,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.result.ColumnDef;
+import com.nflabs.zeppelin.result.Result;
 
 public class ElasticsearchDriverTest {
 	
@@ -64,11 +66,10 @@ public class ElasticsearchDriverTest {
 		client.prepareIndex("index1", "type1").setSource(data1).setRefresh(true).execute().actionGet();
 		client.prepareIndex("index1", "type1").setSource(data2).setRefresh(true).execute().actionGet();
 		
-		driver.query("POST /index1/type1/_search {\"query\":{\"query_string\":{\"query\":\"*\"}}}");
-		
-		
+		Result result = driver.query("POST /index1/type1/_search /hits/hits /_source {\"query\":{\"query_string\":{\"query\":\"*\"}}}");
+		assertEquals(2, result.getRows().size());				
 	}
-	
+
 	@Test
 	public void testStatisticalFacet() throws InterruptedException {
 		Map<String, Object> data1 = new HashMap<String, Object>();
@@ -81,7 +82,9 @@ public class ElasticsearchDriverTest {
 		client.prepareIndex("index1", "type1").setSource(data1).setRefresh(true).execute().actionGet();
 		client.prepareIndex("index1", "type1").setSource(data2).setRefresh(true).execute().actionGet();
 		
-		driver.query("POST /index1/type1/_search {\"query\":{\"query_string\":{\"query\":\"*\"}},\"facets\":{\"stat1\":{\"statistical\":{\"field\":\"age\"}}}}");
+		Result result = driver.query("POST /index1/type1/_search /facets/stat1 / {\"query\":{\"query_string\":{\"query\":\"*\"}},\"facets\":{\"stat1\":{\"statistical\":{\"field\":\"age\"}}}}");
+		ColumnDef[] columnDef = result.getColumnDef();
+		assertEquals(9, columnDef.length);
 		
 		
 	}

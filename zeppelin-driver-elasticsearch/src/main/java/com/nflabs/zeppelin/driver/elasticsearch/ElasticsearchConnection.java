@@ -5,12 +5,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.sql.Types;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpRequest;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -50,22 +55,23 @@ public class ElasticsearchConnection implements ZeppelinConnection {
 
 	@Override
 	public Result query(String query) throws ZeppelinDriverException {
-		Pattern pattern = Pattern.compile("([^ ]*)\\s([^ ]*)(\\s(.*))?");
+		Pattern pattern = Pattern.compile("([^ ]*)\\s([^ ]*)\\s([^ ]*)\\s([^ ]*)(\\s(.*))?");
 		Matcher matcher = pattern.matcher(query);
 		if (matcher.find()==false) {
 			throw new ZeppelinDriverException("Syntax error");
 		}
 		String method = matcher.group(1);
 		String path = matcher.group(2);
+		String listPath = matcher.group(3);
+		String docBase = matcher.group(4);
 		String payload = null;
-		if (matcher.groupCount()>=4) {
-			payload = matcher.group(4);
+		if (matcher.groupCount()>=6) {
+			payload = matcher.group(6);
 		}
 		
 		if (path.startsWith("/")==false) {
 			path = "/"+path;
 		}
-		
 		
 		CloseableHttpClient client = HttpClients.createDefault();
 		String url = "http://"+connectionUri.getHost()+":"+connectionUri.getPort()+path;
@@ -105,23 +111,113 @@ public class ElasticsearchConnection implements ZeppelinConnection {
 		
 		Gson gson = new Gson();
 		HashMap<String, Object> responseJson = gson.fromJson(new InputStreamReader(ins), new HashMap<String, Object>().getClass());
-		Result result = new Result();
-		result.setRaw(responseJson);
 		dumpJson(responseJson);
 		
 		// { hists : "hits" : [ { "_source" : { OBJ } } ] }
+		ESResult result = null;
 		
-		
-		
+		Object list = findObjectFromJson(responseJson, listPath);
+		if (list instanceof List) {
+			Iterator it = ((List)list).iterator();
+			while (it.hasNext()) {
+				Object row = findObjectFromJson((Map<String, Object>) it.next(), docBase);
+				if (row instanceof Map) {
+					Map<String, Object> columns = (Map<String, Object>) row;
+					
+					if (result == null ) {
+						result = new ESResult(createColumnDef(columns));
+					}
+					
+					ColumnDef[] columnDef = result.getColumnDef();
+					Object[] rowData = new Object[columnDef.length];
+					for (int i=0; i<columnDef.length; i++) {
+						ColumnDef c = columnDef[i];
+						rowData[i] = columns.get(c.getName());
+					}
+					result.addRow(rowData);
+					dumpJson(columns);
+				} else {
+					throw new ZeppelinDriverException("Can not find object under "+docBase);
+				}
+			}			
+		} else if (list instanceof Map) {
+			Map<String, Object> columns = (Map<String, Object>) list;
+			result = new ESResult(createColumnDef(columns));
+			ColumnDef [] columnDef = result.getColumnDef();
+			Object [] rowData = new Object[columnDef.length];
+			for (int i=0; i<columnDef.length; i++) {
+				ColumnDef c = columnDef[i];
+				rowData[i] = columns.get(c.getName());
+			}
+			result.addRow(rowData);
+		} else {
+			throw new ZeppelinDriverException("List not found in path "+listPath);
+		}
 		try {
 			response.close();
 		} catch (IOException e) {			
 		}
 		
+		if (result!=null) {
+			result.rawData = responseJson;
+		}
 		return result;
 	}
 	
-	private void dumpJson(HashMap<String, Object> json){
+	public ColumnDef [] createColumnDef(Map<String, Object> json){
+		LinkedList<ColumnDef> columns = new LinkedList<ColumnDef>();
+		Set<Entry<String, Object>> entries = json.entrySet();
+		for(Entry<String, Object> e : entries) {
+			String key = e.getKey();
+			Object value = e.getValue();
+			if (value instanceof Integer) {
+				columns.add(new ColumnDef(key, Types.INTEGER, "INT"));
+			} else if (value instanceof Long) {
+				columns.add(new ColumnDef(key, Types.BIGINT, "LONG"));
+			} else if(value instanceof Float) {
+				columns.add(new ColumnDef(key, Types.FLOAT, "FLOAT"));
+			} else if(value instanceof Double) {
+				columns.add(new ColumnDef(key, Types.DOUBLE, "DOUBLE"));
+			} else if(value instanceof String) {
+				columns.add(new ColumnDef(key, Types.VARCHAR, "STRING"));				
+			} else {
+				// unsupported conversion
+			}
+		}
+		
+		return columns.toArray(new ColumnDef []{});
+	}
+	
+	public Object findObjectFromJson(Map<String, Object> json, String path) {
+		if (path==null) return json;
+		
+		if (path.startsWith("/")) {
+			path = path.substring(1);
+		}
+		
+		String[] paths = path.split("/");
+		if (paths.length==0) return json;
+
+		Object o = json.get(paths[0]);
+		if (paths.length==1) {
+			return o;
+		} else {
+			if (o instanceof Map) {
+				String childPath = "";
+				for (int i=1; i<paths.length; i++){
+					childPath=childPath+"/"+paths[i];
+				}
+				return findObjectFromJson((Map<String, Object>) o, childPath);
+			} else {
+				throw new ZeppelinDriverException("Can't find path on the document");
+			}
+		}
+		
+		
+	}
+	
+	
+	private void dumpJson(Map<String, Object> json){
 		GsonBuilder builder = new GsonBuilder();
 		builder.setPrettyPrinting();
 		Gson gson = builder.create();
