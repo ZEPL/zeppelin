@@ -3,12 +3,12 @@ package com.nflabs.zeppelin.driver.elasticsearch;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.tools.ant.util.FileUtils;
-import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -26,8 +26,8 @@ public class ElasticsearchDriverTest {
 	private static Client client;
 	
 	@BeforeClass
-	public static void setUpClass(){
-		FileUtils.delete(new File("./data"));
+	public static void setUpClass() throws IOException{
+		FileUtils.deleteDirectory(new File("./data"));
 		node = NodeBuilder.nodeBuilder().local(true).node();
 		client = node.client();
 	}
