@@ -103,8 +103,10 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 		// set some default configuration if no hive-site.xml provided
 		hiveConf.set("javax.jdo.option.ConnectionURL", "jdbc:derby:;databaseName="+getLocalMetastore()+";create=true");
 		hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getLocalWarehouse());
-		new File(getLocalWarehouse()).mkdirs();
+		hiveConf.set("hive.exec.mode.local.auto", "true");
+		hiveConf.set("mapreduce.framework.name", "local");
 		hiveConf.set(HiveConf.ConfVars.HADOOPJT.varname, "local");
+		new File(getLocalWarehouse()).mkdirs();
 		return hiveConf;
 	}
 }
