@@ -6,9 +6,12 @@ import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZeppelinConfiguration extends XMLConfiguration {
     private static final long serialVersionUID = 4749305895693848035L;
+    private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 
     public ZeppelinConfiguration(URL url) throws ConfigurationException {
 		super(url);
@@ -35,21 +38,28 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 	}
 
 	/**
-	 * Laod from resource
+	 * Load from resource
 	 * @throws ConfigurationException 
 	 */
-	public static ZeppelinConfiguration create() throws ConfigurationException{
+	public static ZeppelinConfiguration create() {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	    if (classLoader == null) {
 	      classLoader = ZeppelinConfiguration.class.getClassLoader();
 	    }
-	    
 		URL url = classLoader.getResource("zeppelin-site.xml");
-		if(url!=null){
-			return new ZeppelinConfiguration(url);
-		} else {
-			return new ZeppelinConfiguration();
+		if (url == null){
+            LOG.warn("Failed to load configuration, proceeding with a default");
+		    return new ZeppelinConfiguration();
 		}
+		
+		ZeppelinConfiguration result;
+		try {
+		    result = new ZeppelinConfiguration(url);
+		} catch (ConfigurationException e) {
+		    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
+		    result = new ZeppelinConfiguration();
+		}
+		return result;
 	}
 	
 	
@@ -69,7 +79,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Integer) p.getChildren("value").get(0).getValue();
+				return Integer.parseInt((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -80,7 +90,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Long) p.getChildren("value").get(0).getValue();
+				return Long.parseLong((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -91,7 +101,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Float) p.getChildren("value").get(0).getValue();
+				return Float.parseFloat((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -102,7 +112,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Boolean) p.getChildren("value").get(0).getValue();
+				return Boolean.parseBoolean((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -186,12 +196,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
-		ZEPPELIN_SESSION_DIR		("zeppelin.session.dir", "../sessions"),
+		ZEPPELIN_JOB_DIR			("zeppelin.job.dir", "../jobs"),
+		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
-		ZEPPELIN_COMMAND_TIMEOUT	("zeppelin.command.timeout", 1000*60*30),  // 30 min
+		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
-		ZEPPELIN_DRIVER				("zeppelin.driver.class", "com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver"),
+		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:shell:exec://"),
+		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
 		;
 		
 		

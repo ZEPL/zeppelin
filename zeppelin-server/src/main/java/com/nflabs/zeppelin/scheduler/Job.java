@@ -6,28 +6,41 @@ import java.util.Map;
 
 import com.nflabs.zeppelin.scheduler.JobListener;
 
+/**
+ * Skeletal implementation of the Job concept:
+ *  - designed for inheritance
+ *  - should be run on a separate thread
+ *  - maintains internal state: it's status
+ *  - supports listeners who are updated on status change
+ *  
+ *  
+ *  Job class is serialized/deserialized and used server<->client commnunication and saving/loading jobs from disk.
+ *  Changing/adding/deleting non transitive field name need consideration of that. 
+ */
 public abstract class Job {
-	public static enum Status{
+    //TODO(alex): make Job interface and AbstractJob - skeletal impl
+	public static enum Status {
 		READY,
 		RUNNING,
 		FINISHED,
 		ERROR,
-		ABORT,
+		ABORT,;
+        boolean isReady() { return this==RUNNING; }
+        boolean isRunning() { return this==RUNNING; }
 	}
+
+    private String jobName;
+    String id;
+    Object result;
+    Date dateCreated;
+    Date dateStarted;
+    Date dateFinished;
+    Status status;
+    //TODO(alex): why do we keep this state if we already have Status?
+    boolean aborted = false;
 	
-	private String jobName;
-	Status status;
 	transient private Throwable exception;
-	Object result;
-	boolean aborted = false;
 	transient private JobListener listener;
-	String id;
-	
-	Date dateCreated;
-	Date dateStarted;
-	Date dateFinished;
-	
-	
 	
 	public Job(String jobName, JobListener listener) {
 		this.jobName = jobName;
@@ -35,7 +48,7 @@ public abstract class Job {
 		
 		dateCreated = new Date();		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
-		id = dateFormat.format(dateCreated)+"_"+hashCode();
+		id = dateFormat.format(dateCreated)+"_"+super.hashCode();
 		
 		setStatus(Status.READY);
 	}
@@ -44,32 +57,45 @@ public abstract class Job {
 		return id;
 	}
 	
+	public int hashCode(){
+		return id.hashCode();
+	}
+	
+	public boolean equals(Object o){
+		return ((Job)o).hashCode()==hashCode();
+	}
+	
 	public Status getStatus(){
 		return status;
+	}
+	
+	public void setStatus(Status status){
+	    if(this.status==status) return;
+	    Status before = this.status;
+	    Status after = status;
+	    if (listener!=null) listener.beforeStatusChange(this, before, after);
+	    this.status = status;
+	    if (listener!=null) listener.afterStatusChange(this, before, after);
 	}
 	
 	public void setListener(JobListener listener){
 		this.listener = listener;
 	}
 	
-	public void setStatus(Status status){
-		if(this.status==status) return;
-		this.status = status;
-		if(listener!=null) listener.statusChange(this);
+	public JobListener getListener(){
+		return listener;
 	}
-	
+		
 	public boolean isTerminated(){
-		if(status==Status.READY || status==Status.RUNNING) return false;
-		else return true;
+		return !this.status.isReady() && !this.status.isRunning(); 
 	}
 	
 	public boolean isRunning(){
-		if(status==Status.RUNNING) return true;
-		else return false;
+		return this.status.isRunning();
 	}
 	
 	public void run(){
-		if(aborted==true){
+		if(aborted){
 			setStatus(Status.ABORT);
 			return;
 		}
@@ -78,7 +104,7 @@ public abstract class Job {
 			dateStarted = new Date();
 			result = jobRun();
 			dateFinished = new Date();
-			if(aborted==true){				
+			if(aborted){				
 				setStatus(Status.ABORT);
 			} else {
 				setStatus(Status.FINISHED);
@@ -89,13 +115,13 @@ public abstract class Job {
 			setStatus(Status.ERROR);
 		}
 	}
-	
-	public void abort(){
-		aborted = jobAbort();
-	}
-	
+		
 	public Throwable getException(){
 		return exception;
+	}
+	
+	protected void setException(Throwable t){
+		exception = t;
 	}
 	
 	public Object getReturn(){
@@ -118,8 +144,13 @@ public abstract class Job {
 
 	protected abstract boolean jobAbort();
 
+	public void abort() {
+	    aborted = jobAbort();
+	}
+
 	public boolean isAborted() {
 		return aborted;
+		//TODO(alex) why not this.status.isAborted()?
 	}
 
 	public Date getDateCreated() {
@@ -133,6 +164,4 @@ public abstract class Job {
 	public Date getDateFinished() {
 		return dateFinished;
 	}
-	
-	
 }

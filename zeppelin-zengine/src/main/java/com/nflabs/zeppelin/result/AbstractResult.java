@@ -5,11 +5,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.zengine.Z;
-
 public abstract class AbstractResult {
-	private ColumnDef [] columnDef;
+    //TODO: static configuration vs dependency igection
+    // = Zengine.getConf().getLong(ConfVars.ZEPPELIN_MAX_RESULT)
+	private static final long DEFAULT_RESULT_NUM_LIMIT = 100;
+    private ColumnDef [] columnDef;
 	private long max;
 	
 	transient private ResultSet res;
@@ -58,16 +58,27 @@ public abstract class AbstractResult {
 	public AbstractResult(int code, String [] message) throws ResultDataException {
 		this.code = code;
 		
-		columnDef = new ColumnDef[1];
-		columnDef[0] = new ColumnDef("message", Types.VARCHAR, "varchar");
-
-		try {
-			for(int i=0; i<message.length; i++){
-				process(columnDef, new String[]{message[i]}, i);			
+		if(message!=null){
+			columnDef = new ColumnDef[1];
+			columnDef[0] = new ColumnDef("message", Types.VARCHAR, "varchar");
+	
+			try {
+				for(int i=0; i<message.length; i++){
+					process(columnDef, new String[]{message[i]}, i);			
+				}
+			} catch (Exception e1) {
+				throw new ResultDataException(e1);
 			}
-		} catch (Exception e1) {
-			throw new ResultDataException(e1);
 		}
+	}
+	
+	public AbstractResult(ColumnDef [] columnDef) {
+		this.code = 0;
+		this.columnDef = columnDef;
+	}
+	
+	public AbstractResult(){
+		this.code = 0;
 	}
 
 	public void init(ResultSet res, long max) throws SQLException, ResultDataException{
@@ -83,7 +94,8 @@ public abstract class AbstractResult {
 		
 		this.res = res;
 		if (max < 0){
-			this.max = Z.getConf().getLong(ConfVars.ZEPPELIN_MAX_RESULT);
+		    //FIXME(alex): is static configuration evil?
+			this.max = DEFAULT_RESULT_NUM_LIMIT;
 		} else {
 			this.max = max;
 		}

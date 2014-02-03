@@ -13,6 +13,10 @@ logs/
 run/
 metastore_db/
 *.log
+jobs/
+zan-repo/
+drivers/
+warehouse/
 
 **/sessions/
 **/data/
@@ -40,7 +44,6 @@ Thumbs.db
 # maven target files
 target/
 **/target/
-bin/
 
 *~
 \#*\#

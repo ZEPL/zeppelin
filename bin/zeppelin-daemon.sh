@@ -73,9 +73,9 @@ function init(){
 	mkdir -p "$ZEPPELIN_PID_DIR"
     fi
 
-    if [ ! -d "$ZEPPELIN_SESSION_DIR" ]; then
-	echo "Session dir doesn't exist, create $ZEPPELIN_SESSION_DIR"
-	mkdir -p "$ZEPPELIN_SESSION_DIR"
+    if [ ! -d "$ZEPPELIN_JOB_DIR" ]; then
+	echo "Job dir doesn't exist, create $ZEPPELIN_JOB_DIR"
+	mkdir -p "$ZEPPELIN_JOB_DIR"
     fi
 
     if [ ! -d "$ZEPPELIN_ZAN_LOCAL_REPO" ]; then
@@ -102,8 +102,26 @@ function start(){
     # Check if the process has died; in that case we'll tail the log so the user can see
     if ! kill -0 $newpid >/dev/null 2>&1; then
 	echo "failed to launch Zeppelin:"
-	tail -2 "$log" | sed 's/^/  /'
+	if [ "${CI}" == "true" ]; then
+	    tail -1000 "$log" | sed 's/^/  /'
+	else
+	    tail -5 "$log" | sed 's/^/  /'
+	fi
 	echo "full log in $log"
+    fi
+
+    if [ "${CI}" == "true" ]; then  # if it is CI wait until server is up and running and ready to serve.
+	COUNT=0
+	while [ $COUNT -lt 30 ]; do
+	    curl -v localhost:8080 2>&1 | grep '200 OK'
+	    if [ $? -ne 0 ]; then
+		sleep 1
+		continue
+	    else
+		break
+	    fi
+	    let "COUNT+=1"
+	done
     fi
 
 }

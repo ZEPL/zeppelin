@@ -44,14 +44,14 @@ fi
 
 if [ "x$ZEPPELIN_WAR" == "x" ]; then
     if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
-	export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
+	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
     else
-	export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web.war"
+        export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web-*.war"`
     fi
 fi
 
-if [ "x$ZEPPELIN_SESSION_DIR" == "x" ]; then
-    export ZEPPELIN_SESSION_DIR="$ZEPPELIN_HOME/sessions"
+if [ "x$ZEPPELIN_JOB_DIR" == "x" ]; then
+    export ZEPPELIN_JOB_DIR="$ZEPPELIN_HOME/jobs"
 fi
 
 if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
@@ -67,7 +67,7 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
     if [ -d "${1}" ]; then
-	for jar in `find ${1} -name '*jar'`; do
+	for jar in `find ${1} -maxdepth 1 -name '*jar'`; do
 	    ZEPPELIN_CLASSPATH+=:$jar
 	done
     fi
@@ -76,7 +76,7 @@ function addJarInDir(){
 addJarInDir ${ZEPPELIN_HOME}
 
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-cli/target/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-core/target/lib
+addJarInDir ${ZEPPELIN_HOME}/zeppelin-zan/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-server/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-web/target/lib
 
@@ -86,16 +86,12 @@ if [ -d "${ZEPPELIN_HOME}/zeppelin-cli/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-cli/target/classes"
 fi
 
-if [ -d "${ZEPPELIN_HOME}/zeppelin-core/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-core/target/classes"
+if [ -d "${ZEPPELIN_HOME}/zeppelin-zan/target/classes" ]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zan/target/classes"
 fi
 
 if [ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
-fi
-
-if [ -d "${ZEPPELIN_HOME}/zeppelin-web/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-web/target/classes"
 fi
 
 
@@ -117,4 +113,8 @@ export RUNNER
 
 if [ "x$ZEPPELIN_IDENT_STRING" == "x" ]; then
   export ZEPPELIN_IDENT_STRING="$USER"
+fi
+
+if [ "x$DEBUG" == "x" ] ; then
+    export DEBUG=0
 fi

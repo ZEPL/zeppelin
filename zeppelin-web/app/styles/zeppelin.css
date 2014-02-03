@@ -11,6 +11,14 @@ a {
     cursor : pointer;
 }
 
+#zqlEditorHeader {
+    height : 25px;
+}
+
+#zqlEditorHeader div{
+    float: right;
+}
+
 .zqlEditor {
     height : 300px;
 }
@@ -19,7 +27,7 @@ a {
     display : none;
 }
 
-#zqlSessionName {
+#zqlJobName {
     border : 0px solid #dddddd;
     width :100%;
     font-weight : bold;
@@ -27,13 +35,17 @@ a {
 }
 
 
-#zqlSessionCron {
+#zqlJobCron {
     border : 0px solid #dddddd;
     width :100%;
     font-weight : bold;
     color : #555555;
 }
 
+#visualizationContainer{
+    margin : 0px;
+    padding : 0px;
+}
 
 #visualizationContainer iframe{
     border : 0px solid #CCCCCC;
@@ -44,6 +56,14 @@ a {
 #visualizationContainer .visTitle{
     border-bottom : 1px solid #CCCCCC;
     font-weight: bold;
+}
+
+.zanLibraryInformation{
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+    background-color: #eeeeee;
+    padding:0px 10px 10px 10px;
+    margin-bottom: 20px;
 }
 
 body {
