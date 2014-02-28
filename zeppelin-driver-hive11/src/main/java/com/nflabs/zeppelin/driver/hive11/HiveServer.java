@@ -115,6 +115,8 @@ public class HiveServer extends ThriftHive {
      * Flag that indicates whether the last executed command was a Hive query.
      */
     private boolean isHiveQuery;
+	private PrintStream out;
+	private PrintStream err;
 
     public static final Log LOG = LogFactory.getLog(HiveServer.class.getName());
 
@@ -123,8 +125,28 @@ public class HiveServer extends ThriftHive {
      *
      * @throws MetaException unable to create metastore
      */
+    /*
     public HiveServerHandler() throws MetaException {
       this(new HiveConf(SessionState.class));
+    }*/
+
+    /**
+     * Construct a new handler with the specified hive configuration.
+     *
+     * @param conf caller specified hive configuration
+     * @throws MetaException unable to create metastore
+     */
+
+    public HiveServerHandler(HiveConf conf) throws MetaException {
+      super(HiveServer.class.getName(), conf);
+      this.out = null;
+      this.err = null;
+      
+      isHiveQuery = false;
+      driver = null;
+      SessionState session = new SessionState(conf);
+      SessionState.start(session);
+      setupSessionIO(session);
     }
 
     /**
@@ -133,8 +155,10 @@ public class HiveServer extends ThriftHive {
      * @param conf caller specified hive configuration
      * @throws MetaException unable to create metastore
      */
-    public HiveServerHandler(HiveConf conf) throws MetaException {
+    public HiveServerHandler(HiveConf conf, PrintStream out, PrintStream err) throws MetaException {
       super(HiveServer.class.getName(), conf);
+      this.out = out;
+      this.err = err;
 
       isHiveQuery = false;
       driver = null;
@@ -144,26 +168,9 @@ public class HiveServer extends ThriftHive {
     }
 
     private void setupSessionIO(SessionState session) {
-      try {
-        LOG.info("Putting temp output to file " + session.getTmpOutputFile().toString());
         session.in = null; // hive server's session input stream is not used
-        // open a per-session file in auto-flush mode for writing temp results
-        session.out = new PrintStream(new FileOutputStream(session.getTmpOutputFile()), true, "UTF-8");
-        // TODO: for hadoop jobs, progress is printed out to session.err,
-        // we should find a way to feed back job progress to client
-        session.err = new PrintStream(System.err, true, "UTF-8");
-      } catch (IOException e) {
-        LOG.error("Error in creating temp output file ", e);
-        try {
-          session.in = null;
-          session.out = new PrintStream(System.out, true, "UTF-8");
-          session.err = new PrintStream(System.err, true, "UTF-8");
-        } catch (UnsupportedEncodingException ee) {
-          ee.printStackTrace();
-          session.out = null;
-          session.err = null;
-        }
-      }
+        session.out = out;
+        session.err = err;
     }
 
     /**

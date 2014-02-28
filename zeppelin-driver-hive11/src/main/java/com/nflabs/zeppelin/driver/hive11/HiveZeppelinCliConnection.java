@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.OptionsProcessor;
+import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.jdbc.HiveStatement;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -33,6 +34,9 @@ public class HiveZeppelinCliConnection implements ZeppelinConnection {
 	
 	private CliSessionState ss;
 	private HiveConf hiveConf;
+	private PrintStream out;
+	private PrintStream err;
+	private PrintStream info;
 
 	public HiveZeppelinCliConnection(HiveConf hiveConf) throws Exception{
 		this.hiveConf = hiveConf;
@@ -58,12 +62,14 @@ public class HiveZeppelinCliConnection implements ZeppelinConnection {
 		if(!oproc.process_stage2(ss)){
 			throw new ZeppelinDriverException("Can't process option stage2");
 		}
-		/*
-		ss.out = new PrintStream(System.out, true, "UTF-8");
-	    ss.info = new PrintStream(System.err, true, "UTF-8");
-	    ss.err = new CachingPrintStream(System.err, true, "UTF-8");
-	    */
-		
+
+		out = new PrintStream(System.out, true, "UTF-8");
+		err = new CachingPrintStream(System.err, true, "UTF-8");
+		info = new CachingPrintStream(System.err, true, "UTF-8");
+		ss.out = out;
+	    ss.info = info;
+	    ss.err = err;
+
 		SessionState.start(ss);
 
 		if (ss.getHost()!=null ){
@@ -111,11 +117,9 @@ public class HiveZeppelinCliConnection implements ZeppelinConnection {
 		if (ss.isRemoteMode()) {
 			client = ss.getClient();
 			stmt = new HiveStatement(client);
-		    PrintStream out = ss.out;
-		    PrintStream err = ss.err;
 		} else {
 			try {
-				client = new HiveServer.HiveServerHandler(hiveConf);
+				client = new HiveServer.HiveServerHandler(hiveConf, out, err);
 				stmt = new HiveStatement(client);
 			} catch (MetaException e) {
 				throw new ZeppelinDriverException(e);

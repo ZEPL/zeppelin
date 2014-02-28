@@ -46,21 +46,25 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	public ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		try {
 			Connection con = null;
-			//String uriString = "jdbc:"+uri.toString();
 			logger.info("Create connection "+uri);
-			if (client!=null){ // create connection with given client instance
+
+			if (client!=null){
+				// create connection with given client instance. mainly for unit test
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
-			} else if(isEmpty(uri) || uri.equals("hive0.11://")){  // local mode 
-				logger.debug("Create connection from hive configuration");
+			} else if(isEmpty(uri) || uri.equals("hive0.11://")){
+				// local mode. Using hive client 
 				return new HiveZeppelinCliConnection(localHiveConf());
 			} else if(uri.startsWith("hive0.11://")) {
+				// remote mode. Using hive client
 				URI u = new URI(uri);				
 				return new HiveZeppelinCliConnection(hiveConf(), u.getHost(), u.getPort());
-			} else if(uri.equals("hive://") || uri.equals("hive2://")) { //local mode using jdbc driver
+			} else if(uri.equals("hive://") || uri.equals("hive2://")) { 
+				// local mode using jdbc driver
 				logger.debug("Create connection from local mode");
 				con = new HiveConnection(localHiveConf());
-			} else if(uri.startsWith("hive://") || uri.startsWith("hive2://")){ // remote connection using jdbc uri
+			} else if(uri.startsWith("hive://") || uri.startsWith("hive2://")){
+				// remote connection using jdbc uri
 				logger.debug("Create connection from given jdbc uri");
 			    con = DriverManager.getConnection("jdbc:"+uri);
 			} else {
