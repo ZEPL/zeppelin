@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.zengine.stmt;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -306,32 +307,48 @@ public abstract class Z {
 		if (this.hasPrev()){
 			prev().execute(connection);
 		}
+
+		executeResource(getResources());
+
 		String q;
 		String query = getQuery();
+
 		if (query!=null) {
-			executeResource(getResources());
-	
-			String[] queries = Util.split(query, ';');
-			for (int i=0; i<queries.length-1; i++){//all except last one
-			    q = queries[i];
+			String escapeSeq = "\"',;<%>!";
+			char escapeChar = '\\';
+			String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
+			String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
+			String [] op = new String[]{";"};
+			String [] querySplit = Util.split(query, escapeSeq, escapeChar, blockStart, blockEnd, op, false);
+
+			List<String> queries = new LinkedList<String>();
+			for (int i = 0; i < querySplit.length; i++) {
+				String qs = querySplit[i];
+				if(qs==null) continue;
+				qs = qs.trim();
+				if(qs.length()==0) continue;
+				queries.add(qs);
+			}
+
+			for (int i=0; i<queries.size()-1; i++){//all except last one
+			    q = queries.get(i);
 			    lastQueryResult = executeQuery(q);
 			}
-			
-			if (queries.length > 0) {//the last query
-	            q = queries[queries.length-1];
-	            if (isUnNamed()) {	
-	                lastQueryResult = executeQuery(q);
-	            } else {
-	                if(!isSaveableQuery(q)){
-	                    throw new ZException("Can not save query "+q+" into table "+name());
-	                }
-	                if(isTable()){
-	                    lastQueryResult = connection.createTableFromQuery(name(), q);
-	                } else {
-	                    lastQueryResult = connection.createViewFromQuery(name(), q);
-	                }
-	            }
-	
+
+			if (queries.size() > 0) {// the last query
+				q = queries.get(queries.size() - 1);
+				if (isUnNamed()) {
+					lastQueryResult = executeQuery(q);
+				} else {
+					if (!isSaveableQuery(q)) {
+						throw new ZException("Can not save query " + q + " into table " + name());
+					}
+					if (isTable()) {
+						lastQueryResult = connection.createTableFromQuery(name(), q);
+					} else {
+						lastQueryResult = connection.createViewFromQuery(name(), q);
+					}
+				}
 			}
 		}
 

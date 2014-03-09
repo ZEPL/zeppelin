@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.zengine.stmt;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.junit.Before;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZPlan;
@@ -40,13 +42,18 @@ public class ZQLTest extends TestCase {
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDirPath);
 
-		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";      
+		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %><%= z.arg%>\n";
+		// erb library with resource
 		new File(tmpDirPath + "/test").mkdir();
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/zql.erb", q1);
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/test_data.log", "");
+		// web only library
 		new File(tmpDirPath + "/test1").mkdir();
 		new File(tmpDirPath + "/test1/web").mkdirs();
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test1/web/index.erb", "WEB <%= z.result.rows.get(0)[0] %>\n");
+		// resource only library
+		new File(tmpDirPath + "/test2").mkdir();
+		UtilsForTests.createFileWithContent(tmpDirPath + "/test2/test2_res", "");
 
 		
 		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
@@ -87,11 +94,22 @@ public class ZQLTest extends TestCase {
 	
 	public void testGtLt() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank where age > 10 and age < 20");
+		zql.append("select * from bank where age > 10 and age < 20; select * from a;");
 		List<Z> plan = zql.compile();
 		
-		assertEquals(1, plan.size());
+		assertEquals(2, plan.size());
 		assertEquals("select * from bank where age > 10 and age < 20", plan.get(0).getQuery());
+		assertEquals("select * from a", plan.get(1).getQuery());
+	}
+
+	public void testNestedGtLt() throws ZException, ZQLException{
+		ZQL zql = new ZQL();
+		zql.append("select <STRUCT<ARRAY> asdf> asdf; select * from a;");
+		List<Z> plan = zql.compile();
+		
+		assertEquals(2, plan.size());
+		assertEquals("select <STRUCT<ARRAY> asdf> asdf", plan.get(0).getQuery());
+		assertEquals("select * from a", plan.get(1).getQuery());
 	}
 	
 	public void testLstmtSimple() throws ZException, ZQLException{
@@ -103,12 +121,27 @@ public class ZQLTest extends TestCase {
 		q.release();
 	}
 	
+	public void testLstmtMultilineArgs() throws ZException, ZQLException{
+		ZQL zql = new ZQL("test hello\nworld");
+		List<Z> zList = zql.compile();
+		assertEquals(1, zList.size());
+		Z q = zList.get(0);
+		assertEquals("select * from () a limit hello\nworld", q.getQuery());
+		q.release();
+	}
+	
 	public void testLstmtParam() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test(limit=10)");
 		Z q = zql.compile().get(0);
 		assertEquals("select * from () a limit 10", q.getQuery());
 	}
 	
+	public void testLstmtParamErb() throws ZException, ZQLException{
+		ZQL zql = new ZQL("test(limit=<%='20'%>)");
+		Z q = zql.compile().get(0);
+		assertEquals("select * from () a limit 20", q.getQuery());
+	}
+
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test | test(limit=10)");
 		
@@ -119,7 +152,7 @@ public class ZQLTest extends TestCase {
 	
 	public void testLstmtPipedArg() throws Exception{
 		ZQL zql = new ZQL("select * from test | test(limit=20) | test1");
-		
+
 		ZPlan q = zql.compile();
 		assertEquals(1, q.size());
 		assertEquals(null, q.get(0).getQuery());
@@ -138,6 +171,7 @@ public class ZQLTest extends TestCase {
 		// check web resource
 		InputStream ins = q.get(0).readWebResource("/");
 		assertEquals("WEB hello", IOUtils.toString(ins));
+		assertEquals(1, MockDriver.loadedResources.size());
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{
@@ -155,6 +189,14 @@ public class ZQLTest extends TestCase {
 		assertEquals(2, q.size());
 		assertEquals("select a from test", q.get(0).getQuery());
 		assertEquals("select b from test", q.get(1).getQuery());
+	}
+
+	public void testErbScopeMultilineQueryCondition() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% var1=\"b\" %> <% if var1==\"a\" %>select a; <% else %> select b;<% end %>");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select b", q.get(0).getQuery());
 	}
 
 	public void testErbScopePipedQuery() throws IOException, ZException, ZQLException{
@@ -197,7 +239,15 @@ public class ZQLTest extends TestCase {
         zql1.compile();
         zql.compile();
 	}
-	
+
+	public void testResourceOnlyLibrary() throws Exception{
+		ZQL zql = new ZQL("test2;");
+		ZPlan q = zql.compile();
+		LinkedList<Result> result = q.execute(z);
+		assertEquals(1, result.size());
+		assertEquals(1, MockDriver.loadedResources.size());
+	}
+
 	public void testAnnotationStatmentQuery() throws ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test;@driver set production;!echo ls");
 		List<Z> plan = zql.compile();
@@ -208,7 +258,14 @@ public class ZQLTest extends TestCase {
 		assertTrue(plan.get(1) instanceof AnnotationStatement); 
 		assertTrue(plan.get(2) instanceof Q); 
 	}
-	
+
+	public void testUTF8() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("select\n*\nfrom\n,<한글> 'quote' \"doublequote\"");
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select\n*\nfrom\n,<한글> 'quote' \"doublequote\"", q.get(0).getQuery());
+	}
+
 	public void testPerformance() throws Exception{
 		MockDriver.queries.put("select * from tbl", new Result(0, new String[]{"hello"}));
 		new ZQL("select * from tbl").compile().execute(z);
