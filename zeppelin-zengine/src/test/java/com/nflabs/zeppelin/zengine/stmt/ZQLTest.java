@@ -233,6 +233,22 @@ public class ZQLTest extends TestCase {
 		assertEquals("select *\nfrom ("+q.get(0).prev().name()+") a\nlimit 10;", q.get(0).getQuery());
 	}
 
+	public void testSingleLineComment() throws ZException, ZQLException{
+		ZQL zql = new ZQL("select \n* // ALL fields\nfrom table // table name;\n//whole line\nlimit 10;");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select \n* \nfrom table \n\nlimit 10", q.get(0).getQuery());
+	}
+
+	public void testBlockComment() throws ZException, ZQLException{
+		ZQL zql = new ZQL("select /* MULTILINE \n COMMENT */ * from table");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select  * from table", q.get(0).getQuery());
+	}
+
 	public void testQueryCompilessOnAddJarStatement() throws ZException, ZQLException {
 	    //on API level: why is ZException is not parent of ZQLException?
 	    //              can API client do something meaningful catching each of them separately?
