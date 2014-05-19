@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.driver.hive11;
 
 import java.io.File;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -40,26 +41,36 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	@Override
 	public ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		try {
-			Connection con;
-			String uriString = "jdbc:"+uri.toString();
-			logger.info("Create connection "+uriString);
-			if (client!=null){ // create connection with given client instance
+			Connection con = null;
+			logger.info("Create connection "+uri);
+
+			if (client!=null){
+				// create connection with given client instance. mainly for unit test
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
-			//else create instance using configuration files
-			} else if(isEmpty(uriString)){ 
-				logger.debug("Create connection from hive configuration");
-				con = new HiveConnection(hiveConf());
-			} else if(uriString.equals("jdbc:hive://") || uriString.equals("jdbc:hive2://")) { //local mode detected 
+			} else if(isEmpty(uri) || uri.equals("hive0.11://")){
+				// local mode. Using hive client 
+				return new HiveZeppelinCliConnection(localHiveConf());
+			} else if(uri.startsWith("hive0.11://")) {
+				// remote mode. Using hive client
+				URI u = new URI(uri);				
+				return new HiveZeppelinCliConnection(hiveConf(), u.getHost(), u.getPort());
+			} else if(uri.equals("hive://") || uri.equals("hive2://")) { 
+				// local mode using jdbc driver
 				logger.debug("Create connection from local mode");
 				con = new HiveConnection(localHiveConf());
-			} else { // remote connection using jdbc uri
+			} else if(uri.startsWith("hive://") || uri.startsWith("hive2://")){
+				// remote connection using jdbc uri
 				logger.debug("Create connection from given jdbc uri");
-			    con = DriverManager.getConnection(uriString);
+			    con = DriverManager.getConnection("jdbc:"+uri);
+			} else {
+				throw new ZeppelinDriverException("Can't create connection");
 			}
 
 			return new HiveZeppelinConnection(getConf(), con);
 		} catch (SQLException e) {
+			throw new ZeppelinDriverException(e);
+		} catch (Exception e) {
 			throw new ZeppelinDriverException(e);
 		}
 	}
@@ -89,7 +100,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 
 	@Override
 	public boolean acceptsURL(String url) {
-		return ( Pattern.matches("hive://.*", url) || Pattern.matches("hive2://.*", url) );
+		return ( Pattern.matches("hive://.*", url) || Pattern.matches("hive2://.*", url) || Pattern.matches("hive0.11://.*", url));
 	}
 
 	@Override
