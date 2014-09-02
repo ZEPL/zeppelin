@@ -157,7 +157,7 @@ public class ZQL {
 		char escapeChar = '\\';
 		String [] blockStart = new String[]{ "\"", "'", "<%"};
 		String [] blockEnd = new String[]{ "\"", "'", "%>"};
-		String [] t = Util.split(erbEvalGlobalScope(stmts), escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+		String [] t = Util.split(erbEvalGlobalScope(comment(stmts)), escapeSeq, escapeChar, blockStart, blockEnd, op, true);
 
 		String currentOp = null;
 		for(int i=0; i<t.length; i++){
@@ -281,6 +281,70 @@ public class ZQL {
 		}
 		
 		return plan;
+	}
+
+	/**
+	 * This method will remove all commented blocks eg. \/* comment *\/ and commented line (// comment)
+	 * But this is ignore comment in ERB code block
+	 * @param ZQL statements with comment
+	 * @return ZQL statement without comment
+	 */
+	private String comment(String stmts){
+		String ret = "";
+
+		char previousChar = '\n';
+		char escapeChar = '\n';
+		boolean singleLineComment = false;
+		boolean blockComment = false;
+		boolean erbBlock = false;
+
+		for(int i=0; i<stmts.length(); i++){
+			char currentChar = stmts.charAt(i);
+
+			if (singleLineComment) {
+				if (currentChar == '\n') {
+					singleLineComment = false;
+					ret+=currentChar;
+				}
+				escapeChar = previousChar = '\n';
+				continue;
+			} else if (blockComment) {
+				if (escapeChar != '\\' && previousChar == '*' && currentChar == '/') {
+					blockComment = false;
+				}
+				escapeChar = previousChar;
+				previousChar = currentChar;
+				continue;
+			} else if (erbBlock) {
+				if (escapeChar != '\\' && previousChar == '%' && currentChar == '>') {
+					erbBlock = false;
+				}
+
+				ret += currentChar;
+
+				escapeChar = previousChar;
+				previousChar = currentChar;
+				continue;
+			}
+
+			if (escapeChar != '\\' && previousChar == '/' && currentChar == '/' ){
+				// single line comment detected. proceed to end of the line
+				singleLineComment = true;
+				ret = ret.substring(0, ret.length()-1);
+			} else if (escapeChar != '\\' && previousChar == '/' && currentChar == '*') {
+				blockComment = true;
+				ret = ret.substring(0, ret.length()-1);
+			} else if (escapeChar != '\\' && previousChar == '<' && currentChar == '%') {
+				erbBlock = true;
+				ret += currentChar;
+			} else {
+				ret += currentChar;
+			}
+			escapeChar = previousChar;
+			previousChar = currentChar;
+		}
+
+		return ret;
 	}
 	
 	/**
