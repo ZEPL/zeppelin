@@ -64,12 +64,12 @@ angular.module('zeppelinWebApp')
   });
 
   WebSocket.onerror(function(event) {
-    console.log('message: ', event.data);
+    console.log('On error: message: ', event.data);
     $scope.connected = false;
   });
 
   WebSocket.onclose(function(event) {
-    console.log('message: ', event.data);
+    console.log('On close: message: ', event.data);
     $scope.connected = false;
   });
 
