@@ -61,9 +61,11 @@ limitations under the License.
           </ul>
           <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
             <li><span ng-show="connected"
-                      class="fa fa-circle" style="font-size:12px;margin-right:5px;"> Connected</span>
+                      class="fa fa-circle server-connected"> Connected</span>
                 <span ng-show="!connected"
-                      class="fa fa-circle" style="color:#FF4500; font-weight:bold; font-size:10px;margin-right:5px;"> Disconnected</span>
+                      class="fa fa-circle server-disconnected"> Disconnected</span>
+                <!--WebSockets do not re-connect, only page reload make this green again.
+                    TODO(bzz) use smth like https://github.com/joewalnes/reconnecting-websocket -->
             </li>
           </ul>
         </div>

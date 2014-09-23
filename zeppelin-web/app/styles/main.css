@@ -92,3 +92,15 @@ a.navbar-brand:hover {
   height: 100%;
 }
 
+.server-connected {
+  color: #18EB56;
+  font-size: 12px !important;
+  margin-right: 5px;
+}
+
+.server-disconnected {
+  color: #FF4500;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  margin-right: 5px;
+}
