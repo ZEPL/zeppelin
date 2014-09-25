@@ -24,7 +24,6 @@
 
 .paragraphAsIframe{
   padding: 0px 0px 0px 0px;
-  margin-top: -60px;
   margin-left: -10px;
   margin-right: -10px;
 }
@@ -195,7 +194,7 @@
 
 .paragraph .runControl {
   font-size: 1px;
-  color: #AAAAAA;  
+  color: #AAAAAA;
   height:4px;
   margin: 1px 0px 0px 0px;
 }

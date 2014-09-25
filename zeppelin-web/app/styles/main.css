@@ -18,11 +18,19 @@ body {
   padding-top: 60px;
 }
 
+body.iframeMode {
+  padding-top: 0px;
+}
+
+.iframeMode #main {
+  padding-bottom: 0px;
+}
+
 .displayNavBar {
   display: inline !important;
  }
 
- 
+
  body.asIframe {
    padding-top: 0px;
  }

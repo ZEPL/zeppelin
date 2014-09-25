@@ -36,7 +36,7 @@ limitations under the License.
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
 
     <span class="dropdown navbar-right">
-      <span class="fa fa-cog" style="cursor:pointer" 
+      <span class="fa fa-cog" style="cursor:pointer"
             data-toggle="dropdown"
             type="button"
             >
@@ -95,7 +95,7 @@ limitations under the License.
 
         <li><a class="fa fa-link" style="cursor:pointer"
           ng-click="goToSingleParagraph()"
-          ng-show="!asIframe"> Link this paragraph</a>
+          ng-show="!asIframe"> Copy to clipboard</a>
         </li>
         <li>
           <!-- remove paragraph -->
@@ -109,14 +109,14 @@ limitations under the License.
   <div ng-show="paragraph.config.title"
        id="{{paragraph.id}}_title"
        class="title">
-    <input type="text" 
+    <input type="text"
            placeholder="Edit title"
            ng-model="paragraph.title"
            ng-show="showTitleEditor"
            ng-delete="showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"
            />
-    <div ng-click="showTitleEditor = true" 
+    <div ng-click="showTitleEditor = true"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>

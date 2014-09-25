@@ -33,7 +33,7 @@ limitations under the License.
     <link rel="stylesheet" href="styles/font-awesome.min.css">
     <!-- endbuild -->
   </head>
-  <body ng-app="zeppelinWebApp" ng-controller="MainCtrl" >
+  <body ng-app="zeppelinWebApp" ng-controller="MainCtrl" ng-class="{'iframeMode': asIframe}">
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -60,7 +60,7 @@ limitations under the License.
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-            
+
             <li class="server-status">
                 <i class="fa fa-circle" ng-class="{'server-connected':connected, 'server-disconnected':!connected }"></i>
                 <span ng-show="connected">Connected</span>
