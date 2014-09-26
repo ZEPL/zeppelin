@@ -130,6 +130,17 @@ angular.module('zeppelinWebApp')
       },
   };
 
+
+  $scope.getTextToCopy = function() {
+    var noteId = $route.current.pathParams.noteId;
+    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id + '?asIframe';
+    return redirectToUrl;
+  };
+
+  $scope.doSomething = function() {
+    console.log('doSomething');
+  };
+
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
