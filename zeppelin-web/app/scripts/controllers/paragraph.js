@@ -1,3 +1,4 @@
+/*global $:false, jQuery:false, ace:false, confirm:false */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,7 +133,7 @@ angular.module('zeppelinWebApp')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
-    if ($scope.getResultType() === "TABLE") {
+    if ($scope.getResultType() === 'TABLE') {
       $scope.loadTableData($scope.paragraph.result);
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     }
@@ -148,19 +149,19 @@ angular.module('zeppelinWebApp')
 
   $scope.getIframeDimensions = function () {
     if ($scope.asIframe) {
-      var paragraphid = "#" + $routeParams.paragraphId + "_container";
+      var paragraphid = '#' + $routeParams.paragraphId + '_container';
       var height = $(paragraphid).height();
       return height;
     }
     return 0;
   };
 
-  $scope.$watch($scope.getIframeDimensions, function (newValue, oldValue) {
+  $scope.$watch($scope.getIframeDimensions, function (newValue) {
     if ($scope.asIframe && newValue) {
       var message = {};
       message.height = newValue;
       message.url = $location.$$absUrl;
-      $window.parent.postMessage(angular.toJson(message), "*");
+      $window.parent.postMessage(angular.toJson(message), '*');
     }
   });
 
@@ -169,13 +170,12 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.config = {colWidth:12};
     }
     else if (!$scope.paragraph.config.colWidth) {
-      $scope.paragraph.config.colWidth = 12
+      $scope.paragraph.config.colWidth = 12;
     }
   };
 
   $rootScope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id) {
-      var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
@@ -211,12 +211,11 @@ angular.module('zeppelinWebApp')
 
       // update column class
       // TODO : do it in angualr way
-      var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
-      el.removeClass(el.attr('class'))
-      el.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
+      var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
+      el.removeClass(el.attr('class'));
+      el.addClass('paragraph-col col-md-' + $scope.paragraph.config.colWidth);
 
-
-      if (newType==="TABLE") {
+      if (newType==='TABLE') {
         $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
         if (oldGraphMode !== newGraphMode) {
@@ -228,27 +227,27 @@ angular.module('zeppelinWebApp')
 
       // show control if necessary
       if ($scope.isRunning()) {
-        $('#'+$scope.paragraph.id+"_control").show();
+        $('#' + $scope.paragraph.id + '_control').show();
       } else {
-        $('#'+$scope.paragraph.id+"_control").hide();
+        $('#' + $scope.paragraph.id + '_control').hide();
       }
     }
   });
 
   $scope.onMouseover = function(){
-    $('#'+$scope.paragraph.id+"_control").show();
+    $('#' + $scope.paragraph.id + '_control').show();
   };
 
   $scope.onMouseleave = function(){
     if($scope.isRunning()){
-      $('#'+$scope.paragraph.id+"_control").show();
+      $('#' + $scope.paragraph.id + '_control').show();
     } else {
-      $('#'+$scope.paragraph.id+"_control").hide();
+      $('#' + $scope.paragraph.id + '_control').hide();
     }
   };
 
   $scope.isRunning = function(){
-    if($scope.paragraph.status=='RUNNING' || $scope.paragraph.status=='PENDING') {
+    if($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
       return true;
     } else {
       return false;
@@ -256,7 +255,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.cancelParagraph = function() {
-    console.log("Cancel %o", $scope.paragraph.id);
+    console.log('Cancel %o', $scope.paragraph.id);
     var data = {op: 'CANCEL_PARAGRAPH', data: {id: $scope.paragraph.id }};
     $rootScope.$emit('sendNewEvent', data);
   };
@@ -264,39 +263,30 @@ angular.module('zeppelinWebApp')
 
   $scope.runParagraph = function(data) {
     //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
-    var parapgraphData = {op: 'RUN_PARAGRAPH', 
+    var parapgraphData = {op: 'RUN_PARAGRAPH',
                           data: {
-                              id: $scope.paragraph.id, 
+                              id: $scope.paragraph.id,
                               title: $scope.paragraph.title,
-                              paragraph: data, 
-                              config: $scope.paragraph.config, 
+                              paragraph: data,
+                              config: $scope.paragraph.config,
                               params: $scope.paragraph.settings.params
                           }
                          };
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
-  var flushTableData = function() {
-    if ($scope.paragraph.settings.params._table) {
-        delete $scope.paragraph.settings.params._table;
-        if ($scope.paragraph.result) {
-          delete $scope.paragraph.result;
-        }
-      }
-  };
-
   $scope.moveUp = function() {
-    $rootScope.$emit('moveParagraphUp', $scope.paragraph.id)
+    $rootScope.$emit('moveParagraphUp', $scope.paragraph.id);
   };
 
   $scope.moveDown = function() {
-    $rootScope.$emit('moveParagraphDown', $scope.paragraph.id)
+    $rootScope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
   $scope.removeParagraph = function() {
     var result = confirm('Do you want to delete this paragraph?');
     if (result) {
-      console.log("Remove paragraph");
+      console.log('Remove paragraph');
       var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
       $rootScope.$emit('sendNewEvent', parapgraphData);
     }
@@ -345,7 +335,7 @@ angular.module('zeppelinWebApp')
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     newConfig.title = true;
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);    
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.hideTitle = function() {
@@ -353,7 +343,7 @@ angular.module('zeppelinWebApp')
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     newConfig.title = false;
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);    
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.setTitle = function() {
@@ -383,8 +373,8 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceLoaded = function(_editor) {
-    var langTools = ace.require("ace/ext/language_tools");
-    var Range = ace.require('ace/range').Range
+    var langTools = ace.require('ace/ext/language_tools');
+    var Range = ace.require('ace/range').Range;
 
     $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
@@ -396,18 +386,21 @@ angular.module('zeppelinWebApp')
 
       $scope.editor.getSession().setUseWrapMode(true);
 
-      $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+      $scope.editor.setKeyboardHandler('ace/keyboard/emacs');
 
       $scope.editor.setOptions({
           enableBasicAutocompletion: true,
           enableSnippets: false,
           enableLiveAutocompletion:false
       });
+
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
-              if (!$scope.editor.isFocused() ) return;
+              if (!$scope.editor.isFocused()) {
+                return;
+              }
 
-              var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column))
+              var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column));
               $rootScope.$emit('sendNewEvent', {
                   op : 'COMPLETION',
                   data : {
@@ -421,7 +414,7 @@ angular.module('zeppelinWebApp')
                   if (data.completions) {
                       var completions = [];
                       for(var c in data.completions){
-                          var v = data.completions[c]
+                          var v = data.completions[c];
                           completions.push({
                               name:v,
                               value:v,
@@ -432,7 +425,7 @@ angular.module('zeppelinWebApp')
                   }
               });
           }
-      }
+      };
       langTools.addCompleter(remoteCompleter);
 
       $scope.editor.getSession().on('change', function(e, editSession) {
@@ -475,32 +468,35 @@ angular.module('zeppelinWebApp')
       */
 
       // autocomplete on 'ctrl+.'
-      $scope.editor.commands.bindKey("ctrl-.", "startAutocomplete")
-      $scope.editor.commands.bindKey("ctrl-space", null)
+      $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
+      $scope.editor.commands.bindKey('ctrl-space', null);
 
       // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
         if($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
-            if(keyCode==38 || (keyCode==80 && e.ctrlKey)){  // UP
-                var numRows = $scope.editor.getSession().getLength();
-                var currentRow = $scope.editor.getCursorPosition().row
-                if(currentRow==0){
+          var numRows;
+          var currentRow;
+
+            if(keyCode === 38 || (keyCode === 80 && e.ctrlKey)){  // UP
+                numRows = $scope.editor.getSession().getLength();
+                currentRow = $scope.editor.getCursorPosition().row;
+                if(currentRow === 0){
                     // move focus to previous paragraph
                     $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
                 }
-            } else if(keyCode==40 || (keyCode==78 && e.ctrlKey)){  // DOWN
-                var numRows = $scope.editor.getSession().getLength();
-                var currentRow = $scope.editor.getCursorPosition().row
-                if(currentRow == numRows-1){
+            } else if(keyCode === 40 || (keyCode === 78 && e.ctrlKey)){  // DOWN
+                numRows = $scope.editor.getSession().getLength();
+                currentRow = $scope.editor.getCursorPosition().row;
+                if(currentRow === numRows-1){
                     // move focus to next paragraph
                     $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
                 }
             }
         }
         this.origOnCommandKey(e, hashId, keyCode);
-      }
+      };
     }
   };
 
@@ -518,26 +514,26 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
-      $scope.currentProgress = data.progress
+      $scope.currentProgress = data.progress;
     }
   });
 
   $rootScope.$on('focusParagraph', function(event, paragraphId){
     if ($scope.paragraph.id === paragraphId) {
       $scope.editor.focus();
-      $('body').scrollTo('#'+paragraphId+"_editor", 300, {offset:-60});
+      $('body').scrollTo('#' + paragraphId + '_editor', 300, {offset:-60});
     }
   });
 
-  $rootScope.$on('runParagraph', function(event){
+  $rootScope.$on('runParagraph', function(){
     $scope.runParagraph($scope.editor.getValue());
   });
 
-  $rootScope.$on('openEditor', function(event){
+  $rootScope.$on('openEditor', function(){
     $scope.openEditor();
   });
 
-  $rootScope.$on('closeEditor', function(event){
+  $rootScope.$on('closeEditor', function(){
     $scope.closeEditor();
   });
 
@@ -547,7 +543,7 @@ angular.module('zeppelinWebApp')
     if (pdata.result && pdata.result.type) {
       return pdata.result.type;
     } else {
-      return "TEXT";
+      return 'TEXT';
     }
   };
 
@@ -556,7 +552,7 @@ angular.module('zeppelinWebApp')
     if (pdata.settings.params && pdata.settings.params._table && pdata.settings.params._table.mode) {
       return pdata.settings.params._table.mode;
     } else {
-      return "table";
+      return 'table';
     }
   };
 
@@ -729,8 +725,8 @@ angular.module('zeppelinWebApp')
       }
     }
 
-    for (var i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
+    for (var indx = 0; indx < data.rows.length; indx++) {
+      var row = data.rows[indx];
       var xVar = row[xColIndex];
       var yVar = row[yColIndexes[0]];
 
@@ -795,7 +791,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.isGraphMode = function(graphName) {
-    if ($scope.getResultType() === "TABLE" && $scope.getGraphMode()===graphName) {
+    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName) {
       return true;
     } else {
       return false;
@@ -813,16 +809,16 @@ angular.module('zeppelinWebApp')
   $scope.formatTableContent = function(d) {
     if (isNaN(d)) {
       var f = $scope.getTableContentFormat(d);
-      if(f !="") {
+      if(f !== '') {
         return d.substring(f.length+2);
       } else {
         return d;
       }
     } else {
       var splitted = d.toString().split('.');
-      var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+      var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
       if (splitted.length>1) {
-        formatted+= "."+splitted[1];
+        formatted+= '.' + splitted[1];
       }
       return formatted;
     }
@@ -830,19 +826,19 @@ angular.module('zeppelinWebApp')
 
   $scope.getTableContentFormat = function(d) {
     if (isNaN(d)) {
-      if(d.length>"%html".length && "%html "===d.substring(0, "%html ".length)) {
-        return "html";
+      if(d.length >'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
+        return 'html';
       } else {
-        return "";
+        return '';
       }
     } else {
-      return "";
+      return '';
     }
   };
 
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
+    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id + '?asIframe';
     $window.open(redirectToUrl);
   };
 });

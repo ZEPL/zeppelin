@@ -1,3 +1,4 @@
+/*global nv:false, d3:false */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
  * @name zeppelinWebApp.directive:nvd3new
  * @description
  * # nvd3new
- * 
+ *
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
@@ -33,7 +34,7 @@ angular.module('zeppelinWebApp')
       events: '=?', //global events that directive would subscribe to, [optional]
       config: '=?'    //global directive configuration, [optional]
     },
-    link: function(scope, element, attrs) {
+    link: function(scope, element) {
       var defaultConfig = {extended: false, visible: true, disabled: false, autorefresh: true, refreshDataOnly: false};
 
       //basic directive configuration
@@ -69,8 +70,9 @@ angular.module('zeppelinWebApp')
             scope.chart = nv.models[options.chart.type]();
 
             angular.forEach(scope.chart, function(value, key) {
-              if (key === 'options')
-                ;
+              if (key === 'options') {
+                console.log('there is options');
+              }
 
               else if (key === 'dispatch') {
                 if (options.chart[key] === undefined || options.chart[key] === null) {
@@ -119,9 +121,20 @@ angular.module('zeppelinWebApp')
                 configure(scope.chart[key], options.chart[key], options.chart.type);
               }
 
-              else if (//TODO: need to fix bug in nvd3
-                      (key === 'clipEdge' && options.chart.type === 'multiBarHorizontalChart') || (key === 'clipVoronoi' && options.chart.type === 'historicalBarChart') || (key === 'color' && options.chart.type === 'indentedTreeChart') || (key === 'defined' && (options.chart.type === 'historicalBarChart' || options.chart.type === 'cumulativeLineChart' || options.chart.type === 'lineWithFisheyeChart')) || (key === 'forceX' && (options.chart.type === 'multiBarChart' || options.chart.type === 'discreteBarChart' || options.chart.type === 'multiBarHorizontalChart')) || (key === 'interpolate' && options.chart.type === 'historicalBarChart') || (key === 'isArea' && options.chart.type === 'historicalBarChart') || (key === 'size' && options.chart.type === 'historicalBarChart') || (key === 'stacked' && options.chart.type === 'stackedAreaChart') || (key === 'values' && options.chart.type === 'pieChart') || (key === 'xScale' && options.chart.type === 'scatterChart') || (key === 'yScale' && options.chart.type === 'scatterChart') || (key === 'x' && (options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart')) || (key === 'y' && options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart'))
-                ;
+            //TODO: need to fix bug in nvd3
+              else if ((key === 'clipEdge' && options.chart.type === 'multiBarHorizontalChart') ||
+                  (key === 'clipVoronoi' && options.chart.type === 'historicalBarChart') || (key === 'color' && options.chart.type === 'indentedTreeChart') ||
+                  (key === 'defined' && (options.chart.type === 'historicalBarChart' || options.chart.type === 'cumulativeLineChart' ||
+                  options.chart.type === 'lineWithFisheyeChart')) || (key === 'forceX' && (options.chart.type === 'multiBarChart' ||
+                  options.chart.type === 'discreteBarChart' || options.chart.type === 'multiBarHorizontalChart')) ||
+                  (key === 'interpolate' && options.chart.type === 'historicalBarChart') || (key === 'isArea' && options.chart.type === 'historicalBarChart') ||
+                  (key === 'size' && options.chart.type === 'historicalBarChart') || (key === 'stacked' && options.chart.type === 'stackedAreaChart') ||
+                  (key === 'values' && options.chart.type === 'pieChart') || (key === 'xScale' && options.chart.type === 'scatterChart') ||
+                  (key === 'yScale' && options.chart.type === 'scatterChart') || (key === 'x' && (options.chart.type === 'lineWithFocusChart' ||
+                  options.chart.type === 'multiChart')) || (key === 'y' && options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart')) {
+                  // No clue what this is
+                console.log('weird else if');
+              }
 
               else if (options.chart[key] === undefined || options.chart[key] === null) {
                 if (scope._config.extended) {
@@ -137,19 +150,18 @@ angular.module('zeppelinWebApp')
             scope.api.updateWithData(scope.data);
 
             // Configure wrappers
-            if (options['title'] || scope._config.extended) {
+            if (options.title || scope._config.extended) {
               configureWrapper('title');
             }
-            if (options['subtitle'] || scope._config.extended) {
+            if (options.subtitle || scope._config.extended) {
               configureWrapper('subtitle');
             }
-            if (options['caption'] || scope._config.extended) {
+            if (options.caption || scope._config.extended) {
               configureWrapper('caption');
             }
 
-
             // Configure styles
-            if (options['styles'] || scope._config.extended) {
+            if (options.styles || scope._config.extended) {
               configureStyles();
             }
 
@@ -159,27 +171,27 @@ angular.module('zeppelinWebApp')
                 scope.chart.update();
               });
               return scope.chart;
-            }, options.chart['callback']);
+            }, options.chart.callback);
           }
         },
         // Update chart with new data
         updateWithData: function(data) {
           if (data) {
-            scope.options.chart['transitionDuration'] = +scope.options.chart['transitionDuration'] || 250;
+            scope.options.chart.transitionDuration = +scope.options.chart.transitionDuration || 250;
             // Select the current element to add <svg> element and to render the chart in
             if (d3.select(element[0]).select('svg')[0][0]) {
               d3.select(element[0]).select('svg')
                       .attr('height', scope.options.chart.height)
                       .attr('width', scope.options.chart.width)
                       .datum(data)
-                      .transition().duration(scope.options.chart['transitionDuration'])
+                      .transition().duration(scope.options.chart.transitionDuration)
                       .call(scope.chart);
             } else {
               d3.select(element[0]).append('svg')
                       .attr('height', scope.options.chart.height)
                       .attr('width', scope.options.chart.width)
                       .datum(data)
-                      .transition().duration(scope.options.chart['transitionDuration'])
+                      .transition().duration(scope.options.chart.transitionDuration)
                       .call(scope.chart);
             }
             // Set up svg height and width. It is important for all browsers...
@@ -211,9 +223,12 @@ angular.module('zeppelinWebApp')
               }
               configureEvents(value, options[key]);
             }
-            else if (//TODO: need to fix bug in nvd3
-                    (key === 'xScale' && chartType === 'scatterChart') || (key === 'yScale' && chartType === 'scatterChart') || (key === 'values' && chartType === 'pieChart'))
-              ;
+            //TODO: need to fix bug in nvd3
+            else if ((key === 'xScale' && chartType === 'scatterChart') ||
+                (key === 'yScale' && chartType === 'scatterChart') || (key === 'values' && chartType === 'pieChart')) {
+              console.log('another empty else if');
+            }
+
             else if ([
               'scatter',
               'defined',
@@ -245,8 +260,9 @@ angular.module('zeppelinWebApp')
                 options[key] = value.on;
               }
             }
-            else
+            else {
               dispatch.on(key + '._', options[key]);
+            }
           });
         }
       }
@@ -260,12 +276,12 @@ angular.module('zeppelinWebApp')
           scope.options[name] = _;
         }
 
-        var wrapElement = angular.element('<div></div>').html(_['html'] || '')
+        var wrapElement = angular.element('<div></div>').html(_.html || '')
                 .addClass(name).addClass(_.class)
                 .removeAttr('style')
                 .css(_.css);
 
-        if (!_['html']) {
+        if (!_.html) {
           wrapElement.text(_.text);
         }
 
@@ -284,14 +300,18 @@ angular.module('zeppelinWebApp')
 
       // Add some styles to the whole directive element
       function configureStyles() {
-        var _ = extendDeep(defaultStyles(), scope.options['styles'] || {});
+        var _ = extendDeep(defaultStyles(), scope.options.styles || {});
 
         if (scope._config.extended) {
-          scope.options['styles'] = _;
+          scope.options.styles = _;
         }
 
         angular.forEach(_.classes, function(value, key) {
-          value ? element.addClass(key) : element.removeClass(key);
+          if (value) {
+            element.addClass(key);
+          } else {
+            element.removeClass(key);
+          }
         });
 
         element.removeAttr('style').css(_.css);
@@ -360,14 +380,19 @@ angular.module('zeppelinWebApp')
       }
 
       // Watching on options, data, config changing
-      scope.$watch('options', function(options) {
+      scope.$watch('options', function() {
         if (!scope._config.disabled && scope._config.autorefresh) {
           scope.api.refresh();
         }
       }, true);
-      scope.$watch('data', function(data) {
+      scope.$watch('data', function() {
         if (!scope._config.disabled && scope._config.autorefresh) {
-          scope._config.refreshDataOnly ? scope.chart.update() : scope.api.refresh(); // if wanted to refresh data only, use chart.update method, otherwise use full refresh.
+          // if wanted to refresh data only, use chart.update method, otherwise use full refresh.
+          if (scope._config.refreshDataOnly) {
+            scope.chart.update();
+          } else {
+            scope.api.refresh();
+          }
         }
       }, true);
       scope.$watch('config', function(config) {
