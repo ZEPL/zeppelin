@@ -17,6 +17,15 @@
   margin: 0 0 0 0px;
   padding: 0 0 0 0px;
 }
+
+.toast-top-right {
+  top: 55px !important;
+}
+
+.toast-success {
+  background-color: #507CAD !important;
+}
+
 .paragraph {
   padding: 2px 8px 4px 8px;
   min-height: 32px;

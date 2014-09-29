@@ -1,4 +1,4 @@
-/*global $:false, jQuery:false, ace:false, confirm:false */
+/*global $:false, jQuery:false, ace:false, confirm:false, toastr:false */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,7 +138,21 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.doSomething = function() {
-    console.log('doSomething');
+    toastr.options = {
+        'closeButton': false,
+        'debug': false,
+        'positionClass': 'toast-top-right',
+        'onclick': null,
+        'showDuration': '300',
+        'hideDuration': '1000',
+        'timeOut': '2300',
+        'extendedTimeOut': '1000',
+        'showEasing': 'swing',
+        'hideEasing': 'linear',
+        'showMethod': 'fadeIn',
+        'hideMethod': 'fadeOut'
+      };
+    toastr.success('Iframe link was copied to clipboard');
   };
 
   // Controller init
