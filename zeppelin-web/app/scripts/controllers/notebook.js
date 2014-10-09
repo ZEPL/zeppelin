@@ -1,3 +1,4 @@
+/*global confirm:false */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,12 +41,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.removeNote = function(noteId) {
     var result = confirm('Do you want to delete this notebook?');
     if (result) {
-      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
+      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
       $location.path('/#');
     }
   };
 
-  $scope.runNote = function(noteId) {
+  $scope.runAllNotes = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
       $rootScope.$emit('runParagraph');
@@ -62,9 +63,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.isNoteRunning = function() {
     var running = false;
-    if(!$scope.note) return false;
+    if(!$scope.note) {
+      return false;
+    }
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+      if ( $scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
         running = true;
         break;
       }
@@ -85,7 +88,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
-      note = cleanParagraphExcept($scope.paragraphUrl, note)
+      note = cleanParagraphExcept($scope.paragraphUrl, note);
       $rootScope.$emit('setIframe', $scope.asIframe);
     }
     if ($scope.note === null) {
@@ -94,7 +97,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       updateNote(note);
     }
   });
-  
+
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
     noteCopy.id = note.id;
@@ -198,7 +201,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           found = true;
           break;
         }
-      };
+      }
 
       if (found) {
         if (idx === oldIdx) {
@@ -217,17 +220,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
     /** remove paragraphs */
     for (var entry in $scope.note.paragraphs) {
-     var found = false;
-      note.paragraphs.forEach(function(currentEntry) {
-        if (currentEntry.id === $scope.note.paragraphs[entry].id) {
+      var found = false;
+
+      for (var noteIndx in note.paragraphs) {
+        if (note.paragraphs[noteIndx].id === $scope.note.paragraphs[entry].id) {
           found = true;
         }
-      });
+      }
       /** not found means bye */
       if(!found) {
-        $scope.note.paragraphs.splice(entry, 1)
+        $scope.note.paragraphs.splice(entry, 1);
       }
-    };
+    }
   };
 
 });

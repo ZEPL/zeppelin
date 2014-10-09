@@ -20,7 +20,7 @@ function getPort() {
   var port = Number(location.port);
   // brunch port
   if (port === 3333 || port === 9000) {
-    port = 8080; 
+    port = 8080;
   }
   return port+1;
 }
@@ -32,7 +32,7 @@ function getPort() {
  * # zeppelinWebApp
  *
  * Main module of the application.
- * 
+ *
  * @author anthonycorbacho
  */
 angular
@@ -45,13 +45,16 @@ angular
     'ui.ace',
     'ui.bootstrap',
     'nvd3',
-    'ngTouch'
+    'ngTouch',
+    'ngClipboard'
   ])
-  .config(function ($routeProvider, WebSocketProvider) {
+  .config(function ($routeProvider, WebSocketProvider, ngClipProvider) {
     WebSocketProvider
       .prefix('')
       .uri('ws://'+location.hostname+':' + getPort());
-      
+
+    ngClipProvider.setPath('bower_components/zeroclipboard/dist/ZeroClipboard.swf');
+
     $routeProvider
       .when('/', {
         templateUrl: 'views/main.html'
@@ -69,5 +72,5 @@ angular
       });
   });
 
-  
-  
+
+
