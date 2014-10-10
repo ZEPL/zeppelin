@@ -866,7 +866,7 @@ angular.module('zeppelinWebApp')
 
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
+    var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
     $window.open(redirectToUrl);
   };
 });
