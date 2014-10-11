@@ -212,8 +212,12 @@ angular.module('zeppelinWebApp')
       // update column class
       // TODO : do it in angualr way
       var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
-      el.removeClass(el.attr('class'))
-      el.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
+      el.removeClass(el.attr('class'));
+      var col_width = 12;
+      if ($scope.paragraph.config.colWidth) {
+        col_width = $scope.paragraph.config.colWidth;
+      }
+      el.addClass("paragraph-col col-md-" + col_width);
 
 
       if (newType==="TABLE") {
