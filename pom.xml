@@ -79,7 +79,10 @@
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
+<!--
+    Actually not used..
     <module>zeppelin-docs</module>
+-->
   </modules>
 
   <properties>
