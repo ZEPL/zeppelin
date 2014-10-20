@@ -28,39 +28,39 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.socket.NotebookServer;
 
 public class ZeppelinServer extends Application {
-  
-	private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
-	public static Notebook notebook;
-	
-	private SchedulerFactory schedulerFactory;
-	private InterpreterFactory replFactory;
 
-	public static void main(String [] args) throws Exception{
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-        conf.setProperty("args",args);
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
+  public static Notebook notebook;
 
-		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
-        final Server server = setupJettyServer(port);
-        final NotebookServer websocket = new NotebookServer(port + 1);
+  private SchedulerFactory schedulerFactory;
+  private InterpreterFactory replFactory;
 
-        setupZeppelinServerContextHandlers(server, conf);
-        startZeppelinServers(server, websocket);
-        addShutdownHook(server, websocket);
-		server.join();
-	}
+  public static void main(String[] args) throws Exception {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    conf.setProperty("args", args);
 
-    private static Server setupJettyServer(int port) {
-        int timeout = 1000*30;
-        final Server server = new Server();
-        SocketConnector connector = new SocketConnector();
+    int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
+    final Server server = setupJettyServer(port);
+    final NotebookServer websocket = new NotebookServer(port + 1);
 
-        // Set some timeout options to make debugging easier.
-        connector.setMaxIdleTime(timeout);
-        connector.setSoLingerTime(-1);
-        connector.setPort(port);
-        server.addConnector(connector);
-        return server;
-    }
+    setupZeppelinServerContextHandlers(server, conf);
+    startZeppelinServers(server, websocket);
+    addShutdownHook(server, websocket);
+    server.join();
+  }
+
+  private static Server setupJettyServer(int port) {
+    int timeout = 1000 * 30;
+    final Server server = new Server();
+    SocketConnector connector = new SocketConnector();
+
+    // Set some timeout options to make debugging easier.
+    connector.setMaxIdleTime(timeout);
+    connector.setSoLingerTime(-1);
+    connector.setPort(port);
+    server.addConnector(connector);
+    return server;
+  }
 
   private static void startZeppelinServers(final Server server, final NotebookServer websocket)
       throws Exception {
@@ -85,9 +85,9 @@ public class ZeppelinServer extends Application {
       }
     });
   }
-  
-  private static void setupZeppelinServerContextHandlers(final Server server, 
-                                                         final ZeppelinConfiguration conf) {
+
+  private static void setupZeppelinServerContextHandlers(final Server server,
+      final ZeppelinConfiguration conf) {
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
     // Web UI
@@ -98,61 +98,61 @@ public class ZeppelinServer extends Application {
     contexts.setHandlers(new Handler[] {restApi, webApp});
     server.setHandler(contexts);
   }
-    
-    private static ServletContextHandler setupRestApiContextHandler() {
-        final ServletHolder cxfServletHolder = new ServletHolder( new CXFNonSpringJaxrsServlet() );
-		cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
-		cxfServletHolder.setName("rest");
-		cxfServletHolder.setForcedPath("rest");
 
-		final ServletContextHandler cxfContext = new ServletContextHandler();
-		cxfContext.setSessionHandler(new SessionHandler());
-		cxfContext.setContextPath("/api");
-		cxfContext.addServlet( cxfServletHolder, "/*" );
-        return cxfContext;
+  private static ServletContextHandler setupRestApiContextHandler() {
+    final ServletHolder cxfServletHolder = new ServletHolder(new CXFNonSpringJaxrsServlet());
+    cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
+    cxfServletHolder.setName("rest");
+    cxfServletHolder.setForcedPath("rest");
+
+    final ServletContextHandler cxfContext = new ServletContextHandler();
+    cxfContext.setSessionHandler(new SessionHandler());
+    cxfContext.setContextPath("/api");
+    cxfContext.addServlet(cxfServletHolder, "/*");
+    return cxfContext;
+  }
+
+  private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
+    WebAppContext webApp = new WebAppContext();
+    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
+    if (webapp.isDirectory()) { // Development mode, read from FS
+      // webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
+      webApp.setResourceBase(webapp.getPath());
+      webApp.setContextPath("/");
+      webApp.setParentLoaderPriority(true);
+    } else { // use packaged WAR
+      webApp.setWar(webapp.getAbsolutePath());
     }
-
-    private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
-        WebAppContext webApp = new WebAppContext();
-        File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-        if(webapp.isDirectory()){ // Development mode, read from FS
-            //webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
-            webApp.setResourceBase(webapp.getPath());
-            webApp.setContextPath("/");
-            webApp.setParentLoaderPriority(true);
-        } else { //use packaged WAR
-            webApp.setWar(webapp.getAbsolutePath());
-        }
-        // Explicit bind to root
-        webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
-        return webApp;
-    }
+    // Explicit bind to root
+    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+    return webApp;
+  }
 
 
-	public ZeppelinServer() throws Exception {
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		
-		this.schedulerFactory = new SchedulerFactory();
+  public ZeppelinServer() throws Exception {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
-		this.replFactory = new InterpreterFactory(conf);
-		notebook = new Notebook(conf, schedulerFactory, replFactory);
-	}
+    this.schedulerFactory = new SchedulerFactory();
 
-	@Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = new HashSet<Class<?>>();
-        return classes;
-    }
+    this.replFactory = new InterpreterFactory(conf);
+    notebook = new Notebook(conf, schedulerFactory, replFactory);
+  }
 
-	@Override
-    public java.util.Set<java.lang.Object> getSingletons(){
-    	Set<Object> singletons = new HashSet<Object>();
+  @Override
+  public Set<Class<?>> getClasses() {
+    Set<Class<?>> classes = new HashSet<Class<?>>();
+    return classes;
+  }
 
-    	/** Rest-api root endpoint */
-    	ZeppelinRestApi root = new ZeppelinRestApi();
-    	singletons.add(root);
-    	
-    	return singletons;
-    }
+  @Override
+  public java.util.Set<java.lang.Object> getSingletons() {
+    Set<Object> singletons = new HashSet<Object>();
+
+    /** Rest-api root endpoint */
+    ZeppelinRestApi root = new ZeppelinRestApi();
+    singletons.add(root);
+
+    return singletons;
+  }
 
 }
