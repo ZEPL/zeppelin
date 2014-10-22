@@ -7,6 +7,11 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
@@ -15,6 +20,7 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +49,8 @@ public class ZeppelinServer extends Application {
         final Server server = setupJettyServer(port);
         final com.nflabs.zeppelin.socket.NotebookServer websocket = new com.nflabs.zeppelin.socket.NotebookServer(port+1);
 
+        SecurityHandler sch = basicAuth(conf.getRelativeDir("conf/realm.properties"));
+        
         //REST api
 		final ServletContextHandler restApi = setupRestApiContextHandler();
 		/** NOTE: Swagger-core is included via the web.xml in zeppelin-web
@@ -52,6 +60,10 @@ public class ZeppelinServer extends Application {
 		//Web UI
 		final WebAppContext webApp = setupWebAppContext(conf);
 		final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
+
+		if(sch!=null) {
+			webApp.setSecurityHandler(sch);
+		}
 
         // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
@@ -78,6 +90,36 @@ public class ZeppelinServer extends Application {
         });
 		server.join();
 	}
+	
+    private static SecurityHandler basicAuth(String path) {
+    	File realmFile = new File(path);
+    	if (realmFile.isFile()==false) {
+    		return null;    		
+    	} else {
+    		LOG.info("Read realm file "+path);
+    	}
+    	System.err.println("here2");
+    	
+    	HashLoginService l = new HashLoginService("zeppelin realm", path);
+        
+        Constraint constraint = new Constraint();
+        constraint.setName(Constraint.__BASIC_AUTH);
+        constraint.setRoles(new String[]{"user"});
+        constraint.setAuthenticate(true);
+         
+        ConstraintMapping cm = new ConstraintMapping();
+        cm.setConstraint(constraint);
+        cm.setPathSpec("/*");
+        
+        ConstraintSecurityHandler csh = new ConstraintSecurityHandler();
+        csh.setAuthenticator(new BasicAuthenticator());
+        csh.setRealmName("myrealm");
+        csh.addConstraintMapping(cm);
+        csh.setLoginService(l);
+        
+        return csh;
+    	
+    }
 
     private static Server setupJettyServer(int port) {
         int timeout = 1000*30;
