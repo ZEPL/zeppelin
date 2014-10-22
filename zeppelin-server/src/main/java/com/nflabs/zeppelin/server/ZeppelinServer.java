@@ -98,7 +98,6 @@ public class ZeppelinServer extends Application {
     	} else {
     		LOG.info("Read realm file "+path);
     	}
-    	System.err.println("here2");
     	
     	HashLoginService l = new HashLoginService("zeppelin realm", path);
         
