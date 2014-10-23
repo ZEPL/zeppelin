@@ -1,0 +1,5 @@
+
+dependencies {
+  compile project(":zeppelin-zengine")
+  compile "org.apache.commons:commons-exec:1.1"
+}

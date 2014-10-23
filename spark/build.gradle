@@ -1,0 +1,47 @@
+
+dependencies {
+  compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
+  compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+  compile project(':zeppelin-zengine')
+  compile group: 'com.google.code.gson', name: 'gson', version:'2.1'
+  compile group: 'commons-collections', name: 'commons-collections', version:'3.2.1'
+  compile(group: 'org.apache.spark', name: 'spark-core_2.10', version:'1.1.0') {
+    exclude(module: 'jackson-databind')
+  }
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.3.0'
+  compile group: 'org.scala-lang', name: 'scala-library', version:'2.10.4'
+  compile group: 'org.scala-lang', name: 'scala-compiler', version:'2.10.4'
+  compile group: 'org.scala-lang', name: 'scala-reflect', version:'2.10.4'
+  compile group: 'org.eclipse.jetty.aggregate', name: 'jetty-all-server', version:'8.1.14.v20131031'
+  compile group: 'io.netty', name: 'netty-all', version:'4.0.17.Final'
+  compile group: 'org.apache.spark', name: 'spark-repl_2.10', version:'1.1.0'
+  compile group: 'org.apache.spark', name: 'spark-sql_2.10', version:'1.1.0'
+  compile group: 'org.apache.spark', name: 'spark-hive_2.10', version:'1.1.0'
+  compile group: 'org.apache.spark', name: 'spark-streaming_2.10', version:'1.1.0'
+  compile group: 'org.apache.spark', name: 'spark-streaming-twitter_2.10', version:'1.1.0'
+  compile(group: 'org.apache.maven', name: 'maven-plugin-api', version:'3.0') {
+    exclude(module: 'plexus-utils')
+    exclude(module: 'sisu-inject-plexus')
+    exclude(module: 'maven-model')
+  }
+  compile group: 'org.sonatype.aether', name: 'aether-api', version:'1.12'
+  compile group: 'org.sonatype.aether', name: 'aether-util', version:'1.12'
+  compile group: 'org.sonatype.aether', name: 'aether-impl', version:'1.12'
+  compile(group: 'org.apache.maven', name: 'maven-aether-provider', version:'3.0.3') {
+    exclude(module: 'aether-api')
+    exclude(module: 'aether-spi')
+    exclude(module: 'aether-util')
+    exclude(module: 'aether-impl')
+    exclude(module: 'plexus-utils')
+  }
+  compile group: 'org.sonatype.aether', name: 'aether-connector-file', version:'1.12'
+  compile(group: 'org.sonatype.aether', name: 'aether-connector-wagon', version:'1.12') {
+    exclude(module: 'wagon-provider-api')
+  }
+  compile(group: 'org.apache.maven.wagon', name: 'wagon-provider-api', version:'1.0') {
+    exclude(module: 'plexus-utils')
+  }
+  compile(group: 'org.apache.maven.wagon', name: 'wagon-http-lightweight', version:'1.0') {
+    exclude(module: 'wagon-http-shared')
+  }
+}

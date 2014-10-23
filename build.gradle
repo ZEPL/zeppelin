@@ -1,0 +1,50 @@
+
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '1.10'
+}
+
+project.ext {
+  slf4jVersion = '1.7.5'
+  commonConfigurationVersion = '1.9'
+  commonIoVersion = '2.4'
+  commonLoggingVersion = '1.1.1'
+  commonCollectionVersion = '3.2.1'  
+  gsonVersion = '2.1'
+  guavaVersion = '14.0.1'
+  sparkVersion = '1.1.0'
+  scalaVersion = '2.10.4'
+  scalaBinaryVersion = '2.10'
+  jettyVersion = '8.1.14.v20131031'
+  
+}
+
+// Global setup for the subprojects
+subprojects {
+  apply plugin: 'eclipse'
+  apply plugin: 'maven'
+  apply plugin: 'java'
+
+  // Zeppelin group
+  group 'com.nflabs.zeppelin'
+
+  // Force to use Java 1.7
+  sourceCompatibility = JavaVersion.VERSION_1_7
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
+
+  dependencies {
+    testCompile group: "junit", name: "junit", version: "4.11"
+    testCompile "org.mockito:mockito-core:1.9.5"
+  }
+
+}

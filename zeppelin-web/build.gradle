@@ -1,0 +1,24 @@
+apply plugin: 'node'
+apply plugin: 'war'
+
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.moowork.gradle:gradle-node-plugin:0.3'
+  }
+}
+
+node {
+  version = '0.10.22'
+  // Base URL for fetching node distributions
+  distBaseUrl = 'http://nodejs.org/dist'
+  download = true
+}
+
+task buildClient(type: NodeTask, dependsOn: 'npmInstall') {
+    description 'Installs Node.js, installs packages from package.json, and runs Grunt.js build'
+    script = file('node_modules/.bin/grunt')
+    args = ['build']
+}

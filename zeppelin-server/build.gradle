@@ -1,0 +1,67 @@
+apply plugin: 'application'
+mainClassName = "com.nflabs.zeppelin.server.ZeppelinServer"
+applicationName = "zeppelin"
+
+dependencies {
+  compile project(':zeppelin-zengine')
+  compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
+  compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+  compile(group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs', version:'2.7.7') {
+    exclude(module: 'javax.ws.rs-api')
+  }
+  compile group: 'org.apache.cxf', name: 'cxf-rt-transports-http', version:'2.7.7'
+  compile group: 'org.java-websocket', name: 'Java-WebSocket', version:'1.3.0'
+  compile(group: 'com.wordnik', name: 'swagger-jersey-jaxrs_2.10', version:'1.3.0') {
+    exclude(module: 'jackson-core')
+    exclude(module: 'jackson-databind')
+    exclude(module: 'jackson-annotations')
+    exclude(module: 'jackson-module-scala_2.10')
+    exclude(module: 'jackson-module-scala_2.10')
+    exclude(module: 'json4s-jackson_2.10')
+    exclude(module: 'json4s-core_2.10')
+    exclude(module: 'paranamer')
+    exclude(module: 'commons-lang')
+    exclude(module: 'jersey-servlet')
+  }
+  compile(group: 'org.apache.cxf', name: 'cxf-rt-transports-http-jetty', version:'2.7.7') {
+    exclude(module: 'jetty-server')
+    exclude(module: 'jetty-security')
+    exclude(module: 'slf4j-api')
+  }
+  compile(group: 'org.apache.cxf', name: 'cxf-api', version:'2.7.7') {
+    exclude(module: '*')
+  }
+  compile group: 'org.eclipse.jetty.aggregate', name: 'jetty-all-server', version:'8.1.14.v20131031'
+  compile(group: 'org.eclipse.jetty', name: 'jetty-jsp', version:'8.1.14.v20131031') {
+    exclude(module: 'javax.servlet.jsp')
+    exclude(module: 'javax.servlet')
+    exclude(module: 'org.apache.jasper.glassfish')
+  }
+  compile(group: 'org.eclipse.jetty.orbit', name: 'javax.servlet.jsp', version:'2.2.0.v201112011158') {
+    exclude(module: 'javax.servlet')
+  }
+  compile group: 'com.google.code.gson', name: 'gson', version:'2.1'
+  compile group: 'org.quartz-scheduler', name: 'quartz', version:'2.2.1'
+  compile(group: 'org.atmosphere', name: 'atmosphere-jersey', version:'2.2.0') {
+    exclude(module: 'jersey-server')
+    exclude(module: 'javax.ws.rs-api')
+  }
+  compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version:'2.0-m10'
+  testCompile(group: 'commons-httpclient', name: 'commons-httpclient', version:'3.1') {
+    exclude(module: 'commons-codec')
+  }
+  testCompile(group: 'org.seleniumhq.selenium', name: 'selenium-java', version:'2.37.1') {
+    exclude(module: 'selenium-android-driver')
+    exclude(module: 'commons-logging')
+    exclude(module: 'commons-io')
+    exclude(module: 'commons-lang3')
+    exclude(module: 'xml-apis')
+    exclude(module: 'commons-codec')
+    exclude(module: 'httpclient')
+    exclude(module: 'jetty-websocket')
+    exclude(module: 'jetty-http')
+    exclude(module: 'netty')
+  }
+  testCompile group: 'xml-apis', name: 'xml-apis', version:'1.4.01'
+  testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.2.5'
+}
