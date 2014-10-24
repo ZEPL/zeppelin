@@ -46,6 +46,7 @@ subprojects {
   }
 
   apply from: "$rootProject.projectDir/gradle/dependencyManagement.gradle"
+    apply from: "$rootProject.projectDir/gradle/distribution.gradle"
   
   dependencies {
     testCompile group: "junit", name: "junit", version: "4.11"
@@ -54,7 +55,12 @@ subprojects {
 }
 
 clean {
-  def interpreters = new File(rootDir, 'interpreters')
-  interpreters.deleteDir()
+  doLast {
+    def interpreters = new File(rootDir, 'interpreters')
+    interpreters.deleteDir()
+    
+    def distribution = new File(rootDir, 'distribution')
+    distribution.deleteDir()
+  }
 }
 

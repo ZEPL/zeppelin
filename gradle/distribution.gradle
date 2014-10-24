@@ -12,12 +12,27 @@
  * limitations under the License.
  */
 
-apply from: "$rootProject.projectDir/gradle/interpreters.gradle"
-
-dependencies {
-  compile project(":zeppelin-zengine")
-  
-  compile 'org.slf4j:slf4j-api'
-  compile 'org.slf4j:slf4j-log4j12'
-  compile "org.commonjava.googlecode.markdown4j:markdown4j:2.2-cj-1.0"
+task createDistributionFolder() {
+  def rootPathDist = new File(rootDir, 'distribution')
+  if( !rootPathDist.exists() ) {
+    rootPathDist.mkdirs() 
+  }
 }
+
+task createZeppelinFolder() {
+  def rootPathZep = new File(rootDir, "distribution/${rootProject.name}-$version")
+  if( !rootPathZep.exists() ) {
+    rootPathZep.mkdirs() 
+  }
+}
+
+task copyInterpreters() {
+  
+
+}
+
+task dist () {
+  createDistributionFolder
+  createZeppelinFolder
+}
+
