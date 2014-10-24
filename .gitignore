@@ -60,6 +60,13 @@ Thumbs.db
 target/
 **/target/
 
+#Gradle
+.gradle
+build/
+bin/
+**/build/
+bin/
+
 *~
 \#*\#
 /.emacs.desktop

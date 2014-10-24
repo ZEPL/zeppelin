@@ -1,21 +1,34 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-description = 'Zeppelin: Zengine'
+description = 'Zeppelin :: Zengine'
+
 dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
-    compile(group: 'commons-configuration', name: 'commons-configuration', version:'1.9') {
-exclude(module: 'commons-logging')
-    }
-    compile(group: 'commons-io', name: 'commons-io', version:'2.4') {
-exclude(module: '*')
-    }
-    compile group: 'commons-logging', name: 'commons-logging', version:'1.1.1'
-    compile group: 'com.google.code.gson', name: 'gson', version:'2.1'
-    compile group: 'com.google.guava', name: 'guava', version:'14.0.1'
-    compile(group: 'org.reflections', name: 'reflections', version:'0.9.8') {
-exclude(module: 'guava')
-exclude(module: 'xml-apis')
-    }
-    compile group: 'xml-apis', name: 'xml-apis', version:'1.4.01'
-    testCompile group: 'junit', name: 'junit', version:'4.11'
+  compile 'org.slf4j:slf4j-api'
+  compile 'org.slf4j:slf4j-log4j12'
+  compile('commons-configuration:commons-configuration') {
+    exclude(module: 'commons-logging')
+  }
+  compile('commons-io:commons-io') {
+    exclude(module: '*')
+  }
+  compile 'commons-logging:commons-logging'
+  compile 'com.google.code.gson:gson'
+  compile 'com.google.guava:guava'
+  compile('org.reflections:reflections:0.9.8') {
+    exclude(module: 'guava')
+    exclude(module: 'xml-apis')
+  }
+  compile 'xml-apis:xml-apis:1.4.01'
 }

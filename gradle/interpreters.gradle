@@ -1,0 +1,36 @@
+///////////////////////////////////////////////
+///////////// INTERPRETOR CONFIG //////////////
+///////////////////////////////////////////////
+
+task createInterpretorsDirectory() {
+  def rootInterpretorsPath = new File(rootDir, 'interpreters')
+  if( !rootInterpretorsPath.exists() ) {
+    rootInterpretorsPath.mkdirs() 
+  }
+}
+
+task interpreter(type: Copy) {
+  createInterpretorsDirectory
+  
+  def interpretorsPath = new File(rootDir, "interpreters/${project.name}")
+  if( !interpretorsPath.exists() ) {
+    interpretorsPath.mkdirs()
+  }
+  
+  into "${rootProject.projectDir}/interpreters/${project.name}"
+  from configurations.runtime
+  exclude 'zepp**'
+  exclude 'gson**'
+  exclude 'guava**'
+  exclude 'reflections**'
+  exclude 'xml-apis**'
+  exclude 'commons-configuration**'
+  exclude 'commons-io**'
+  exclude 'commons-lang**'
+  exclude 'commons-logg**'
+  exclude 'dom**'
+  exclude 'javassist**'
+  exclude 'slf4j**'
+  exclude 'log4j**'
+}
+
