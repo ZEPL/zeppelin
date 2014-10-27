@@ -46,7 +46,7 @@ if [ "x$ZEPPELIN_WAR" == "x" ]; then
     if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
 	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
     else
-        export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME}/zeppelin-web -name "zeppelin-web*.war"`
+        export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web*.war"`
     fi
 fi
 
@@ -78,6 +78,7 @@ function addJarInDir(){
 }
 
 addJarInDir ${ZEPPELIN_HOME}
+addJarInDir ${ZEPPELIN_HOME}/lib
 
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-zengine/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-server/target/lib
