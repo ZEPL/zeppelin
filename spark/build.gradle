@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootProject.projectDir/gradle/interpreters.gradle"
-
+libsDirName = "../../interpreters/spark"
+  
 dependencies {
   compile project(':zeppelin-zengine')
   
@@ -60,3 +60,6 @@ dependencies {
     exclude(module: 'wagon-http-shared')
   }
 }
+
+apply from: "$rootProject.projectDir/gradle/interpreters.gradle"
+

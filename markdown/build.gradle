@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-apply from: "$rootProject.projectDir/gradle/interpreters.gradle"
-
+libsDirName = "../../interpreters/md"
+  
 dependencies {
   compile project(":zeppelin-zengine")
-  
-  compile 'org.slf4j:slf4j-api'
-  compile 'org.slf4j:slf4j-log4j12'
   compile "org.commonjava.googlecode.markdown4j:markdown4j:2.2-cj-1.0"
 }
+
+apply from: "$rootProject.projectDir/gradle/interpreters.gradle"

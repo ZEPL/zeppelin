@@ -31,6 +31,9 @@ node {
   download = true
 }
 
+war {
+  from "$project.projectDir/src/main/webapp"
+}
 task buildClient(type: NodeTask, dependsOn: 'npmInstall') {
     description 'Installs Node.js, installs packages from package.json, and runs Grunt.js build'
     script = file('node_modules/.bin/grunt')

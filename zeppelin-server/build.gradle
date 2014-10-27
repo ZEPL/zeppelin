@@ -16,6 +16,8 @@ apply plugin: 'application'
 mainClassName = "com.nflabs.zeppelin.server.ZeppelinServer"
 applicationName = "zeppelin"
 
+apply from: "$rootProject.projectDir/gradle/distribution.gradle"
+
 dependencies {
   compile project(':zeppelin-zengine')
   

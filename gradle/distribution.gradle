@@ -12,27 +12,116 @@
  * limitations under the License.
  */
 
-task createDistributionFolder() {
-  def rootPathDist = new File(rootDir, 'distribution')
-  if( !rootPathDist.exists() ) {
-    rootPathDist.mkdirs() 
+installApp.destinationDir = project.file("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version")
+distZip.destinationDir = project.file("$rootProject.projectDir/dist/$applicationName-$version")
+distTar.destinationDir = project.file("$rootProject.projectDir/dist/$applicationName-$version")
+
+
+/** Distribution tasks */
+task copyLicense {
+  def docs = file("$buildDir/tmpDist")
+  def to = new File("$rootProject.projectDir/LICENSE.txt").text
+  outputs.dir docs
+  doLast {
+    docs.mkdirs()
+    new File(docs, "LICENSE").write(to)
   }
 }
 
-task createZeppelinFolder() {
-  def rootPathZep = new File(rootDir, "distribution/${rootProject.name}-$version")
-  if( !rootPathZep.exists() ) {
-    rootPathZep.mkdirs() 
+task copyReadme {
+  def docs = file("$buildDir/tmpDist")
+  def to = new File("$rootProject.projectDir/README.md").text
+  outputs.dir docs
+  doLast {
+    docs.mkdirs()
+    new File(docs, "README.md").write(to)
   }
 }
 
-task copyInterpreters() {
-  
-
+task copyWeb {
+  def webTemplate = file("$rootProject.projectDir/zeppelin-web/build/libs")
+  def web = file("$buildDir/web")
+          
+  outputs.dir web
+  doLast {
+    web.mkdirs()
+    ant.copy(todir: web) {
+      fileset(dir: webTemplate)
+    }
+  }
 }
 
-task dist () {
-  createDistributionFolder
-  createZeppelinFolder
+task copyInterpretor {
+  def interpretorsTemplate = file("$rootProject.projectDir/interpreters")
+  def interpretors = file("$buildDir/interpreter")
+      
+  outputs.dir interpretors
+  doLast {
+    interpretors.mkdirs()
+    ant.copy(todir: interpretors) {
+      fileset(dir: interpretorsTemplate)
+    }
+  }
 }
 
+task copyConfiguration {
+  def conf = file("$buildDir/conf")
+  def confTemplate = file("$rootProject.projectDir/conf")
+  outputs.dir conf
+  doLast {
+    conf.mkdirs()
+    ant.copy(todir: conf) {
+      fileset(dir: confTemplate)
+    }
+  }
+}
+
+task copyBin {
+  def bin = file("$buildDir/bin")
+  def binTemplate = file("$rootProject.projectDir/bin")
+  outputs.dir bin
+  doLast {
+    bin.mkdirs()
+    ant.copy(todir: bin) {
+      fileset(dir: binTemplate)
+    }
+  }
+}
+
+applicationDistribution.from(copyLicense) {
+  into ""
+}
+
+applicationDistribution.from(copyReadme) {
+  into ""
+}
+
+applicationDistribution.from(copyWeb) {
+  into ""
+}
+
+
+applicationDistribution.from(copyInterpretor) {
+  into "interpreter"
+}
+
+applicationDistribution.from(copyConfiguration) {
+  into "conf"
+}
+
+applicationDistribution.from(copyBin) {
+  into "bin"
+  fileMode = 0755 
+}
+//project.delete()
+installApp {
+  doLast {
+    copy {
+      from "$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/lib/$applicationName-server-$version" + ".jar"
+      into "$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version"
+    }
+    project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/bin/zeppelin")
+    project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/bin/zeppelin.bat")
+    project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/lib/$applicationName-server-$version" + ".jar")
+  }
+}
