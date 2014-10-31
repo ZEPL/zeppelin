@@ -14,18 +14,19 @@
 
 description = 'Zeppelin :: Zengine'
 apply from: "$rootProject.projectDir/gradle/publish.gradle"
+
 dependencies {
-  compile 'org.slf4j:slf4j-api'
-  compile 'org.slf4j:slf4j-log4j12'
-  compile('commons-configuration:commons-configuration') {
+  compile 'org.slf4j:slf4j-api:' + dependencyManagement.forConfiguration('compile').getManagedVersion("org.slf4j", "slf4j-api")
+  compile 'org.slf4j:slf4j-log4j12:'  + dependencyManagement.forConfiguration('compile').getManagedVersion("org.slf4j", "slf4j-log4j12")
+  compile('commons-configuration:commons-configuration:' + dependencyManagement.forConfiguration('compile').getManagedVersion("commons-configuration", "commons-configuration")) {
     exclude(module: 'commons-logging')
   }
-  compile('commons-io:commons-io') {
+  compile('commons-io:commons-io:' + dependencyManagement.forConfiguration('compile').getManagedVersion("commons-io", "commons-io")) {
     exclude(module: '*')
   }
-  compile 'commons-logging:commons-logging'
-  compile 'com.google.code.gson:gson'
-  compile 'com.google.guava:guava'
+  compile 'commons-logging:commons-logging:' + dependencyManagement.forConfiguration('compile').getManagedVersion("commons-logging", "commons-logging")
+  compile 'com.google.code.gson:gson:' + dependencyManagement.forConfiguration('compile').getManagedVersion("com.google.code.gson", "gson")
+  compile 'com.google.guava:guava:' + dependencyManagement.forConfiguration('compile').getManagedVersion("com.google.guava", "guava")
   compile('org.reflections:reflections:0.9.8') {
     exclude(module: 'guava')
     exclude(module: 'xml-apis')

@@ -12,14 +12,34 @@
  * limitations under the License.
  */
 apply plugin: "maven"
-apply plugin: "propdeps-maven"
+apply plugin: 'signing'
 
+/** Source generation */
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+  classifier = 'sources'
+  from sourceSets.main.allJava
+}
+
+artifacts {
+  archives jar, javadocJar, sourcesJar
+}
+
+signing {
+  sign configurations.archives
+}
+
+/** Publish to Sonatype */
 def customizePom(pom, gradleProject) {
   pom.whenConfigured { generatedPom ->
     // add all items necessary for maven central publication
     generatedPom.project {
       name = 'Zeppelin'
-      description = gradleProject.description
+      description = 'A web-based notebook that enables interactive data analytics.'
       url = 'http://zeppelin-project.org/'
       packaging 'jar'
       organization {
@@ -55,11 +75,7 @@ def customizePom(pom, gradleProject) {
           email = 'corbacho.anthony@gmail.com'
         }
       }
-    }  
-    //groupId = "com.nflabs.zeppelin"
-    //group = "com.nflabs.zeppelin"
-    //archivesBaseName
-    //artifactId = project.archivesBaseName
+    }
   }
 }
 ext.deployUsername = { project.hasProperty("repoUsername") ? getProperty("repoUsername") : "" }
@@ -76,6 +92,7 @@ uploadArchives {
   repositories {
     //add project.repositories.fileRepo
     mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
       customizePom(pom, project)    
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
         authentication(userName: deployUsername(), password: deployPassword())

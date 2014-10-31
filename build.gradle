@@ -18,11 +18,9 @@ buildscript {
   repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'http://repo.spring.io/plugins-release' }
   }
   dependencies {
     classpath "io.spring.gradle:dependency-management-plugin:0.2.1.RELEASE"
-    classpath "org.springframework.build.gradle:propdeps-plugin:0.0.5"
   }
 }
 
@@ -48,22 +46,7 @@ subprojects {
   }
 
   apply from: "$rootProject.projectDir/gradle/dependencyManagement.gradle"
-  
-    
-  task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-  }
 
-  task sourcesJar(type: Jar, dependsOn:classes) {
-    classifier = 'sources'
-    from sourceSets.main.allJava
-  }
-    
-  artifacts {
-    archives javadocJar, sourcesJar
-  }
-  
   dependencies {
     testCompile group: "junit", name: "junit", version: "4.11"
     testCompile "org.mockito:mockito-core:1.9.5"

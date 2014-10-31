@@ -19,7 +19,7 @@ description = "Zeppelin server"
 
 apply from: "$rootProject.projectDir/gradle/distribution.gradle"
 apply from: "$rootProject.projectDir/gradle/publish.gradle"
-
+  
 dependencies {
   compile project(':zeppelin-zengine')
   
@@ -48,7 +48,7 @@ dependencies {
   compile( 'org.apache.cxf:cxf-api:2.7.7') {
     exclude(module: '*')
   }
-  compile 'org.eclipse.jetty.aggregate:jetty-all-server'
+  compile 'org.eclipse.jetty.aggregate:jetty-all-server:' + dependencyManagement.forConfiguration('compile').getManagedVersion("org.eclipse.jetty.aggregate", "jetty-all-server")
   compile( 'org.eclipse.jetty:jetty-jsp:8.1.14.v20131031') {
     exclude(module: 'javax.servlet.jsp')
     exclude(module: 'javax.servlet')
@@ -57,7 +57,7 @@ dependencies {
   compile( 'org.eclipse.jetty.orbit:javax.servlet.jsp:2.2.0.v201112011158') {
     exclude(module: 'javax.servlet')
   }
-  compile 'com.google.code.gson:gson'
+  compile 'com.google.code.gson:gson:' + dependencyManagement.forConfiguration('compile').getManagedVersion("com.google.code.gson", "gson")
   compile 'org.quartz-scheduler:quartz:2.2.1'
   compile( 'org.atmosphere:atmosphere-jersey:2.2.0') {
     exclude(module: 'jersey-server')
