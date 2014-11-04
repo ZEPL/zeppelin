@@ -53,26 +53,30 @@ public class HadoopDfs extends Interpreter {
   @Override
   public InterpreterResult interpret(String commandLine) {
     LOG.info("run dfs command: {}", commandLine);
-    
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    PrintStream printStream = new PrintStream(out);
-    System.setOut(printStream);
     List<String> argsList = createListOfArgumentsFrom(commandLine);
-    
     try {
-      execute(argsList, out);
+      String result = runHadoopShellAndGetOutpout(argsList);
+      return new InterpreterResult(Code.SUCCESS, result);
     } catch (Exception e) {
       e.printStackTrace();
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }
-    return new InterpreterResult(Code.SUCCESS, out.toString());
+    
   }
   
-  private void execute(List<String> argsList, ByteArrayOutputStream out) throws Exception {
+  private String runHadoopShellAndGetOutpout(List<String> argsList)
+      throws Exception {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    PrintStream printStream = new PrintStream(out);
+    System.setOut(printStream);
     FsShell fsShell = new FsShell(new Configuration());
-    fsShell.run(argsList.toArray(new String[] {}));
+    if(fsShell.run(argsList.toArray(new String[] {})) < 0) {
+      throw new Exception("Couldnt execute the commad " + argsList.toString());
+    }
+    String output = out.toString();
     out.flush();
     out.close();
+    return output;
   }
 
   private List<String> createListOfArgumentsFrom(String commandLine) {
