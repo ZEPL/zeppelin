@@ -1,28 +1,31 @@
-package java.com.nflabs.zeppelin.dfs;
+package com.nflabs.zeppelin.dfs;
 
 import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.nflabs.zeppelin.dfs.HadoopDfs;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 public class HadoopDfsTest {
-  @Before
-  public void setUp() throws Exception {}
-
-  @After
-  public void tearDown() throws Exception {}
-
   @Test
   public void test_Hadoop_Dfs_with_ls_agrument() {
     HadoopDfs dfs = new HadoopDfs(new Properties());
     dfs.open();
     InterpreterResult result = dfs.interpret("ls ./");
     assertNotNull(result.message());
+    assertEquals(result.code(), Code.SUCCESS);
+    System.out.println(result.message());
   }
+  
+  @Test
+  public void test_Hadoop_Dfs_with_invalid_agrument() {
+    HadoopDfs dfs = new HadoopDfs(new Properties());
+    dfs.open();
+    InterpreterResult result = dfs.interpret("asdasads");
+    assertEquals(result.code(), Code.ERROR);
+  }
+
 }
