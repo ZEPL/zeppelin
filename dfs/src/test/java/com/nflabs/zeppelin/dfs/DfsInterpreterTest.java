@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
-public class DfsInterpreterTest {
+public class HadoopDfs {
   @Before
   public void setUp() throws Exception {}
 
@@ -19,7 +19,7 @@ public class DfsInterpreterTest {
 
   @Test
   public void test_Hadoop_Dfs_with_ls_agrument() {
-    DfsInterpreter dfs = new DfsInterpreter(new Properties());
+    HadoopDfs dfs = new HadoopDfs(new Properties());
     dfs.open();
     InterpreterResult result = dfs.interpret("ls ./");
     assertNotNull(result.message());

@@ -14,7 +14,6 @@
 package com.nflabs.zeppelin.dfs;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Hadoop Shell interpreter
@@ -36,15 +37,15 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
  * @author anthonycorbacho
  *
  */
-public class DfsInterpreter extends Interpreter {
+public class HadoopDfs extends Interpreter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DfsInterpreter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HadoopDfs.class);
 
   static {
-    Interpreter.register("dfs", DfsInterpreter.class.getName());
+    Interpreter.register("dfs", HadoopDfs.class.getName());
   }
 
-  public DfsInterpreter(Properties property) {
+  public HadoopDfs(Properties property) {
     super(property);
 
   }
@@ -105,7 +106,11 @@ public class DfsInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return null;
+    return FormType.SIMPLE;
+  }
+  @Override
+  public Scheduler getScheduler() {
+      return SchedulerFactory.singleton().createOrGetParallelScheduler(HadoopDfs.class.getName()+this.hashCode(), 5);
   }
 
   @Override
