@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.dfs;
+package java.com.nflabs.zeppelin.dfs;
 
 import static org.junit.Assert.*;
 
@@ -8,9 +8,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nflabs.zeppelin.dfs.HadoopDfs;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
-public class HadoopDfs {
+public class HadoopDfsTest {
   @Before
   public void setUp() throws Exception {}
 
