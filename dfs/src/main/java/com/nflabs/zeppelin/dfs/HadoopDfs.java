@@ -70,7 +70,7 @@ public class HadoopDfs extends Interpreter {
     PrintStream printStream = new PrintStream(out);
     System.setOut(printStream);
     FsShell fsShell = new FsShell(new Configuration());
-    if(fsShell.run(argsList.toArray(new String[] {})) < 0) {
+    if (fsShell.run(argsList.toArray(new String[] {})) < 0) {
       throw new Exception("Couldnt execute the commad " + argsList.toString());
     }
     String output = out.toString();
