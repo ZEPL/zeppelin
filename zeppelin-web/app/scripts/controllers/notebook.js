@@ -24,9 +24,12 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
-
   $scope.note = null;
   $scope.showEditor = false;
+  $scope.editorToggled = false;
+  $scope.tableToggled = false;
+  $scope.looknfeelOption = [ 'default', 'simple' ];
+  
 
   /** Init the new controller */
   var initNotebook = function() {
@@ -52,6 +55,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.toggleAllEditor = function() {
+    if ($scope.editorToggled) {
+        $rootScope.$emit('closeEditor');        
+    } else {
+        $rootScope.$emit('openEditor');        
+    }
+    $scope.editorToggled = !$scope.editorToggled;
+  }
+
   $scope.showAllEditor = function() {
     $rootScope.$emit('openEditor');
   };
@@ -60,11 +72,28 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $rootScope.$emit('closeEditor');
   };
 
+  $scope.toggleAllTable = function() {
+    if ($scope.tableToggled) {
+        $rootScope.$emit('closeTable');        
+    } else {
+        $rootScope.$emit('openTable');        
+    }
+    $scope.tableToggled = !$scope.tableToggled;
+  }
+
+  $scope.showAllTable = function() {
+    $rootScope.$emit('openTable');
+  };
+
+  $scope.hideAllTable = function() {
+    $rootScope.$emit('closeTable');
+  };
+
   $scope.isNoteRunning = function() {
     var running = false;
-    if(!$scope.note) return false;
+    if(!$scope.note){ return false; }
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+      if ( $scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
         running = true;
         break;
       }
@@ -72,11 +101,25 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
+  $scope.setLookAndFeel = function(looknfeel) {
+    $scope.note.config.looknfeel = looknfeel;
+    $scope.setConfig();
+    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
+  };
+
+  /** Update note config **/
+  $scope.setConfig = function(config) {
+    if(config) {
+      $scope.note.config = config;
+    }
+    $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
+  };
+
   /** Update the note name */
   $scope.sendNewName = function() {
     $scope.showEditor = false;
     if ($scope.note.name) {
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name}});
+      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
     }
   };
 
@@ -88,12 +131,23 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       note = cleanParagraphExcept($scope.paragraphUrl, note);
       $rootScope.$emit('setIframe', $scope.asIframe);
     }
+
     if ($scope.note === null) {
       $scope.note = note;
+      initialize();
     } else {
       updateNote(note);
     }
+
+    /** set look n feel */
+    $rootScope.$emit('setLookAndFeel', note.config.looknfeel);
   });
+
+  var initialize = function() {
+    if(!$scope.note.config.looknfeel) {
+      $scope.note.config.looknfeel = 'default';
+    }
+  };
   
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
@@ -107,6 +161,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           noteCopy.paragraphs[0].config = {};
         }
         noteCopy.paragraphs[0].config.editorHide = true;
+        noteCopy.paragraphs[0].config.tableHide = true;
         noteCopy.paragraphs[0].config.asIframe = true;
         break;
       }
@@ -128,6 +183,27 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
 
     $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+  });
+
+  // create new paragraph on current position
+  $rootScope.$on('insertParagraph', function(event, paragraphId) {
+    var newIndex = -1;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === paragraphId) {
+        newIndex = i+1;
+        break;
+      }
+    }
+
+    if (newIndex == $scope.note.paragraphs.length) {
+      alert('Cannot insert after the last paragraph.');
+      return;
+    }
+    if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
+      return;
+    }
+
+    $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
   });
 
   $rootScope.$on('moveParagraphDown', function(event, paragraphId) {
@@ -156,7 +232,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide) {
+        if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -174,7 +250,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide) {
+        if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -198,7 +274,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           found = true;
           break;
         }
-      };
+      }
 
       if (found) {
         if (idx === oldIdx) {
@@ -222,12 +298,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         if (currentEntry.id === $scope.note.paragraphs[entry].id) {
           found = true;
         }
-      });
+      })
       /** not found means bye */
       if(!found) {
-        $scope.note.paragraphs.splice(entry, 1)
+        $scope.note.paragraphs.splice(entry, 1);
       }
-    };
+    }
   };
 
 });

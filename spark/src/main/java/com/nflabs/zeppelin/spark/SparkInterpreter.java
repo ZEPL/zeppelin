@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
@@ -76,11 +77,20 @@ public class SparkInterpreter extends Interpreter {
 	
 	
 	static SparkInterpreter _singleton;	
+	
+	public static SparkInterpreter singleton(){
+		return _singleton;
+	}
+	
 	public static SparkInterpreter singleton(Properties property){
 		if(_singleton==null) {
 			new SparkInterpreter(property);
 		}
 		return _singleton;
+	}
+	
+	public static void setSingleton(SparkInterpreter si) {
+		_singleton = si;
 	}
 
 	public SparkInterpreter(Properties property) {
@@ -258,7 +268,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		sqlc = getSQLContext();
 		
 		dep = getDependencyResolver();
-		z = new ZeppelinContext(sc, sqlc, dep);
+		
+		NoteInterpreterLoader noteInterpreterLoader = (NoteInterpreterLoader) getProperty().get("noteIntpLoader");
+		z = new ZeppelinContext(sc, sqlc, dep, noteInterpreterLoader, printStream);
 
         this.interpreter.loadFiles(settings);
 
@@ -352,12 +364,20 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
         //Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
         //SparkEnv env = (SparkEnv) share.get("sparkEnv");
 		SparkEnv.set(env);
+		
+		// add print("") to make sure not finishing with comment
+		// see https://github.com/NFLabs/zeppelin/issues/151
+		String [] linesToRun = new String[lines.length+1];
+		for (int i=0; i<lines.length; i++) {
+			linesToRun[i] = lines[i];
+		}
+		linesToRun[lines.length] = "print(\"\")";
 
 		Console.setOut((java.io.PrintStream) binder.get("out"));
 		out.reset();
 		Code r = null;
 		String incomplete = "";
-		for(String s : lines) {		
+		for(String s : linesToRun) {		
 			scala.tools.nsc.interpreter.Results.Result res = null;
 			try {
 				res = intp.interpret(incomplete+s);
@@ -501,10 +521,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	@Override
 	public void close() {
 		sc.stop();
-		interpreter.closeInterpreter();
 		sc = null;
-		interpreter = null;
-		intp = null;
+		
+		intp.close();
 	}
 	
 	@Override
