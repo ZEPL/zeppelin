@@ -36,8 +36,8 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static final int DEFAULT_PORT = 8282;
 
-  private static void creatingwebSocketServerLog(int port) {
-    LOG.info("Create zeppeling websocket on port {}", port);
+  private static void creatingWebSocketServerLog(int port) {
+    LOG.info("Create zeppelin websocket on port {}", port);
   }
 
   Gson gson = new Gson();
@@ -46,12 +46,12 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
 
   public NotebookServer() {
     super(new InetSocketAddress(DEFAULT_PORT));
-    creatingwebSocketServerLog(DEFAULT_PORT);
+    creatingWebSocketServerLog(DEFAULT_PORT);
   }
 
   public NotebookServer(int port) {
     super(new InetSocketAddress(port));
-    creatingwebSocketServerLog(port);
+    creatingWebSocketServerLog(port);
   }
 
   private Notebook notebook() {
@@ -263,30 +263,30 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     if (note != null) {
       boolean cronUpdated = isCronUpdated(config, note.getConfig());
       note.setName(name);
-	  note.setConfig(config);
-	  
-	  if (cronUpdated) {
-	    notebook.refreshCron(note.id());
-	  }
+      note.setConfig(config);
+
+      if (cronUpdated) {
+        notebook.refreshCron(note.id());
+      }
 
       broadcastNote(note);
       broadcastNoteList();
     }
   }
   
-	private boolean isCronUpdated(Map<String, Object> configA,
-			Map<String, Object> configB) {		
-		boolean cronUpdated = false;
-		if (configA.get("cron") != null && configB.get("cron") != null
-				&& configA.get("cron").equals(configB.get("cron"))) {
-			cronUpdated = true;
-		} else if (configA.get("cron") == null && configB.get("cron") == null) {
-			cronUpdated = false;
-		} else if (configA.get("cron") != null || configB.get("cron") != null) {
-			cronUpdated = true;
-		}
-		return cronUpdated;
-	}
+  private boolean isCronUpdated(Map<String, Object> configA,
+      Map<String, Object> configB) {
+    boolean cronUpdated = false;
+    if (configA.get("cron") != null && configB.get("cron") != null
+        && configA.get("cron").equals(configB.get("cron"))) {
+      cronUpdated = true;
+    } else if (configA.get("cron") == null && configB.get("cron") == null) {
+      cronUpdated = false;
+    } else if (configA.get("cron") != null || configB.get("cron") != null) {
+      cronUpdated = true;
+    }
+    return cronUpdated;
+  }
 
   private void createNote(WebSocket conn, Notebook notebook) throws IOException {
     Note note = notebook.createNote();
@@ -299,7 +299,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
-      return ;
+      return;
     }
     Note note = notebook.getNote(noteId);
     note.unpersist();
@@ -311,7 +311,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   private void updateParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
-      return ;
+      return;
     }
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -328,7 +328,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   private void removeParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
-      return ;
+      return;
     }
     final Note note = notebook.getNote(getOpenNoteId(conn));
     /** We dont want to remove the last paragraph */
@@ -343,7 +343,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     String paragraphId = (String) fromMessage.get("id");
     String buffer = (String) fromMessage.get("buf");
     int cursor = (int)Double.parseDouble(fromMessage.get("cursor").toString());
-	Message resp = new Message(OP.COMPLETION_LIST).put("id", paragraphId);
+    Message resp = new Message(OP.COMPLETION_LIST).put("id", paragraphId);
     
     if (paragraphId == null) {
       conn.send(serializeMessage(resp));
@@ -379,7 +379,6 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     broadcastNote(note);
   }
 
-  
   private void cancelParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -392,7 +391,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   }
 
   private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
-	  final String paragraphId = (String) fromMessage.get("id");
+    final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
     }
@@ -421,22 +420,22 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     private NotebookServer notebookServer;
     private Note note;
 
-	public ParagraphJobListener(NotebookServer notebookServer, Note note){
-	  this.notebookServer = notebookServer;
-      this.note = note;
-	}
+  public ParagraphJobListener(NotebookServer notebookServer, Note note){
+    this.notebookServer = notebookServer;
+    this.note = note;
+  }
 
-	@Override
-	public void onProgressUpdate(Job job, int progress) {
-      notebookServer.broadcast(note.id(), new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
-	}
+  @Override
+  public void onProgressUpdate(Job job, int progress) {
+    notebookServer.broadcast(note.id(), new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
+  }
 
-	@Override
-	public void beforeStatusChange(Job job, Status before, Status after) {
-	}
+  @Override
+  public void beforeStatusChange(Job job, Status before, Status after) {
+  }
 
-	@Override
-	public void afterStatusChange(Job job, Status before, Status after) {
+  @Override
+  public void afterStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
         job.getException().printStackTrace();
       }
