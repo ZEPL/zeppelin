@@ -210,7 +210,7 @@
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
-      <version>2.37.1</version>
+      <version>2.43.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -233,14 +233,6 @@
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
-	<exclusion> <!-- hive-service::hive-exec::hive-metastore::hive-serde brings -->
-	  <groupId>commons-codec</groupId>
-	  <artifactId>commons-codec</artifactId>
-	</exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-websocket</artifactId>
@@ -249,22 +241,12 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-http</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>        
       </exclusions>
     </dependency>
     <dependency> <!-- because there are two of them above  -->
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
       <version>1.4.01</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
       <scope>test</scope>
     </dependency>
 

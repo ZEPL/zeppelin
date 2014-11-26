@@ -67,7 +67,7 @@ public class ZeppelinIT {
 			try {
 		        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
 		            public Boolean apply(WebDriver d) {
-		                return d.findElement(By.partialLinkText("Start")).isDisplayed();
+		                return d.findElement(By.partialLinkText("Welcome to Zeppelin")).isDisplayed();
 		            }
 		        });
 		        loaded = true;
@@ -84,79 +84,15 @@ public class ZeppelinIT {
 		return driver;
 	}
 
-	@Test
-	public void testDisableIT(){
-		//
-	}
-	
-	/*
     @Test
-    public void testRunSimpleQueryInNewSession() {
-        // Notice that the remainder of the code relies on the interface,
-        // not the implementation.
+    public void testZeppelinConnected() throws InterruptedException {
         WebDriver driver = getWebDriver();
 
         try {
-            // click start
-            WebElement start = driver.findElement(By.partialLinkText("Start"));
-            start.click();
-
-            // Wait for the page to load, timeout after 10 seconds
+            // Wait for websocket connected, timeout after 10 seconds
             (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("Create new Job")).isDisplayed();
-                }
-            });
-
-            // click new
-            driver.findElement(By.linkText("Create new Job")).click();
-
-            // wait for run button appears
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("Run")).isDisplayed();
-                }
-            });
-
-            // type some query
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
-
-            // press run button
-            driver.findElement(By.linkText("Run")).click();
-
-            // wait for button becomes Running ...
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Running ...']")).isDisplayed();
-                }
-            });
-
-            // wait for button becomes Run
-            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Run']")).isDisplayed();
-                }
-            });
-
-            WebElement msg = driver.findElement(By.id("msgBox"));
-            if (msg!=null) {
-            	System.out.println("msgBox="+msg.getText());
-            }
-
-            // wait for visualization
-            (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
-                }
-            });
-
-            WebDriver iframe = driver.switchTo().frame(driver.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")));
-
-            // wait for result displayed
-            (new WebDriverWait(iframe, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//table//td[text()='test']")).isDisplayed();
+                    return d.findElement(By.xpath("//span[text()='Connected']")).isDisplayed();
                 }
             });
         } catch (WebDriverException e){
@@ -168,8 +104,6 @@ public class ZeppelinIT {
             driver.quit();
         }
     }
-
-*/
 
     /**
      * Get the url of Zeppelin
