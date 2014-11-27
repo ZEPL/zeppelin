@@ -524,6 +524,21 @@ angular.module('zeppelinWebApp')
                 }
             }
         }
+
+        if (keyCode===78 && e.ctrlKey && (e.metaKey || e.altKey)) {        // ctrl-alt-n
+          $scope.moveDown();
+        } else if (keyCode===80 && e.ctrlKey && (e.metaKey || e.altKey)) { // ctrl-alt-p
+          $scope.moveUp();
+        } else if (keyCode===73 && e.ctrlKey && (e.metaKey || e.altKey)) { // ctrl-alt-i
+          $scope.insertNew();
+        } else if (keyCode===75 && e.ctrlKey && (e.metaKey || e.altKey)) { // ctrl-alt-k
+          $scope.removeParagraph();
+        } else if (keyCode===69 && e.ctrlKey && (e.metaKey || e.altKey)) { // ctrl-alt-e
+          $scope.toggleEditor();
+        } else if (keyCode===79 && e.ctrlKey && (e.metaKey || e.altKey)) { // ctrl-alt-o
+          $scope.toggleOutput();
+        }
+
         this.origOnCommandKey(e, hashId, keyCode);
       };
     }
