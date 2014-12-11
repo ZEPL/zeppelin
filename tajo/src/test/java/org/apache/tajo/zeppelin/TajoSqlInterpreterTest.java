@@ -65,7 +65,7 @@ public class TajoSqlInterpreterTest {
     client.executeQueryAndGetResult(sql);
     assertTrue(client.existTable(tableName));
 
-    InterpreterResult result = tajo.interpret("select * from testsimplequery limit 20");
+    InterpreterResult result = tajo.interpret("select * from testsimplequery where score < 10 ");
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(Type.TABLE, result.type());

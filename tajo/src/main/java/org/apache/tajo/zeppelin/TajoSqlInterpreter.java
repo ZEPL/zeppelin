@@ -24,6 +24,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+/**
+ * Tajo SQL Interpreter for Zeppelin.
+ */
 public class TajoSqlInterpreter extends Interpreter {
   public static final int ZEPPELIN_SPARK_MAX_RESULT = 1000;
   Logger logger = LoggerFactory.getLogger(TajoSqlInterpreter.class);
@@ -54,7 +57,7 @@ public class TajoSqlInterpreter extends Interpreter {
       cliOut = new ByteArrayOutputStream();
 
       tajoCli = new TajoCli(tajoConf, new String[]{}, cliIn, cliOut);
-      tajoCli.executeMetaCommand("\\set " + SessionVars.CLI_FORMATTER_CLASS +" " +
+      tajoCli.executeMetaCommand("\\set " + SessionVars.CLI_FORMATTER_CLASS + " " +
           TajoCliZeppelinOutputFormatter.class.getName());
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
@@ -65,7 +68,8 @@ public class TajoSqlInterpreter extends Interpreter {
   @Override
   public void open() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    int maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult", ZEPPELIN_SPARK_MAX_RESULT);
+    int maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult",
+        ZEPPELIN_SPARK_MAX_RESULT);
     tajoCli.getContext().setInt("zeppelin.spark.maxResult", maxResult);
   }
 
@@ -112,7 +116,8 @@ public class TajoSqlInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(TajoSqlInterpreter.class.getName()+this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        TajoSqlInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
