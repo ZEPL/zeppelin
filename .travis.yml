@@ -5,6 +5,7 @@ jdk:
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -e -X
 
 before_script:
   - mvn package -Pbuild-distr -B
