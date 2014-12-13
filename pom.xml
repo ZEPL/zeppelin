@@ -75,6 +75,7 @@
 		<module>zeppelin-server</module>
 		<module>zeppelin-distribution</module>
 		<module>zeppelin-docs</module>
+        <module>tajo</module>
 	</modules>
 
 	<properties>
@@ -100,6 +101,7 @@
 		<codahale.metrics.version>3.0.0</codahale.metrics.version>
 		<avro.version>1.7.6</avro.version>
 		<jets3t.version>0.7.1</jets3t.version>
+    <tajo.version>0.9.1-SNAPSHOT</tajo.version>
 
 		<PermGen>64m</PermGen>
 		<MaxPermGen>512m</MaxPermGen>
@@ -1018,6 +1020,20 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+
+    <!-- for Tajo snapshot -->
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>http://repository.apache.org/snapshots</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+
 	</repositories>
 
 	<pluginRepositories>
