@@ -67,6 +67,19 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
+.ace-tm .ace_marker-layer .ace_selection {
+    background: rgba(98, 157, 233, 0.2) !important;
+    color: black;
+}
+
+.ace_active-line {
+    background: rgba(98, 157, 233, 0.2) !important;
+}
+
+.ace-tm .ace_marker-layer .ace_selected-word {
+    background: rgba(250, 250, 255, 0.2) !important;
+}
+
 .labelBtn {
   padding: .2em .6em .3em;
   font-size: 75%;
@@ -134,7 +147,7 @@
   width: 80%;
   font-weight: bold;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px!important;
+  font-size: 17px !important;
   text-transform: capitalize;
 }
 
@@ -176,6 +189,7 @@
   /*font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
   font-family: 'Roboto', sans-serif;
   font-size: 14px!important;
+  margin-bottom: 5px !important;
 }
 
 .paragraph p {
@@ -184,7 +198,6 @@
 
 .paragraph div svg {
   width : 100%;
-  height : 300px;
 }
 
 .ace-tm {
@@ -227,7 +240,7 @@
 
 .paragraph .runControl {
   font-size: 1px;
-  color: #AAAAAA;  
+  color: #AAAAAA;
   height:4px;
   margin: 1px 0px 0px 0px;
 }
@@ -244,6 +257,12 @@
   z-index:100;
 }
 
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
 
 .disable {
   opacity:0.4!important;
@@ -255,6 +274,12 @@
   margin-right: -10px;
   margin-top: -10px;
   font-family: 'Roboto', sans-serif;
+}
+
+.noteAction li{
+  font-size:12px;
+  margin-bottom:4px;
+  color: #333333;
 }
 
 .new_h3 {
@@ -351,22 +376,19 @@
   height:auto;
   overflow : auto;
   min-height: 200px;
-  border: 1px solid #DDDDDD;
-  border-radius: 5px;
+  border-top: 1px solid #ecf0f1;
+
 }
 
 .tableDisplay .option .columns {
   height: 100%;
-  float:left;
-  margin-right:10px;
-  padding: 3px 3px 3px 3px;
 }
 
 .tableDisplay .option .columns ul {
-  overflow-y: auto;
-  overflow-x: visible;
+
   background-color: white;
-  min-width: 100px;
+  /*min-width: 100px;*/
+  width:auto;
   padding: 3px 3px 3px 3px;
   height : 150px;
   border: 1px solid #CCC;
@@ -377,18 +399,18 @@
 
 }
 
-.tableDisplay .option .columns ul li{
+.tableDisplay .option .columns ul li {
   margin: 3px 3px 3px 3px;
 }
 
-.tableDisplay .option .columns ul li span{
+.tableDisplay .option .columns ul li span {
   cursor: pointer;
   margin-left: 3px;
   margin-top: 3px;
 }
 
 .tableDisplay .option .columns ul li div ul { /* aggregation menu */
-  min-width:50px;
+  width:auto;
   height:auto;
 }
 
@@ -398,5 +420,42 @@
   cursor: pointer;
 }
 
+.graphContainer {
+  position:relative;
+  margin-bottom: 5px;
+  overflow: visible;
+}
 
+.noOverflow {
+    overflow: hidden !important;
+}
 
+.graphContainer .table {
+  overflow: hidden;
+  margin-bottom: 5px !important;
+}
+
+.allFields {
+  margin-bottom: 10px;
+}
+.noDot {
+  list-style-type: none;
+  padding-left:5px;
+}
+
+.liVertical {
+  display:block;
+  float:left;
+  padding: 5px;
+}
+.row {
+  margin-right: 0px !important
+}
+
+.lightBold {
+  font-weight: 500;
+}
+
+.resizable-helper {
+  border: 3px solid #DDDDDD;
+}

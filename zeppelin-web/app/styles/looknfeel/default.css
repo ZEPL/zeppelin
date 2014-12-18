@@ -37,6 +37,10 @@ body {
   box-shadow: none;
 }
 
+.paragraph {
+  min-height: 32px;
+}
+
 .noteAction {
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -55,4 +59,10 @@ body {
 .paragraph-space {
   margin-bottom: 5px;
   padding: 10px !important;
+}
+
+.editor,
+.executionTime,
+.nv-controlsWrap {
+  display:block;
 }
