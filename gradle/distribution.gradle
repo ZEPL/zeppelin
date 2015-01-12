@@ -20,7 +20,7 @@ distTar.destinationDir = project.file("$rootProject.projectDir/dist/$application
 /** Distribution tasks */
 task copyLicense {
   def docs = file("$buildDir/tmpDist")
-  def to = new File("$rootProject.projectDir/LICENSE.txt").text
+  def to = new File("$rootProject.projectDir/LICENSE").text
   outputs.dir docs
   doLast {
     docs.mkdirs()
