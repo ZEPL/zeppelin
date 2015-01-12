@@ -20,9 +20,13 @@ public class SparkInterpreterTest {
 	@Before
 	public void setUp() throws Exception {
 		Properties p = new Properties();
-		p.put("share", share);
-		repl = new SparkInterpreter(p);
-		repl.open();
+		p.put("share", new HashMap<String, Object>());
+	    repl = SparkInterpreter.singleton();
+	    if (repl == null) {
+	    	repl = new SparkInterpreter(p);
+			SparkInterpreter.setSingleton(repl);
+			repl.open();
+	    }
 	}
 
 	@After
@@ -45,6 +49,11 @@ public class SparkInterpreterTest {
 		assertNotNull(repl.getValue("ver"));		
 		assertEquals("HELLO\n", repl.interpret("println(\"HELLO\")").message());
 		*/
+	}
+	
+	@Test
+	public void testEndWithComment() {
+		assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment").code());
 	}
 
 	@Test
