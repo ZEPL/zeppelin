@@ -52,7 +52,7 @@ task copyWeb {
 }
 
 task copyInterpretor {
-  def interpretorsTemplate = file("$rootProject.projectDir/interpreters")
+  def interpretorsTemplate = file("$rootProject.projectDir/interpreter")
   def interpretors = file("$buildDir/interpreter")
       
   outputs.dir interpretors
