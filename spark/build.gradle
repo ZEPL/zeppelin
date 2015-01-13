@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-libsDirName = "../../interpreters/spark"
-  
+libsDirName = "../../interpreter/spark"
+
 dependencies {
   compile project(':zeppelin-zengine')
   
   compile 'com.google.code.gson:gson'
   compile 'commons-collections:commons-collections' 
-  compile('org.apache.spark:spark-core_2.10:1.1.0') {
+  compile('org.apache.spark:spark-core_2.10') {
     exclude(module: 'jackson-databind')
     exclude(module: 'netty')
   }
@@ -29,11 +29,11 @@ dependencies {
   compile 'org.scala-lang:scala-reflect' 
   compile 'org.eclipse.jetty.aggregate:jetty-all-server' 
   compile 'io.netty:netty-all' 
-  compile 'org.apache.spark:spark-repl_2.10:1.1.0'
-  compile 'org.apache.spark:spark-sql_2.10:1.1.0'
-  compile 'org.apache.spark:spark-hive_2.10:1.1.0'
-  compile 'org.apache.spark:spark-streaming_2.10:1.1.0'
-  compile 'org.apache.spark:spark-streaming-twitter_2.10:1.1.0'
+  compile 'org.apache.spark:spark-repl_2.10'
+  compile 'org.apache.spark:spark-sql_2.10'
+  compile 'org.apache.spark:spark-hive_2.10'
+  compile 'org.apache.spark:spark-streaming_2.10'
+  compile 'org.apache.spark:spark-streaming-twitter_2.10'
   compile('org.apache.maven:maven-plugin-api:3.0') {
     exclude(module: 'plexus-utils')
     exclude(module: 'sisu-inject-plexus')

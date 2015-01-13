@@ -37,7 +37,7 @@ dependencyManagement {
     jets3t_version = "0.9.0"
   }
 
-  def spark_version = "1.1.0"
+  def spark_version = "1.1.1"
   def scala_version = "2.10.4"
   def scala_binary_version = "2.10"
   def mesos_version = "0.18.1"
@@ -59,6 +59,7 @@ dependencyManagement {
   def java_version = "1.7"
   def cxf_version = "2.7.7"
   def gson_version = "2.1"
+  def guava_version = "15.0"
  
   dependencies {
     "org.eclipse.jetty:jetty-util" "${jetty_version}"
@@ -67,9 +68,9 @@ dependencyManagement {
     "org.eclipse.jetty:jetty-server" "${jetty_version}"
     "org.eclipse.jetty.aggregate:jetty-all-server" "${jetty_version}"
     "com.google.code.gson:gson" "${gson_version}"
-    "com.google.guava:guava" "14.0.1"
-    "org.apache.httpcomponents:httpclient" "4.2.5"
-    "org.apache.httpcomponents:httpcore" "4.2.5"
+    "com.google.guava:guava" "${guava_version}"
+    "org.apache.httpcomponents:httpclient" "4.3.6"
+    "org.apache.httpcomponents:httpcore" "4.3.3"
     "commons-collections:commons-collections" "3.2.1"
     "commons-lang:commons-lang" "2.5"
     "org.apache.commons:commons-lang3" "3.3.2"
@@ -135,5 +136,12 @@ dependencyManagement {
     "com.sun.jersey:jersey-core" "1.9"
     "com.sun.jersey:jersey-client" "1.9"
     "com.sun.xml.bind:jaxb-impl" "2.2.6"
+    
+    "org.apache.spark:spark-core_2.10" "${spark_version}"
+    "org.apache.spark:spark-repl_2.10" "${spark_version}"
+    "org.apache.spark:spark-sql_2.10" "${spark_version}"
+    "org.apache.spark:spark-hive_2.10" "${spark_version}"
+    "org.apache.spark:spark-streaming_2.10" "${spark_version}"
+    "org.apache.spark:spark-streaming-twitter_2.10" "${spark_version}"
   }
 }
