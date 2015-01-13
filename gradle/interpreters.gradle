@@ -22,7 +22,7 @@ task copyJarDependencies(type: Copy) {
     proj = "sh"
   }
   
-  def libDir = new File(rootProject.projectDir, "/interpreters/$proj")
+  def libDir = new File(rootProject.projectDir, "/interpreter/$proj")
   configurations.runtime.filter {it.name.endsWith 'jar'}.each { 
       File file -> moveJarIntoInterpreterDirectory(file, libDir)
     }
@@ -32,18 +32,22 @@ void moveJarIntoInterpreterDirectory(File file, libDir) {
   copy {
     from file
     into libDir
-    exclude '**zeppelin-zengine-**'
-    exclude '**gson**'
-    exclude '**guava**'
-    exclude '**reflections**'
-    exclude '**xml-apis**'
-    exclude '**commons-configuration**'
-    exclude '**commons-io**'
-    exclude '**commons-lang**'
-    exclude '**commons-logg**'
-    exclude '**dom**'
-    exclude '**javassist**'
-    exclude '**slf4j**'
-    exclude '**log4j**'
+    /**
+     * Super important for version conflict with netty... 
+     * Send 10 f*cking minutes before noticing this...
+     */
+    exclude '**netty-3.2.2.Final**'
+    //exclude '**gson**'
+    //exclude '**guava**'
+    //exclude '**reflections**'
+    //exclude '**xml-apis**'
+    //exclude '**commons-configuration**'
+    //exclude '**commons-io**'
+    //exclude '**commons-lang**'
+    //exclude '**commons-logg**'
+    //exclude '**dom**'
+    //exclude '**javassist**'
+    //exclude '**slf4j**'
+    //exclude '**log4j**'
   }
 }
