@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-libsDirName = "../../interpreters/md"
+libsDirName = "../../interpreter/md"
   
 dependencies {
   compile project(":zeppelin-zengine")
