@@ -32,4 +32,5 @@ dependencies {
     exclude(module: 'xml-apis')
   }
   compile 'xml-apis:xml-apis:1.4.01'
+  compile 'org.quartz-scheduler:quartz:2.2.1'
 }
