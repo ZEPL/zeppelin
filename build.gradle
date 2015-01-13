@@ -55,7 +55,7 @@ subprojects {
 
 clean {
   doLast {
-    def interpreters = new File(rootDir, 'interpreters')
+    def interpreters = new File(rootDir, 'interpreter')
     interpreters.deleteDir()
     
     def distribution = new File(rootDir, 'dist')
