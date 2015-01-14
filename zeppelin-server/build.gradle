@@ -18,7 +18,9 @@ applicationName = "zeppelin"
 description = "Zeppelin server"
 
 apply from: "$rootProject.projectDir/gradle/distribution.gradle"
-apply from: "$rootProject.projectDir/gradle/publish.gradle"
+if (project.hasProperty("signing")) {
+  apply from: "$rootProject.projectDir/gradle/publish.gradle"
+}
 apply from: "$rootProject.projectDir/gradle/copyDependency.gradle"
   
 dependencies {

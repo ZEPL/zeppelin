@@ -92,7 +92,7 @@ uploadArchives {
   repositories {
     //add project.repositories.fileRepo
     mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+      //beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
       customizePom(pom, project)    
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
         authentication(userName: deployUsername(), password: deployPassword())
