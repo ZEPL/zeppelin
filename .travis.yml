@@ -6,12 +6,16 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
+install:
+  - ./gradlew assemble -x signArchives
+
 before_script:
-  - mvn package -Pbuild-distr -B
+#  - mvn package -Pbuild-distr -B
   - ./testing/startSparkCluster.sh
 
 script:
-  - mvn verify -Pusing-packaged-distr -B
+  #- mvn verify -Pusing-packaged-distr -B
+  - ./gradle build -x signArchives
 
 after_failure:
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
