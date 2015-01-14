@@ -19,6 +19,7 @@ description = "Zeppelin server"
 
 apply from: "$rootProject.projectDir/gradle/distribution.gradle"
 apply from: "$rootProject.projectDir/gradle/publish.gradle"
+apply from: "$rootProject.projectDir/gradle/copyDependency.gradle"
   
 dependencies {
   compile project(':zeppelin-zengine')
@@ -83,4 +84,8 @@ dependencies {
   }
   testCompile 'xml-apis:xml-apis:1.4.01'
   testCompile 'org.apache.httpcomponents:httpclient:4.2.5'
+}
+
+tasks.withType(Jar) {
+  destinationDir = file("$rootDir/lib")
 }

@@ -62,6 +62,9 @@ clean {
     
     def distribution = new File(rootDir, 'dist')
     distribution.deleteDir()
+    
+    def target = new File(rootDir, 'lib')
+    target.deleteDir()
   }
 }
 

@@ -97,7 +97,7 @@ applicationDistribution.from(copyReadme) {
 }
 
 applicationDistribution.from(copyWeb) {
-  into ""
+  into "lib"
 }
 
 
@@ -114,14 +114,10 @@ applicationDistribution.from(copyBin) {
   fileMode = 0755 
 }
 //project.delete()
+
 installApp {
   doLast {
-    copy {
-      from "$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/lib/$applicationName-server-$version" + ".jar"
-      into "$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version"
-    }
-    project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/bin/zeppelin")
+    //project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/bin/zeppelin")
     project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/bin/zeppelin.bat")
-    project.delete("$rootProject.projectDir/dist/$applicationName-$version/$applicationName-$version/lib/$applicationName-server-$version" + ".jar")
   }
 }
