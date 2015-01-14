@@ -15,11 +15,11 @@ before_script:
 
 script:
   #- mvn verify -Pusing-packaged-distr -B
-  - ./gradle build -x signArchives
+  - ./gradlew build -x signArchives --stacktrace
 
-after_failure:
-  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
-  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
+#after_failure:
+#  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
+#  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
 
 after_script:
   - ./testing/stopSparkCluster.sh
