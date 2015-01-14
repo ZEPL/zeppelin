@@ -14,52 +14,52 @@
 
 dependencyManagement {
   /** Definition of dependencies versions */      
-  def hadoop_version = "1.0.4"
-  def protobuf_version = "2.4.1"
-  def jets3t_version = "0.7.1"
+  def hadoop_version = getVersion("hadoop_version", "1.0.4")
+  def protobuf_version = getVersion("protobuf_version", "2.4.1")
+  def jets3t_version = getVersion("jets3t_version", "0.7.1")
   
-  if(project.hasProperty('hadoop-0.23')) {
+  if (project.hasProperty('hadoop-0.23')) {
     hadoop_version = "0.23.10"
   }
-  if(project.hasProperty('hadoop-2.2')) {
+  if (project.hasProperty('hadoop-2.2')) {
     hadoop_version = "2.2.0"
     protobuf_version = "2.5.0"
     jets3t_version = "0.7.1"
   }
-  if(project.hasProperty('hadoop-2.3')) {
+  if (project.hasProperty('hadoop-2.3')) {
     hadoop_version = "2.3.0"
     protobuf_version = "2.5.0"
     jets3t_version = "0.9.0"
   }
-  if(project.hasProperty('hadoop-2.4')) {
+  if (project.hasProperty('hadoop-2.4')) {
     hadoop_version = "2.4.0"
     protobuf_version = "2.5.0"
     jets3t_version = "0.9.0"
   }
 
-  def spark_version = "1.1.1"
-  def scala_version = "2.10.4"
-  def scala_binary_version = "2.10"
-  def mesos_version = "0.18.1"
-  def mesos_classifier = "shaded-protobuf"
+  def spark_version = getVersion("spark_version", "1.1.1")
+  def scala_version = getVersion("scala_version", "2.10.4")
+  def scala_binary_version = getVersion("scala_binary_version", "2.10")
+  def mesos_version = getVersion("mesos_version", "0.18.1")
+  def mesos_classifier = getVersion("mesos_classifier", "shaded-protobuf")
   def akka_group = "org.spark-project.akka"
-  def akka_version = "2.2.3-shaded-protobuf"
-  def slf4j_version = "1.7.5"
-  def log4j_version = "1.2.17"
-  def yarn_version = "${hadoop_version}"
-  def hbase_version = "0.94.6"
-  def zookeeper_version = "3.4.5"
-  def hive_version = "0.12.0"
-  def parquet_version = "1.4.3"
-  def jblas_version = "1.2.3"
-  def jetty_version = "8.1.14.v20131031"
-  def chill_version = "0.3.6"
-  def codahale_metrics_version = "3.0.0"
-  def avro_version = "1.7.6"
-  def java_version = "1.7"
-  def cxf_version = "2.7.7"
-  def gson_version = "2.1"
-  def guava_version = "15.0"
+  def akka_version = getVersion("akka_version", "2.2.3-shaded-protobuf")
+  def slf4j_version = getVersion("slf4j_version", "1.7.5")
+  def log4j_version = getVersion("log4j_version", "1.2.17")
+  def yarn_version = getVersion("hadoop_version", "${hadoop_version}")
+  def hbase_version = getVersion("hbase_version", "0.94.6")
+  def zookeeper_version = getVersion("zookeeper_version", "3.4.5")
+  def hive_version = getVersion("hive_version", "0.12.0")
+  def parquet_version = getVersion("parquet_version", "1.4.3")
+  def jblas_version = getVersion("jblas_version", "1.2.3")
+  def jetty_version = getVersion("jetty_version", "8.1.14.v20131031")
+  def chill_version = getVersion("chill_version", "0.3.6")
+  def codahale_metrics_version = getVersion("codahale_metrics_version", "3.0.0")
+  def avro_version = getVersion("avro_version", "1.7.6")
+  def java_version = getVersion("java_version", "1.7")
+  def cxf_version = getVersion("cxf_version", "2.7.7")
+  def gson_version = getVersion("gson_version", "2.1")
+  def guava_version = getVersion("guava_version", "15.0")
  
   dependencies {
     "org.eclipse.jetty:jetty-util" "${jetty_version}"
@@ -144,4 +144,12 @@ dependencyManagement {
     "org.apache.spark:spark-streaming_2.10" "${spark_version}"
     "org.apache.spark:spark-streaming-twitter_2.10" "${spark_version}"
   }
+}
+
+/**
+ * Small function to get override version via property
+ * like gradle -PmyVersion=10.2
+ */
+def getVersion(String propertyName, String minimalVersion) {
+  return project.hasProperty(propertyName) ? project."${propertyName}" : minimalVersion
 }
