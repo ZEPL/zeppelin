@@ -66,5 +66,6 @@ clean {
     def target = new File(rootDir, 'lib')
     target.deleteDir()
   }
+  delete file("zeppelin-web/src")
 }
 
