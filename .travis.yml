@@ -7,13 +7,13 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - ./gradlew assemble -x signArchives
+  - ./gradlew assemble
 
 before_script:
   - ./testing/startSparkCluster.sh
 
 script:
-  - ./gradlew build -x signArchives --stacktrace
+  - ./gradlew build --stacktrace
 
 after_script:
   - ./testing/stopSparkCluster.sh
