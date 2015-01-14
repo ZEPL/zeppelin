@@ -1,0 +1,55 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+apply plugin: 'checkstyle'
+apply plugin: 'net.saliman.cobertura'
+
+/**
+ * Checkstyle Configuration. 
+ */
+  checkstyle {
+  configFile = new File(rootDir, '_tools/checkstyle.xml')
+  sourceSets = [sourceSets.main]
+  ignoreFailures = true
+}
+
+checkstyleMain {
+  include('**/*.java')
+  doLast {
+    project.ext.checkType = "main"
+    tasks.checkstyleReport.execute()
+  }
+}
+
+task checkstyleReport {
+  checkstyleReport.outputs.upToDateWhen { false }
+}
+
+checkstyleReport << {
+  logger.info("Producing checkstyle html report")
+  final source = "${project.projectDir}/build/reports/checkstyle/${project.checkType}.xml"
+  final xls = "../_tools/checkstyle.xls"
+  final output = "${project.projectDir}/build/reports/checkstyle/index.html"
+  println("HTML report can be found at: " + output)
+  ant.xslt(in: source, style: xls, out: output)
+}
+
+
+/**
+ * Cobertura config.
+ */
+cobertura {
+  coverageReportDir = file("${project.projectDir}/build/reports/cobertura")
+}
+
+task codeQuality( dependsOn: [build,coberturaReport] )

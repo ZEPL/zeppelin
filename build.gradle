@@ -21,6 +21,7 @@ buildscript {
   }
   dependencies {
     classpath "io.spring.gradle:dependency-management-plugin:0.2.1.RELEASE"
+    classpath "net.saliman:gradle-cobertura-plugin:2.2.5"
   }
 }
 
@@ -46,6 +47,7 @@ subprojects {
   }
 
   apply from: "$rootProject.projectDir/gradle/dependencyManagement.gradle"
+  apply from: "$rootProject.projectDir/gradle/codeQuality.gradle"
 
   dependencies {
     testCompile group: "junit", name: "junit", version: "4.11"
