@@ -45,7 +45,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           var setting = data.body[settingId];
           interpreterSettings.push(remoteSettingToLocalSetting(setting.id, setting));
         }
-
         $scope.interpreterSettings = interpreterSettings;
       }).
       error(function(data, status, headers, config) {
@@ -55,7 +54,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
 
   var getAvailableInterpreters = function() {
-    $http.get(getRestApiBase()+"/interpreter/interpreter").
+    $http.get(getRestApiBase()+"/interpreter").
       success(function(data, status, headers, config) {
         var groupedInfo = {};
         var info;
@@ -117,7 +116,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.restartInterpreterSetting = function(settingId) {
-    var result = confirm('Do you want to restart this interpreter setting?');
+    var result = confirm('Do you want to restart this interpreter?');
     if (!result) {
       return;
     }
@@ -145,6 +144,16 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
+    for (var i=0; i<$scope.interpreterSettings.length; i++) {
+      var setting = $scope.interpreterSettings[i];
+      if (setting.name === $scope.newInterpreterSetting.name) {
+        alert("Name '"+setting.name+"' already exists");
+        return;
+      }
+    }
+
+    $scope.addNewInterpreterProperty();
+
     var newSetting = {
       name : $scope.newInterpreterSetting.name,
       group : $scope.newInterpreterSetting.group,
@@ -155,7 +164,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       newSetting.properties[p] = $scope.newInterpreterSetting.properties[p].value;
     };
 
-    $http.put(getRestApiBase()+"/interpreter/setting", newSetting).
+    $http.post(getRestApiBase()+"/interpreter/setting", newSetting).
       success(function(data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
@@ -183,12 +192,18 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   }
 
   $scope.addNewInterpreterProperty = function() {
+    if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === "") {
+      return;
+    }
+
     $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
     $scope.newInterpreterSetting.propertyValue = "";
     $scope.newInterpreterSetting.propertyKey = "";
   };
 
   var init = function() {
+    // when interpeter page opened after seeing non-default looknfeel note, the css remains unchanged. that's what intepreter page want. Force set default looknfeel.
+    $rootScope.$emit('setLookAndFeel', 'default');
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
     $scope.resetNewInterpreterSetting();

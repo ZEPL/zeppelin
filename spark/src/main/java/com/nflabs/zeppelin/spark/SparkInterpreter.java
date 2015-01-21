@@ -29,15 +29,6 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.notebook.form.Setting;
-import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-import com.nflabs.zeppelin.spark.dep.DependencyResolver;
-
 import scala.Console;
 import scala.None;
 import scala.Some;
@@ -53,9 +44,19 @@ import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.notebook.form.Setting;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.spark.dep.DependencyResolver;
+
 /**
  * Spark interpreter for Zeppelin.
- * 
+ *
  */
 public class SparkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
@@ -66,6 +67,7 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("spark.app.name", "Zeppelin", "The name of spark application")
             .add("master", getMaster(),
                 "spark master uri. ex) spark://masterhost:7077")
             .add("spark.executor.memory", "1g", "executor memory per worker instance")
@@ -125,7 +127,10 @@ public class SparkInterpreter extends Interpreter {
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = SparkILoop.getAddedJars();
     SparkConf conf =
-        new SparkConf().setMaster(getProperty("master")).setAppName("Zeppelin").setJars(jars)
+        new SparkConf()
+            .setMaster(getProperty("master"))
+            .setAppName(getProperty("spark.app.name"))
+            .setJars(jars)
             .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
 
     if (execUri != null) {
@@ -170,7 +175,7 @@ public class SparkInterpreter extends Interpreter {
      * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
      * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path throuh
      * nsc.Settings.classpath.
-     * 
+     *
      * >> val settings = new Settings() >> settings.usejavacp.value = true >>
      * settings.classpath.value += File.pathSeparator + >> System.getProperty("java.class.path") >>
      * val in = new Interpreter(settings) { >> override protected def parentClassLoader =
@@ -240,7 +245,7 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, dep, printStream);
+    z = new ZeppelinContext(sc, sqlc, null, dep, printStream);
 
     this.interpreter.loadFiles(settings);
 
@@ -290,12 +295,14 @@ public class SparkInterpreter extends Interpreter {
     return paths;
   }
 
+  @Override
   public List<String> completion(String buf, int cursor) {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
   }
 
+  @Override
   public void bindValue(String name, Object o) {
     if ("form".equals(name) && o instanceof Setting) { // form controller injection from
                                                        // Paragraph.jobRun
@@ -304,6 +311,7 @@ public class SparkInterpreter extends Interpreter {
     getResultCode(intp.bindValue(name, o));
   }
 
+  @Override
   public Object getValue(String name) {
     Object ret = intp.valueOfTerm(name);
     if (ret instanceof None) {
@@ -315,21 +323,25 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private final String jobGroup = "zeppelin-" + this.hashCode();
+  private String getJobGroup(InterpreterContext context){
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+  }
 
   /**
    * Interpret a single line.
    */
-  public InterpreterResult interpret(String line) {
+  @Override
+  public InterpreterResult interpret(String line, InterpreterContext context) {
+    z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(line.split("\n"));
+    return interpret(line.split("\n"), context);
   }
 
-  public InterpreterResult interpret(String[] lines) {
+  public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
-      sc.setJobGroup(jobGroup, "Zeppelin", false);
+      sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
       InterpreterResult r = interpretInput(lines);
       sc.clearJobGroup();
       return r;
@@ -381,11 +393,14 @@ public class SparkInterpreter extends Interpreter {
   }
 
 
-  public void cancel() {
-    sc.cancelJobGroup(jobGroup);
+  @Override
+  public void cancel(InterpreterContext context) {
+    sc.cancelJobGroup(getJobGroup(context));
   }
 
-  public int getProgress() {
+  @Override
+  public int getProgress(InterpreterContext context) {
+    String jobGroup = getJobGroup(context);
     int completedTasks = 0;
     int totalTasks = 0;
 
@@ -401,6 +416,7 @@ public class SparkInterpreter extends Interpreter {
     while (it.hasNext()) {
       ActiveJob job = it.next();
       String g = (String) job.properties().get("spark.jobGroup.id");
+
       if (jobGroup.equals(g)) {
         int[] progressInfo = null;
         if (sc.version().startsWith("1.0")) {

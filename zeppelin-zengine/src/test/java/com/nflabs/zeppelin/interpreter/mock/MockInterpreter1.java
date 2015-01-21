@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreter1 extends Interpreter{
   Map<String, Object> vars = new HashMap<String, Object>();
-  
+
 	public MockInterpreter1(Properties property) {
 		super(property);
 	}
@@ -31,17 +32,17 @@ public class MockInterpreter1 extends Interpreter{
 	}
 
 	@Override
-	public InterpreterResult interpret(String st) {
+	public InterpreterResult interpret(String st, InterpreterContext context) {
 		return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: "+st);
 	}
 
 	@Override
-	public void cancel() {
+	public void cancel(InterpreterContext context) {
 	}
 
 	@Override
 	public void bindValue(String name, Object o) {
-    vars.put(name, o);	  
+    vars.put(name, o);
 	}
 
 	@Override
@@ -50,10 +51,10 @@ public class MockInterpreter1 extends Interpreter{
 	}
 
 	@Override
-	public int getProgress() {
+	public int getProgress(InterpreterContext context) {
 		return 0;
 	}
-	
+
 	@Override
 	public Scheduler getScheduler() {
 		return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
