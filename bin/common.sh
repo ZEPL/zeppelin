@@ -77,19 +77,19 @@ function addJarInDir(){
   fi
 }
   
-addJarInDir "${ZEPPELIN_HOME}"
+#addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
+#addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
+#addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+#addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
-  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
-fi
+#if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
+#  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
+#fi
 
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
-  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
-fi
+#if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
+#  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+#fi
 
 if [[ ! -z "${SPARK_HOME}" ]] && [[ -d "${SPARK_HOME}" ]]; then
   addJarInDir "${SPARK_HOME}"

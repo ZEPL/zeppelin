@@ -1,7 +1,6 @@
 *.class
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
@@ -30,6 +29,8 @@ zan-repo/
 drivers/
 warehouse/
 notebook/
+**/libs
+interpreter
 
 **/sessions/
 **/data/
@@ -61,6 +62,15 @@ Thumbs.db
 # maven target files
 target/
 **/target/
+
+#Gradle
+.gradle
+build/
+bin/
+**/build/
+bin/
+dist/
+lib/
 
 *~
 \#*\#

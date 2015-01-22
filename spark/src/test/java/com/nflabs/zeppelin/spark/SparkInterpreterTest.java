@@ -22,6 +22,7 @@ public class SparkInterpreterTest {
 		Properties p = new Properties();
 		p.put("share", new HashMap<String, Object>());
 	    repl = SparkInterpreter.singleton();
+	    
 	    if (repl == null) {
 	    	repl = new SparkInterpreter(p);
 			SparkInterpreter.setSingleton(repl);
@@ -31,7 +32,7 @@ public class SparkInterpreterTest {
 
 	@After
 	public void tearDown() throws Exception {
-		repl.getSparkContext().stop();
+		//repl.getSparkContext().stop();
 	}
 
 	@Test

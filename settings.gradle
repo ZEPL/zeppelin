@@ -1,0 +1,9 @@
+rootProject.name='zeppelin'
+
+include 'zeppelin-zengine'
+include 'zeppelin-server'
+include 'zeppelin-web'
+include 'markdown'
+include 'shell'
+include 'spark'
+

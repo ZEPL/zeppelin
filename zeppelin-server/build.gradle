@@ -1,0 +1,93 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'application'
+mainClassName = "com.nflabs.zeppelin.server.ZeppelinServer"
+applicationName = "zeppelin"
+description = "Zeppelin server"
+
+apply from: "$rootProject.projectDir/gradle/distribution.gradle"
+if (project.hasProperty("signing")) {
+  apply from: "$rootProject.projectDir/gradle/publish.gradle"
+}
+apply from: "$rootProject.projectDir/gradle/copyDependency.gradle"
+  
+dependencies {
+  compile project(':zeppelin-zengine')
+  
+  compile( 'org.apache.cxf:cxf-rt-frontend-jaxrs:2.7.7') {
+    exclude(module: 'javax.ws.rs-api')
+  }
+  compile 'org.apache.cxf:cxf-rt-transports-http:2.7.7'
+  compile 'org.java-websocket:Java-WebSocket:1.3.0'
+  compile('com.wordnik:swagger-jersey-jaxrs_2.10:1.3.0') {
+    exclude(module: 'jackson-core')
+    exclude(module: 'jackson-databind')
+    exclude(module: 'jackson-annotations')
+    exclude(module: 'jackson-module-scala_2.10')
+    exclude(module: 'jackson-module-scala_2.10')
+    exclude(module: 'json4s-jackson_2.10')
+    exclude(module: 'json4s-core_2.10')
+    exclude(module: 'paranamer')
+    exclude(module: 'commons-lang')
+    exclude(module: 'jersey-servlet')
+  }
+  compile('org.apache.cxf:cxf-rt-transports-http-jetty:2.7.7') {
+    exclude(module: 'jetty-server')
+    exclude(module: 'jetty-security')
+    exclude(module: 'slf4j-api')
+  }
+  compile( 'org.apache.cxf:cxf-api:2.7.7') {
+    exclude(module: '*')
+  }
+  compile 'org.eclipse.jetty.aggregate:jetty-all-server:' + dependencyManagement.forConfiguration('compile').getManagedVersion("org.eclipse.jetty.aggregate", "jetty-all-server")
+  compile( 'org.eclipse.jetty:jetty-jsp:8.1.14.v20131031') {
+    exclude(module: 'javax.servlet.jsp')
+    exclude(module: 'javax.servlet')
+    exclude(module: 'org.apache.jasper.glassfish')
+  }
+  compile( 'org.eclipse.jetty.orbit:javax.servlet.jsp:2.2.0.v201112011158') {
+    exclude(module: 'javax.servlet')
+  }
+  compile 'com.google.code.gson:gson:' + dependencyManagement.forConfiguration('compile').getManagedVersion("com.google.code.gson", "gson")
+  compile 'org.quartz-scheduler:quartz:2.2.1'
+  compile( 'org.atmosphere:atmosphere-jersey:2.2.0') {
+    exclude(module: 'jersey-server')
+    exclude(module: 'javax.ws.rs-api')
+  }
+  compile 'javax.ws.rs:javax.ws.rs-api:2.0-m10'
+  
+  /** Test deps */
+  testCompile( 'commons-httpclient:commons-httpclient:3.1') {
+    exclude(module: 'commons-codec')
+  }
+  testCompile( 'org.seleniumhq.selenium:selenium-java:2.37.1') {
+    exclude(module: 'selenium-android-driver')
+    exclude(module: 'commons-logging')
+    exclude(module: 'commons-io')
+    exclude(module: 'commons-lang3')
+    exclude(module: 'xml-apis')
+    exclude(module: 'commons-codec')
+    exclude(module: 'httpclient')
+    exclude(module: 'jetty-websocket')
+    exclude(module: 'jetty-http')
+    exclude(module: 'netty')
+  }
+  testCompile 'xml-apis:xml-apis:1.4.01'
+  testCompile 'org.apache.httpcomponents:httpclient:4.2.5'
+}
+
+tasks.withType(Jar) {
+  destinationDir = file("$rootDir/lib")
+}

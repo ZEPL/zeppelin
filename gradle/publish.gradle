@@ -1,0 +1,157 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+apply plugin: "maven"
+apply plugin: 'signing'
+
+/** Source generation */
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+  classifier = 'sources'
+  from sourceSets.main.allJava
+}
+
+artifacts {
+  archives jar, javadocJar, sourcesJar
+}
+
+signing {
+  sign configurations.archives
+}
+
+/** Publish to Sonatype */
+def customizePom(pom, gradleProject) {
+  pom.whenConfigured { generatedPom ->
+    // add all items necessary for maven central publication
+    generatedPom.project {
+      name = 'Zeppelin'
+      description = 'A web-based notebook that enables interactive data analytics.'
+      url = 'http://zeppelin-project.org/'
+      packaging 'jar'
+      organization {
+        name = 'NFLabs'
+        url = 'http://www.nflabs.com/'
+      }
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          distribution 'repo'
+        }
+      }
+      scm {
+        url = 'http://www.github.com/NFLabs/zeppelin'
+        connection = 'scm:git:git:git@github.com:NFLabs/zeppelin.git'
+        developerConnection = 'scm:git:git@github.com:NFLabs/zeppelin.git'
+      }
+      developers {
+        developer {
+          id = 'moon'
+          name = 'Lee moon soo'
+          email = 'leemoonsoo@gmail.com'
+        }
+        developer {
+          id = 'alex'
+          name = 'Alexander Bezzubov'
+          email = 'abezzubov@nflabs.com'
+        }
+        developer {
+          id = 'anthonycorbacho'
+          name = 'Anthony Corbacho'
+          email = 'corbacho.anthony@gmail.com'
+        }
+      }
+    }
+  }
+}
+ext.deployUsername = { project.hasProperty("repoUsername") ? getProperty("repoUsername") : "" }
+ext.deployPassword = { project.hasProperty("repoPassword") ? getProperty("repoPassword") : "" }
+
+repositories {
+  flatDir {
+    name "fileRepo"
+    dirs "repo"
+  }
+}
+
+uploadArchives {
+  repositories {
+    //add project.repositories.fileRepo
+    mavenDeployer {
+      //beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+      customizePom(pom, project)    
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: deployUsername(), password: deployPassword())
+      }
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: deployUsername(), password: deployPassword())
+      }
+    }
+  }
+}
+
+install {
+  repositories.mavenInstaller {
+    customizePom(pom, project)
+  }
+}
+
+/**
+*   S3
+*/
+task uploadToS3() {
+  group = "Distribution"
+  description = "Upload ZIPs to S3"
+
+  logging.level = LogLevel.INFO
+  // execution phase only
+  doLast() {
+    // distZip might not create an s3 config so check its existence first
+    if (configurations.find({ it.name == 's3' })) {
+      uploadArtifactsToS3(project, toDir)
+    }
+  }
+}
+
+def uploadArtifactsToS3(target, toDir) {
+  configurations { antlibs }
+  dependencies {
+    antlibs "org.springframework.build:org.springframework.build.aws.ant:3.0.6.RELEASE"
+    antlibs "net.java.dev.jets3t:jets3t:0.8.1"
+  }
+
+  // see ant logging
+  target.logging.level = LogLevel.INFO
+  ant {
+    taskdef(resource: 'org/springframework/build/aws/ant/antlib.xml', classpath: configurations.antlibs.asPath)
+      s3(accessKey: s3AccessKey, secretKey: s3SecretAccessKey) {
+        target.configurations["s3"].artifacts.each { artifact ->
+        def archive = artifact.archiveTask
+      
+        upload(bucketName: 'zeppel.in', file: archive.archivePath, toFile: toDir + "/${archive.archiveName}", publicRead: 'false') {
+          metadata(name: 'project.name', value: project)
+          metadata(name: 'package.file.name', value: archive.archiveName)
+        }
+        // checksum
+        def checksum = file(archive.archivePath.absolutePath + ".sha1.txt")
+        if (checksum.exists()) {
+          upload(bucketName: 'zeppel.in', file: archive.archivePath.absolutePath + ".sha1.txt", toFile: toDir + "/${archive.archiveName}" + ".sha1.txt", publicRead: 'false')
+        }
+      }
+    }
+  }
+}

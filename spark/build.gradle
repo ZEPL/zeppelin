@@ -1,0 +1,65 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+libsDirName = "../../interpreter/spark"
+
+dependencies {
+  compile project(':zeppelin-zengine')
+  
+  compile 'com.google.code.gson:gson'
+  compile 'commons-collections:commons-collections' 
+  compile('org.apache.spark:spark-core_2.10') {
+    exclude(module: 'jackson-databind')
+    exclude(module: 'netty')
+  }
+  compile 'com.fasterxml.jackson.core:jackson-databind' 
+  compile 'org.scala-lang:scala-library'
+  compile 'org.scala-lang:scala-compiler' 
+  compile 'org.scala-lang:scala-reflect' 
+  compile 'org.eclipse.jetty.aggregate:jetty-all-server' 
+  compile 'io.netty:netty-all' 
+  compile 'org.apache.spark:spark-repl_2.10'
+  compile 'org.apache.spark:spark-sql_2.10'
+  compile 'org.apache.spark:spark-hive_2.10'
+  compile 'org.apache.spark:spark-streaming_2.10'
+  compile 'org.apache.spark:spark-streaming-twitter_2.10'
+  compile('org.apache.maven:maven-plugin-api:3.0') {
+    exclude(module: 'plexus-utils')
+    exclude(module: 'sisu-inject-plexus')
+    exclude(module: 'maven-model')
+  }
+  compile 'org.sonatype.aether:aether-api:1.12'
+  compile 'org.sonatype.aether:aether-util:1.12'
+  compile 'org.sonatype.aether:aether-impl:1.12'
+  compile('org.apache.maven:maven-aether-provider:3.0.3') {
+    exclude(module: 'aether-api')
+    exclude(module: 'aether-spi')
+    exclude(module: 'aether-util')
+    exclude(module: 'aether-impl')
+    exclude(module: 'plexus-utils')
+  }
+  compile 'org.sonatype.aether:aether-connector-file:1.12'
+  compile('org.sonatype.aether:aether-connector-wagon:1.12') {
+    exclude(module: 'wagon-provider-api')
+  }
+  compile('org.apache.maven.wagon:wagon-provider-api:1.0') {
+    exclude(module: 'plexus-utils')
+  }
+  compile('org.apache.maven.wagon:wagon-http-lightweight:1.0') {
+    exclude(module: 'wagon-http-shared')
+  }
+}
+
+apply from: "$rootProject.projectDir/gradle/interpreters.gradle"
+
