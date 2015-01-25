@@ -64,6 +64,8 @@ angular.module('zeppelinWebApp')
       if ($('#p'+$scope.paragraph.id+'_html').length) {
         try {
           $('#p'+$scope.paragraph.id+'_html').html($scope.paragraph.result.msg);
+
+          $('#p'+$scope.paragraph.id+'_html').find("pre code").each(function(i, e) { hljs.highlightBlock(e) });
         } catch(err) {
           console.log('HTML rendering error %o', err);
         }

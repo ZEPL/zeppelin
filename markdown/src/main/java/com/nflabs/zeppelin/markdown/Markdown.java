@@ -50,6 +50,8 @@ public class Markdown extends Interpreter {
       html = md.process(st);
     } catch (IOException e) {
       return new InterpreterResult(Code.ERROR, e.getMessage());
+    } catch (java.lang.RuntimeException e) {
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
     return new InterpreterResult(Code.SUCCESS, "%html " + html);
   }
