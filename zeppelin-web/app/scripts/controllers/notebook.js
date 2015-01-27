@@ -1,4 +1,4 @@
-/* global confirm:false, alert:false */
+/* global confirm:false, alert:false, jQuery:false */
 /* jshint loopfunc: true */
 /* Copyright 2014 NFLabs
  *
