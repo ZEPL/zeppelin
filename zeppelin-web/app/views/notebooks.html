@@ -110,6 +110,51 @@ limitations under the License.
       </div>
     </h3>
 
+  <!-- settings -->
+  <div ng-show="showSetting"
+       class="setting">
+    <div>
+      <h4>Settings</h4>
+    </div>
+    <hr />
+    <div>
+      <h5>Interpreter binding</h5>
+      <p>
+        Bind interpreter for this note.
+        Click to Bind/Unbind interpreter.
+        Drag and drop to reorder interpreters. <br />
+        The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="/#/interpreter">Interpreter</a> menu.
+      </p>
+
+      <div class="interpreterSettings"
+           as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+        <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
+          <div as-sortable-item-handle
+               ng-click="item.selected = !item.selected"
+               class="btn"
+               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}"><font style="font-size:16px">{{item.name}}</font> <small><span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></small></div>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div>
+      <h5>Markdown interpreter</h5>
+      <div>
+        <p class="fa fa-pencil-square-o dropdown"> Code block syntax highlighting style
+          <form style="display:inline; margin-left:5px;">
+            <select ng-model="note.config.codeHighlightStyle"
+                    class="selectpicker"
+                    ng-change="changeCodeHighlightStyle(note.config.codeHighlightStyle)"
+                    ng-options="style for style in codeHighlightStyles"></select>
+          </form>
+        </p>
+      </div>
+    </div>
+    <br />
+    <div>
+      <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
+      <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
+    </div>
   </div>
 
   <div class="note-jump"></div>
