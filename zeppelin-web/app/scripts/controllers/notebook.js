@@ -23,9 +23,8 @@
  * # NotebookCtrl
  * Controller of notes, manage the note (update)
  *
- * @author anthonycorbacho
  */
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -42,6 +41,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     {name: '12h', value: '0 0 0/12 * * ?'},
     {name: '1d', value: '0 0 0 * * ?'}
   ];
+
+  $scope.interpreterSettings = [];
+  $scope.interpreterBindings = [];
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -136,9 +138,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
-    $scope.viewOnly = looknfeel == 'report';
     $scope.setConfig();
-    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
   $scope.changeCodeHighlightStyle = function(style) {
@@ -186,25 +186,26 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
     if ($scope.note === null) {
       $scope.note = note;
-      initialize();
     } else {
       updateNote(note);
     }
-
-    /** set look n feel */
-    var looknfeel = note.config.looknfeel;
-    $scope.viewOnly = looknfeel == 'report';
-    $rootScope.$emit('setLookAndFeel', looknfeel);
-
-    var style = note.config.codeHighlightStyle;
-    $rootScope.$emit('changeCodeHighlightStyle', style);
+    initializeLookAndFeel();
+    initializeCodeHighlightStyle();
+    //open interpreter binding setting when there're none selected
+    getInterpreterBindings(getInterpreterBindingsCallBack);
   });
 
-  var initialize = function() {
-    if(!$scope.note.config.looknfeel) {
-      $scope.note.config.looknfeel = 'default';
-    }
 
+  var initializeLookAndFeel = function() {
+    if (!$scope.note.config.looknfeel) {
+      $scope.note.config.looknfeel = 'default';
+    } else {
+      $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
+    }
+    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
+  };
+
+  var initializeCodeHighlightStyle = function() {
     if (!$scope.note.config.codeHighlightStyle) {
       $scope.note.config.codeHighlightStyle = 'GitHub';
     }
@@ -212,33 +213,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $('link[title]').each(function(i, link) {
       link.disabled = (link.title !== $scope.note.config.codeHighlightStyle);
     });
-
-    // open interpreter binding setting when there're none selected
-    getInterpreterBindings(function(){
-      var selected = false;
-      for (var i in $scope.interpreterBindings) {
-        var setting = $scope.interpreterBindings[i];
-        if (setting.selected) {
-          selected = true;
-          break;
-        }
-      }
-
-      if (!selected) {
-        // make default selection
-        var selectedIntp = {};
-        for (var i in $scope.interpreterBindings) {
-          var setting = $scope.interpreterBindings[i];
-          if (!selectedIntp[setting.group]) {
-            setting.selected = true;
-            selectedIntp[setting.group] = true;
-          }
-        }
-
-        $scope.showSetting = true;
-      }
-    });
+    $rootScope.$emit('changeCodeHighlightStyle', style);
   };
+
+
+
 
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
@@ -273,7 +252,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
-
     $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
   });
 
@@ -294,7 +272,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
       return;
     }
-
     $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
   });
 
@@ -310,7 +287,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
-
     $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
   });
 
@@ -405,7 +381,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   var getInterpreterBindings = function(callback) {
-    $http.get(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id).
+    $http.get(getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
       success(function(data, status, headers, config) {
         $scope.interpreterBindings = data.body;
         $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
@@ -414,8 +390,32 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
+  };
+
+  var getInterpreterBindingsCallBack = function() {
+    var selected = false;
+    for (var i in $scope.interpreterBindings) {
+      var setting = $scope.interpreterBindings[i];
+      if (setting.selected) {
+        selected = true;
+        break;
+      }
+    }
+
+    if (!selected) {
+      // make default selection
+      var selectedIntp = {};
+      for (var i in $scope.interpreterBindings) {
+        var setting = $scope.interpreterBindings[i];
+        if (!selectedIntp[setting.group]) {
+          setting.selected = true;
+          selectedIntp[setting.group] = true;
+        }
+      }
+      $scope.showSetting = true;
+    }
   };
 
   $scope.interpreterSelectionListeners = {
@@ -450,14 +450,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
 
-    $http.put(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id,
+    $http.put(getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id,
              selectedSettingIds).
       success(function(data, status, headers, config) {
-        console.log("Interpreter binding %o saved", selectedSettingIds);
+        console.log('Interpreter binding %o saved', selectedSettingIds);
         $scope.showSetting = false;
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
   };
 
