@@ -66,7 +66,7 @@ angular.module('zeppelinWebApp')
         try {
           $('#p'+$scope.paragraph.id+'_html').html($scope.paragraph.result.msg);
 
-          $('#p'+$scope.paragraph.id+'_html').find("pre code").each(function(i, e) { hljs.highlightBlock(e) });
+          $('#p'+$scope.paragraph.id+'_html').find('pre code').each(function(i, e) { hljs.highlightBlock(e); });
         } catch(err) {
           console.log('HTML rendering error %o', err);
         }
@@ -210,12 +210,14 @@ angular.module('zeppelinWebApp')
       }
 
       var code = $scope.dirtyText;
-      if ( code && code.startsWith('%sql')) {
-        $scope.editor.getSession().setMode(editorMode.sql);
-      } else if ( code.startsWith('%md')) {
-        $scope.editor.getSession().setMode(editorMode.markdown);
-      } else {
-        $scope.editor.getSession().setMode(editorMode.scala);
+      if (code) {
+        if (code.startsWith('%sql')) {
+          $scope.editor.getSession().setMode(editorMode.sql);
+        } else if ( code.startsWith('%md')) {
+          $scope.editor.getSession().setMode(editorMode.markdown);
+        } else {
+          $scope.editor.getSession().setMode(editorMode.scala);
+        }
       }
     }
   });

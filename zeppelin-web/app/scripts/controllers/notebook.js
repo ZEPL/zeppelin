@@ -210,14 +210,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $scope.note.config.codeHighlightStyle = 'GitHub';
     }
 
+   var style = $scope.note.config.codeHighlightStyle;
     $('link[title]').each(function(i, link) {
-      link.disabled = (link.title !== $scope.note.config.codeHighlightStyle);
+      link.disabled = (link.title !== style);
     });
     $rootScope.$emit('changeCodeHighlightStyle', style);
   };
-
-
-
 
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
