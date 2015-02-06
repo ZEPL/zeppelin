@@ -348,9 +348,23 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
-    }
-  });
+    },
 
+    typescript: {
+      base: {
+        src: ['<%= yeoman.app %>/scripts/ts/**/*.ts'],
+        dest: '<%= yeoman.dist %>/scripts/',
+        options: {
+          module: 'amd', //or commonjs
+          target: 'es5', //or es3
+          basePath: '<%= yeoman.app %>/scripts/ts',
+          sourceMap: true,
+          declaration: true
+        }
+      }
+    }
+
+  });
 
   grunt.registerTask('serve', 'Compile then start a connect web server', function (target) {
     if (target === 'dist') {
@@ -359,6 +373,7 @@ module.exports = function (grunt) {
 
     grunt.task.run([
       'clean:server',
+      'typescript',
       'wiredep',
       'concurrent:server',
       'autoprefixer',
@@ -375,6 +390,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
+    'typescript',
     'concurrent:test',
     'autoprefixer',
     'connect:test',
@@ -384,6 +400,7 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'wiredep',
+    'typescript',
     'useminPrepare',
     'concurrent:dist',
     'autoprefixer',
