@@ -1,8 +1,5 @@
 package com.nflabs.zeppelin.notebook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -11,21 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.notebook.repo.NotebookRepo;
 import com.nflabs.zeppelin.notebook.utility.IdHashes;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
-import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
  * Binded interpreters for a note
@@ -37,8 +28,8 @@ public class Note implements Serializable, JobListener {
   private String id;
 
   private transient NoteInterpreterLoader replLoader;
-  private transient ZeppelinConfiguration conf;
   private transient JobListenerFactory jobListenerFactory;
+  private transient NotebookRepo repo;
 
   /**
    * note configurations.
@@ -54,11 +45,13 @@ public class Note implements Serializable, JobListener {
    */
   private Map<String, Object> info = new HashMap<String, Object>();
 
+
   public Note() {}
 
-  public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-      JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched) {
-    this.conf = conf;
+  public Note(NotebookRepo repo,
+      NoteInterpreterLoader replLoader,
+      JobListenerFactory jobListenerFactory) {
+    this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
     generateId();
@@ -88,8 +81,22 @@ public class Note implements Serializable, JobListener {
     this.replLoader = replLoader;
   }
 
-  public void setZeppelinConfiguration(ZeppelinConfiguration conf) {
-    this.conf = conf;
+
+
+  public JobListenerFactory getJobListenerFactory() {
+    return jobListenerFactory;
+  }
+
+  public void setJobListenerFactory(JobListenerFactory jobListenerFactory) {
+    this.jobListenerFactory = jobListenerFactory;
+  }
+
+  public NotebookRepo getNotebookRepo() {
+    return repo;
+  }
+
+  public void setNotebookRepo(NotebookRepo repo) {
+    this.repo = repo;
   }
 
   /**
@@ -248,59 +255,11 @@ public class Note implements Serializable, JobListener {
   }
 
   public void persist() throws IOException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-
-    File dir = new File(conf.getNotebookDir() + "/" + id);
-    if (!dir.exists()) {
-      dir.mkdirs();
-    } else if (dir.isFile()) {
-      throw new RuntimeException("File already exists" + dir.toString());
-    }
-
-    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
-    logger().info("Persist note {} into {}", id, file.getAbsolutePath());
-
-    String json = gson.toJson(this);
-    FileOutputStream out = new FileOutputStream(file);
-    out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
-    out.close();
+    repo.save(this);
   }
 
   public void unpersist() throws IOException {
-    File dir = new File(conf.getNotebookDir() + "/" + id);
-
-    FileUtils.deleteDirectory(dir);
-  }
-
-  public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-      Scheduler scheduler, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched)
-      throws IOException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-
-    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
-    logger().info("Load note {} from {}", id, file.getAbsolutePath());
-
-    if (!file.isFile()) {
-      return null;
-    }
-
-    FileInputStream ins = new FileInputStream(file);
-    String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    Note note = gson.fromJson(json, Note.class);
-    note.setZeppelinConfiguration(conf);
-    note.setReplLoader(replLoader);
-    note.jobListenerFactory = jobListenerFactory;
-    for (Paragraph p : note.paragraphs) {
-      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
-        p.setStatus(Status.ABORT);
-      }
-    }
-
-    return note;
+    repo.remove(id());
   }
 
   public Map<String, Object> getConfig() {
