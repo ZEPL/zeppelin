@@ -23,6 +23,7 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterInfo;
 import com.nflabs.zeppelin.interpreter.InterpreterSetting;
 import com.nflabs.zeppelin.rest.message.NewInterpreterSettingRequest;
 import com.nflabs.zeppelin.server.JsonResponse;
@@ -126,5 +127,76 @@ public class InterpreterRestApi {
   public Response listInterpreter(String message) {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
     return new JsonResponse(Status.OK, "", m).build();
+  }
+
+  /**
+   * Get interpreter information
+   */
+  @GET
+  @Path("setting/info/{settingId}/{interpreterName}/{infoName}")
+  public Response getInfo(@PathParam("settingId") String id,
+      @PathParam("interpreterName") String interpreterName,
+      @PathParam("infoName") String infoName) {
+    InterpreterSetting intpSetting = interpreterFactory.get(id);
+    if (intpSetting == null) {
+      return new JsonResponse(Status.NOT_FOUND, "", id).build();
+    }
+
+    Interpreter interpreter = null;
+    for (Interpreter intp : intpSetting.getInterpreterGroup()) {
+      if (interpreterName.equals(Interpreter.findRegisteredInterpreterByClassName(
+          intp.getClassName()).getName())) {
+        interpreter = intp;
+        break;
+      }
+    }
+
+    if (interpreter == null) {
+      return new JsonResponse(Status.NOT_FOUND, "Interpreter "
+          + interpreterName + " not found", interpreterName).build();
+    }
+
+    InterpreterInfo info = interpreter.getInfo();
+
+    if (info == null) {
+      return new JsonResponse(Status.OK, "").build(); // empty information
+    } else {
+      return new JsonResponse(Status.OK, "", info.get(infoName)).build();
+    }
+  }
+
+  /**
+   * List available info
+   */
+  @GET
+  @Path("setting/info/{settingId}/{interpreterName}")
+  public Response getInfoList(@PathParam("settingId") String id,
+      @PathParam("interpreterName") String interpreterName) {
+    InterpreterSetting intpSetting = interpreterFactory.get(id);
+    if (intpSetting == null) {
+      return new JsonResponse(Status.NOT_FOUND, "", id).build();
+    }
+
+    Interpreter interpreter = null;
+    for (Interpreter intp : intpSetting.getInterpreterGroup()) {
+      if (interpreterName.equals(Interpreter.findRegisteredInterpreterByClassName(
+          intp.getClassName()).getName())) {
+        interpreter = intp;
+        break;
+      }
+    }
+
+    if (interpreter == null) {
+      return new JsonResponse(Status.NOT_FOUND, "Interpreter "
+          + interpreterName + " not found", interpreterName).build();
+    }
+
+    InterpreterInfo info = interpreter.getInfo();
+
+    if (info == null) {
+      return new JsonResponse(Status.OK, "").build(); // empty information
+    } else {
+      return new JsonResponse(Status.OK, "", info.list()).build();
+    }
   }
 }

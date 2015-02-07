@@ -135,4 +135,9 @@ public class LazyOpenInterpreter
   public void setClassloaderUrls(URL [] urls) {
     intp.setClassloaderUrls(urls);
   }
+
+  @Override
+  public InterpreterInfo getInfo() {
+    return intp.getInfo();
+  }
 }

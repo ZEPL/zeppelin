@@ -24,7 +24,7 @@
  * Controller of notes, manage the note (update)
  *
  */
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $timeout) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -443,4 +443,25 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       return true;
     }
   };
+
+  $scope.showInterpreterInfo = function(intpSettingId, intpName) {
+   console.log("toggle %o %o %o", $scope.interpreterBindings, intpSettingId, intpName);
+   var newEl = $('<div id="cpuUsage" style="position:fixed;width: 400px;height: 300px;background-color: green; top: 100px;z-index: 10;right: 10px;"></div>');
+   newEl.append('Hello world');
+   $('#mainContainer').append(newEl);
+
+   var updateCpuUsage = function() {
+     console.log("get cpuusage");
+     $http.get(getRestApiBase() + '/interpreter/setting/info/' + intpSettingId + "/" + intpName + "/cpu").
+      success(function(data, status, headers, config) {
+        console.log('data=%o', data);
+        $("#cpuUsage").html(data.body);
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+      $timeout(updateCpuUsage, 1000);   
+    };
+    $timeout(updateCpuUsage, 1000);
+  }
 });

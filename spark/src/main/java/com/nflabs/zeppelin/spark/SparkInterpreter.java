@@ -23,6 +23,7 @@ import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
+import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.hive.HiveContext;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import scala.Console;
+import scala.Enumeration.Value;
 import scala.None;
 import scala.Some;
 import scala.Tuple2;
@@ -47,6 +49,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterInfo;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
@@ -54,6 +57,7 @@ import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
+import com.nflabs.zeppelin.spark.mon.SparkClusterResourceMonitor;
 
 /**
  * Spark interpreter for Zeppelin.
@@ -78,6 +82,8 @@ public class SparkInterpreter extends Interpreter {
             .add("spark.cores.max",
                 getSystemDefault(null, "spark.cores.max", ""),
                 "total number of cores to use. Empty value uses all available core")
+            .add("zeppelin.spark.resourceMonitor", "true",
+                "enable/disable resource monitoring")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -96,6 +102,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkEnv env;
+  private SparkClusterResourceMonitor rm;
 
 
   public SparkInterpreter(Properties property) {
@@ -194,6 +201,10 @@ public class SparkInterpreter extends Interpreter {
     return defaultValue;
   }
 
+  public boolean resourceMonitor() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.resourceMonitor"));
+  }
+
   @Override
   public void open() {
     URL[] urls = getClassloaderUrls();
@@ -271,6 +282,19 @@ public class SparkInterpreter extends Interpreter {
     completor = new SparkJLineCompletion(intp);
 
     sc = getSparkContext();
+
+    if (resourceMonitor()) {
+      if (sc.getPoolForName("resourceMonitor").isEmpty()) {
+        Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
+        int minimumShare = 0;
+        int weight = 1;
+        Pool pool = new Pool("resourceMonitor", schedulingMode, minimumShare, weight);
+        sc.taskScheduler().rootPool().addSchedulable(pool);
+      }
+
+      rm = new SparkClusterResourceMonitor(sc);
+    }
+
     sqlc = getSQLContext();
 
     dep = getDependencyResolver();
@@ -573,5 +597,10 @@ public class SparkInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
         SparkInterpreter.class.getName() + this.hashCode());
+  }
+
+  @Override
+  public InterpreterInfo getInfo() {
+    return new SparkInterpreterInfo(rm);
   }
 }

@@ -162,6 +162,7 @@ a.navbar-brand:hover {
 .server-status {
   font-size:12px;
   margin-top: 6px;
+  cursor: pointer;
 }
 
 .server-connected {

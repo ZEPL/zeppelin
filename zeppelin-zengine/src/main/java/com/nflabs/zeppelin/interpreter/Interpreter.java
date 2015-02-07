@@ -155,6 +155,15 @@ public abstract class Interpreter {
 
   public abstract int getProgress(InterpreterContext context);
 
+  /**
+   * Get general information
+   * @param info
+   * @return
+   */
+  public InterpreterInfo getInfo() {
+    return null;
+  }
+
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
   }
