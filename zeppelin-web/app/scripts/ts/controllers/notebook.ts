@@ -189,7 +189,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
 
   var cleanParagraphExcept = function(paragraphId, note) {
-    var noteCopy = {};
+    var noteCopy : any = {};
     noteCopy.id = note.id;
     noteCopy.name = note.name;
     noteCopy.config = note.config;
@@ -349,7 +349,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  var getInterpreterBindings = function(callback) {
+  var getInterpreterBindings = function(callback?) {
     $http.get(getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
       success(function(data, status, headers, config) {
         $scope.interpreterBindings = data.body;

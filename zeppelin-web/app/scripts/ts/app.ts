@@ -31,11 +31,11 @@
   */
 function getPort() {
   var port = Number(location.port);
-  if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) {
+  if (location.protocol !== 'https:' && (port === null || port === 0)) {
     port = 80;
-  } else if (location.protocol === 'https:' && (port === 'undifined' || port === 0)) {
+  } else if (location.protocol == 'https:' && (port === null || port === 0)) {
     port = 443;
-  } else if (port === 3333 || port === 9000) {
+  } else if (port == 3333 || port == 9000) {
     port = 8080;
   }
   return port+1;
@@ -51,7 +51,7 @@ function getWebsocketProtocol() {
 
 function getRestApiBase() {
   var port = Number(location.port);
-  if (port === 'undefined' || port === 0) {
+  if (port === null || port === 0) {
     port = 80;
     if (location.protocol === 'https:') {
       port = 443;

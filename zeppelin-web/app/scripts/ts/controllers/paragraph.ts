@@ -123,9 +123,7 @@ angular.module('zeppelinWebApp')
 
   $scope.$watch($scope.getIframeDimensions, function (newValue, oldValue) {
     if ($scope.asIframe && newValue) {
-      var message = {};
-      message.height = newValue;
-      message.url = $location.$$absUrl;
+      var message = {height: newValue, url: $location.$$absUrl};
       $window.parent.postMessage(angular.toJson(message), '*');
     }
   });
@@ -465,8 +463,9 @@ angular.module('zeppelinWebApp')
         $scope.editor.resize();
       });
 
+
       var code = $scope.editor.getSession().getValue();
-      if ( String(code).startsWith('%sql')) {
+      if (String(code).startsWith('%sql')) {
         $scope.editor.getSession().setMode(editorMode.sql);
       } else if ( String(code).startsWith('%md')) {
         $scope.editor.getSession().setMode(editorMode.markdown);
@@ -696,7 +695,7 @@ angular.module('zeppelinWebApp')
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
-  var setTable = function(type, data, refresh) {
+  var setTable = function(data, refresh) {
     var getTableContentFormat = function(d) {
       if (isNaN(d)) {
         if (d.length>'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
@@ -852,7 +851,7 @@ angular.module('zeppelinWebApp')
           .transition()
           .duration(animationDuration)
           .call($scope.chart[type]);
-      d3.select('#p'+$scope.paragraph.id+'_'+type+' svg').style.height = height+'px';
+      d3.select('#p'+$scope.paragraph.id+'_'+type+' svg').style("height", height+'px');
       nv.utils.windowResize($scope.chart[type].update);
     };
 
@@ -1126,7 +1125,7 @@ angular.module('zeppelinWebApp')
     };
   };
 
-  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues, chartType) {
+  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues?, chartType?) {
     // construct d3 data
     var d3g = [];
 
@@ -1149,7 +1148,7 @@ angular.module('zeppelinWebApp')
       }
     };
 
-    var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
+    var traverse = function(sKey, s, rKey, r, func, rowName?, rowValue?, colName?) {
       //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
 
       if (s.type==='key') {

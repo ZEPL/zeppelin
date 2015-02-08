@@ -40,6 +40,13 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         }
       },
+      scripts: {
+        files: ['<%= yeoman.app %>/scripts/ts/**/*.ts'],
+        tasks: ['typescript'],
+        options: {
+            spawn: false
+        }
+      },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: ['newer:jshint:test', 'karma']
@@ -353,7 +360,7 @@ module.exports = function (grunt) {
     typescript: {
       base: {
         src: ['<%= yeoman.app %>/scripts/ts/**/*.ts'],
-        dest: '<%= yeoman.dist %>/scripts/',
+        dest: '<%= yeoman.app %>/scripts/js/',
         options: {
           module: 'amd', //or commonjs
           target: 'es5', //or es3
@@ -375,7 +382,7 @@ module.exports = function (grunt) {
       'clean:server',
       'typescript',
       'wiredep',
-      'concurrent:server',
+      'concurrent:dist',
       'autoprefixer',
       'connect:livereload',
       /*'newer:jshint'*/
@@ -399,19 +406,19 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
-    'wiredep',
     'typescript',
-    'useminPrepare',
+    'wiredep',
+//    'useminPrepare',
     'concurrent:dist',
     'autoprefixer',
-    'concat',
-    'ngmin',
+//    'concat',
+//    'ngmin',
     'copy:dist',
-    'cssmin',
-    'uglify',
+//    'cssmin',
+//    'uglify',
     /*'filerev',*/
-    'usemin',
-    'htmlmin'
+//    'usemin',
+//    'htmlmin'
   ]);
 
   grunt.registerTask('default', [
