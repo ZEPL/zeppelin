@@ -29,53 +29,53 @@
   * In the case of running "grunt serve", this function will appear
   * as is.
   */
-function getPort() {
-  var port = Number(location.port);
-  if (location.protocol !== 'https:' && (port === null || port === 0)) {
-    port = 80;
-  } else if (location.protocol == 'https:' && (port === null || port === 0)) {
-    port = 443;
-  } else if (port == 3333 || port == 9000) {
-    port = 8080;
-  }
-  return port+1;
-}
-
-function getWebsocketProtocol() {
-  var protocol = 'ws';
-  if (location.protocol === 'https:') {
-    protocol = 'wss';
-  }
-  return protocol;
-}
-
-function getRestApiBase() {
-  var port = Number(location.port);
-  if (port === null || port === 0) {
-    port = 80;
-    if (location.protocol === 'https:') {
+module zeppelin {
+  function getPort() {
+    var port = Number(location.port);
+    if (location.protocol !== 'https:' && (port === undefined || port === 0)) {
+      port = 80;
+    } else if (location.protocol == 'https:' && (port === undefined || port === 0)) {
       port = 443;
+    } else if (port == 3333 || port == 9000) {
+      port = 8080;
     }
+    return port+1;
   }
 
-  if (port === 3333 || port === 9000) {
-    port = 8080;
+  function getWebsocketProtocol() {
+    var protocol = 'ws';
+    if (location.protocol === 'https:') {
+      protocol = 'wss';
+    }
+    return protocol;
   }
-  return location.protocol+"//"+location.hostname+":"+port+"/api";
-}
 
-/**
- * @ngdoc overview
- * @name zeppelinWebApp
- * @description
- * # zeppelinWebApp
- *
- * Main module of the application.
- *
- * @author anthonycorbacho
- */
-angular
-  .module('zeppelinWebApp', [
+  export function restApiBase() {
+    var port = Number(location.port);
+    if (port === undefined || port === 0) {
+      port = 80;
+      if (location.protocol === 'https:') {
+        port = 443;
+      }
+    }
+
+    if (port === 3333 || port === 9000) {
+      port = 8080;
+    }
+    return location.protocol + '//' + location.hostname + ':' + port + '/api';
+  }
+
+  /**
+   * @ngdoc overview
+   * @name zeppelinWebApp
+   * @description
+   * # zeppelinWebApp
+   *
+   * Main module of the application.
+   *
+   * @author anthonycorbacho
+   */
+  export var zeppelinWebApp = angular.module('zeppelinWebApp', [
     'ngAnimate',
     'ngCookies',
     'ngRoute',
@@ -119,6 +119,4 @@ angular
         redirectTo: '/'
       });
   });
-
-
-
+}

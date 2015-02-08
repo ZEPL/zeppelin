@@ -23,32 +23,33 @@
  * 
  * @author anthonycorbacho
  */
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
-  /** Current list of notes (ids) */
-  $scope.notes = [];
-  $('#notebook-list').perfectScrollbar({suppressScrollX: true});
+module zeppelin {
+  zeppelinWebApp.controller('NavCtrl', function($scope, $rootScope, $routeParams) {
+    /** Current list of notes (ids) */
+    $scope.notes = [];
+    $('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
-  /** Set the new menu */
-  $rootScope.$on('setNoteMenu', function(event, notes) {
-      $scope.notes = notes;
+    /** Set the new menu */
+    $rootScope.$on('setNoteMenu', function(event, notes) {
+        $scope.notes = notes;
+    });
+
+    var loadNotes = function() {
+      $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
+    };
+    loadNotes();
+
+    /** Create a new note */
+    $scope.createNewNote = function() {
+      $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
+    };
+
+    /** Check if the note url is equal to the current note */
+    $scope.isActive = function(noteId) {
+      if ($routeParams.noteId === noteId) {
+        return true;
+      }
+      return false;
+    };
   });
-
-  var loadNotes = function() {
-    $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
-  };
-  loadNotes();
-
-  /** Create a new note */
-  $scope.createNewNote = function() {
-    $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
-  };
-  
-  /** Check if the note url is equal to the current note */
-  $scope.isActive = function(noteId) {
-    if ($routeParams.noteId === noteId) {
-      return true;
-    }
-    return false;
-  };
-  
-});
+}

@@ -23,92 +23,92 @@
  *
  * @author anthonycorbacho
  */
-angular.module('zeppelinWebApp')
-        .controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
+module zeppelin {
+  zeppelinWebApp.controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
 
-  $scope.WebSocketWaitingList = [];
-  $scope.connected = false;
-  $scope.looknfeel = 'default';
+    $scope.WebSocketWaitingList = [];
+    $scope.connected = false;
+    $scope.looknfeel = 'default';
 
-  var init = function() {
-    $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
-  };
-  init();
+    var init = function() {
+      $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
+    };
+    init();
 
-  /**
-   * Web socket
-   */
-  WebSocket.onopen(function() {
-    console.log('Websocket created');
-    $scope.connected = true;
-    if ($scope.WebSocketWaitingList.length > 0) {
-      for (var o in $scope.WebSocketWaitingList) {
-        WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));
+    /**
+     * Web socket
+     */
+    WebSocket.onopen(function() {
+      console.log('Websocket created');
+      $scope.connected = true;
+      if ($scope.WebSocketWaitingList.length > 0) {
+        for (var o in $scope.WebSocketWaitingList) {
+          WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));
+        }
       }
-    }
+    });
+
+    WebSocket.onmessage(function(event) {
+      var payload;
+      if (event.data) {
+        payload = angular.fromJson(event.data);
+      }
+      console.log('Receive << %o, %o', payload.op, payload);
+      var op = payload.op;
+      var data = payload.data;
+      if (op === 'NOTE') {
+        $rootScope.$emit('setNoteContent', data.note);
+      } else if (op === 'NOTES_INFO') {
+        $rootScope.$emit('setNoteMenu', data.notes);
+      } else if (op === 'PARAGRAPH') {
+        $rootScope.$emit('updateParagraph', data);
+      } else if (op === 'PROGRESS') {
+        $rootScope.$emit('updateProgress', data);
+      } else if (op === 'COMPLETION_LIST') {
+        $rootScope.$emit('completionList', data);
+      }
+    });
+
+    WebSocket.onerror(function(event) {
+      console.log('error message: ', event);
+      $scope.connected = false;
+    });
+
+    WebSocket.onclose(function(event) {
+      console.log('close message: ', event);
+      $scope.connected = false;
+    });
+
+    /** Send info to the websocket server */
+    var send = function(data) {
+      if (WebSocket.currentState() !== 'OPEN') {
+        $scope.WebSocketWaitingList.push(data);
+      } else {
+        console.log('Send >> %o, %o', data.op, data);
+        WebSocket.send(JSON.stringify(data));
+      }
+    };
+
+    /** get the childs event and sebd to the websocket server */
+    $rootScope.$on('sendNewEvent', function(event, data) {
+      if (!event.defaultPrevented) {
+        send(data);
+        event.preventDefault();
+      }
+    });
+
+    $rootScope.$on('setIframe', function(event, data) {
+      if (!event.defaultPrevented) {
+        $scope.asIframe = data;
+        event.preventDefault();
+      }
+    });
+
+    $rootScope.$on('setLookAndFeel', function(event, data) {
+      if (!event.defaultPrevented && data && data !== '') {
+        $scope.looknfeel = data;
+        event.preventDefault();
+      }
+    });
   });
-
-  WebSocket.onmessage(function(event) {
-    var payload;
-    if (event.data) {
-      payload = angular.fromJson(event.data);
-    }
-    console.log('Receive << %o, %o', payload.op, payload);
-    var op = payload.op;
-    var data = payload.data;
-    if (op === 'NOTE') {
-      $rootScope.$emit('setNoteContent', data.note);
-    } else if (op === 'NOTES_INFO') {
-      $rootScope.$emit('setNoteMenu', data.notes);
-    } else if (op === 'PARAGRAPH') {
-      $rootScope.$emit('updateParagraph', data);
-    } else if (op === 'PROGRESS') {
-      $rootScope.$emit('updateProgress', data);
-    } else if (op === 'COMPLETION_LIST') {
-      $rootScope.$emit('completionList', data);
-    }
-  });
-
-  WebSocket.onerror(function(event) {
-    console.log('error message: ', event);
-    $scope.connected = false;
-  });
-
-  WebSocket.onclose(function(event) {
-    console.log('close message: ', event);
-    $scope.connected = false;
-  });
-
-  /** Send info to the websocket server */
-  var send = function(data) {
-    if (WebSocket.currentState() !== 'OPEN') {
-      $scope.WebSocketWaitingList.push(data);
-    } else {
-      console.log('Send >> %o, %o', data.op, data);
-      WebSocket.send(JSON.stringify(data));
-    }
-  };
-
-  /** get the childs event and sebd to the websocket server */
-  $rootScope.$on('sendNewEvent', function(event, data) {
-    if (!event.defaultPrevented) {
-      send(data);
-      event.preventDefault();
-    }
-  });
-
-  $rootScope.$on('setIframe', function(event, data) {
-    if (!event.defaultPrevented) {
-      $scope.asIframe = data;
-      event.preventDefault();
-    }
-  });
-
-  $rootScope.$on('setLookAndFeel', function(event, data) {
-    if (!event.defaultPrevented && data && data !== '') {
-      $scope.looknfeel = data;
-      event.preventDefault();
-    }
-  });
-
-});
+}
