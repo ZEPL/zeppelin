@@ -1,3 +1,4 @@
+/* global $:false */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +40,7 @@ module zeppelin {
     $('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
     /** Set the new menu */
-    $rootScope.$on('setNoteMenu', function(event, notes) {
+    $scope.$on('setNoteMenu', function(event, notes) {
         $scope.notes = notes;
     });
 

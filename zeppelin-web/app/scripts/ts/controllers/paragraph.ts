@@ -242,7 +242,7 @@ module zeppelin {
     });
 
     // TODO: this may have impact on performance when there are many paragraphs in a note.
-    $rootScope.$on('updateParagraph', function(event, data) {
+    $scope.$on('updateParagraph', function(event, data) {
       if (data.paragraph.id !== $scope.paragraph.id) return;
       if (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
           data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
@@ -529,7 +529,7 @@ module zeppelin {
                     }
                 });
 
-                $rootScope.$on('completionList', function(event, data) {
+                $scope.$on('completionList', function(event, data) {
                     if (data.completions) {
                         var completions = [];
                         for (var c in data.completions) {
@@ -655,36 +655,36 @@ module zeppelin {
       return 'Took ' + (timeMs/1000) + ' seconds';
     };
 
-    $rootScope.$on('updateProgress', function(event, data) {
+    $scope.$on('updateProgress', function(event, data) {
       if (data.id === $scope.paragraph.id) {
         $scope.currentProgress = data.progress;
       }
     });
 
-    $rootScope.$on('focusParagraph', function(event, paragraphId) {
+    $scope.$on('focusParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId) {
         $scope.editor.focus();
         $('body').scrollTo('#' + paragraphId + '_editor', 300, {offset:-60});
       }
     });
 
-    $rootScope.$on('runParagraph', function(event) {
+    $scope.$on('runParagraph', function(event) {
       $scope.runParagraph($scope.editor.getValue());
     });
 
-    $rootScope.$on('openEditor', function(event) {
+    $scope.$on('openEditor', function(event) {
       $scope.openEditor();
     });
 
-    $rootScope.$on('closeEditor', function(event) {
+    $scope.$on('closeEditor', function(event) {
       $scope.closeEditor();
     });
 
-    $rootScope.$on('openTable', function(event) {
+    $scope.$on('openTable', function(event) {
       $scope.openTable();
     });
 
-    $rootScope.$on('closeTable', function(event) {
+    $scope.$on('closeTable', function(event) {
       $scope.closeTable();
     });
 

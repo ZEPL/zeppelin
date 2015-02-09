@@ -139,42 +139,42 @@ module zeppelin {
     $scope.runNote = function() {
       var result = confirm('Run all paragraphs?');
       if (result) {
-        $rootScope.$emit('runParagraph');
+        $scope.$emit('runParagraph');
       }
     };
 
     $scope.toggleAllEditor = function() {
       if ($scope.editorToggled) {
-          $rootScope.$emit('closeEditor');
+        $scope.hideAllEditor();
       } else {
-          $rootScope.$emit('openEditor');
+        $scope.showAllEditor();
       }
       $scope.editorToggled = !$scope.editorToggled;
     };
 
     $scope.showAllEditor = function() {
-      $rootScope.$emit('openEditor');
+      $scope.$broadcast('openEditor');
     };
 
     $scope.hideAllEditor = function() {
-      $rootScope.$emit('closeEditor');
+      $scope.$broadcast('closeEditor');
     };
 
     $scope.toggleAllTable = function() {
       if ($scope.tableToggled) {
-          $rootScope.$emit('closeTable');
+          $scope.hideAllTable();
       } else {
-          $rootScope.$emit('openTable');
+          $scope.showAllTable();
       }
       $scope.tableToggled = !$scope.tableToggled;
     };
 
     $scope.showAllTable = function() {
-      $rootScope.$emit('openTable');
+      $scope.$broadcast('openTable');
     };
 
     $scope.hideAllTable = function() {
-      $rootScope.$emit('closeTable');
+      $scope.$broadcast('closeTable');
     };
 
     $scope.isNoteRunning = function() {
@@ -217,7 +217,7 @@ module zeppelin {
     };
 
     /** update the current note */
-    $rootScope.$on('setNoteContent', function(event, note) {
+    $scope.$on('setNoteContent', function(event, note) {
       $scope.paragraphUrl = $routeParams.paragraphId;
       $scope.asIframe = $routeParams.asIframe;
       if ($scope.paragraphUrl) {
@@ -245,10 +245,6 @@ module zeppelin {
       $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
     };
 
-
-
-
-
     var cleanParagraphExcept = function(paragraphId, note) {
       var noteCopy : any = {};
       noteCopy.id = note.id;
@@ -270,7 +266,7 @@ module zeppelin {
       return noteCopy;
     };
 
-    $rootScope.$on('moveParagraphUp', function(event, paragraphId) {
+    $scope.$on('moveParagraphUp', function(event, paragraphId) {
       var newIndex = -1;
       for (var i=0; i<$scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -286,7 +282,7 @@ module zeppelin {
     });
 
     // create new paragraph on current position
-    $rootScope.$on('insertParagraph', function(event, paragraphId) {
+    $scope.$on('insertParagraph', function(event, paragraphId) {
       var newIndex = -1;
       for (var i=0; i<$scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -305,7 +301,7 @@ module zeppelin {
       $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
     });
 
-    $rootScope.$on('moveParagraphDown', function(event, paragraphId) {
+    $scope.$on('moveParagraphDown', function(event, paragraphId) {
       var newIndex = -1;
       for (var i=0; i<$scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -320,7 +316,7 @@ module zeppelin {
       $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
     });
 
-    $rootScope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
+    $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
       var focus = false;
       for (var i = $scope.note.paragraphs.length - 1; i >= 0; i--) {
         if (focus === false ) {
@@ -331,14 +327,14 @@ module zeppelin {
         } else {
           var p = $scope.note.paragraphs[i];
           if (!p.config.editorHide && !p.config.tableHide) {
-            $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
+            $scope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
             break;
           }
         }
       }
     });
 
-    $rootScope.$on('moveFocusToNextParagraph', function(event, currentParagraphId){
+    $scope.$on('moveFocusToNextParagraph', function(event, currentParagraphId){
       var focus = false;
       for (var i=0; i<$scope.note.paragraphs.length; i++) {
         if (focus === false ) {
@@ -349,7 +345,7 @@ module zeppelin {
         } else {
           var p = $scope.note.paragraphs[i];
           if (!p.config.editorHide && !p.config.tableHide) {
-            $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
+            $scope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
             break;
           }
         }
@@ -387,7 +383,7 @@ module zeppelin {
         for (var idx in newParagraphIds) {
           var newEntry = note.paragraphs[idx];
           if (oldParagraphIds[idx] === newParagraphIds[idx]) {
-            $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+            $scope.$broadcast('updateParagraph', {paragraph: newEntry});
           } else {
             // move paragraph
             var oldIdx = oldParagraphIds.indexOf(newParagraphIds[idx]);
