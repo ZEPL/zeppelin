@@ -34,7 +34,8 @@ module zeppelin {
 
   zeppelinWebApp.controller('NavCtrl', function(
     $scope: INavCtrlScope,
-    $rootScope: ng.IRootScopeService, $routeParams) {
+    $rootScope: IZeppelinRootScope,
+    $routeParams) {
     /** Current list of notes (ids) */
 
     $('#notebook-list').perfectScrollbar({suppressScrollX: true});
@@ -45,13 +46,14 @@ module zeppelin {
     });
 
     var loadNotes = function() {
-      $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
+      var e = new ZListNoteEvent();
+      $rootScope.sendNewEvent(e);
     };
     loadNotes();
 
     /** Create a new note */
     $scope.createNewNote = function() {
-      $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
+      $rootScope.sendNewEvent(new ZNewNoteEvent());
     };
 
     /** Check if the note url is equal to the current note */

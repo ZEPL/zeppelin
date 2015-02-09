@@ -42,31 +42,32 @@ module zeppelin {
 
   interface INotebookCtrlScope extends ng.IScope {
     note: Notebook;
-    showEditor: boolean;
+
+    // status flags
+    showNameEditor: boolean;
     editorToggled: boolean;
     tableToggled: boolean;
     viewOnly: boolean;
+    showSetting: boolean;
+    asIframe: boolean;
+    isNoteRunning: () => boolean;
+
+    // settings
     looknfeelOption: Array<string>;
     cronOption: Array<any>;
     interpreterSettings: Array<any>;
     interpreterBindings: Array<any>;
-    showSetting: boolean;
     interpreterSelectionListeners: any;
 
-    paragraphUrl: string;
-    asIframe: boolean;
-
-    getCronOptionNameFromValue: (value: string) => string;
-
-    removeNote: (noteId: string) => void;
-    runNote: () => void;
+    // notebook controls
+    runAllNote: () => void;
     toggleAllEditor: () => void;
     showAllEditor: () => void;
     hideAllEditor: () => void;
     toggleAllTable: () => void;
     showAllTable: () => void;
     hideAllTable: () => void;
-    isNoteRunning: () => boolean;
+    removeNote: () => void;
     setLookAndFeel: (looknfeel: string) => void;
     setConfig: (config?: NotebookConfig) => void;
     setCronScheduler: (cronExpr: string) => void;
@@ -76,6 +77,10 @@ module zeppelin {
     closeSetting: () => void;
     toggleSetting: () => void;
     saveSetting: () => void;
+
+    // etc
+    paragraphUrl: string;
+    getCronOptionNameFromValue: (value: string) => string;
   }
 
   zeppelinWebApp.controller('NotebookCtrl', function(
@@ -83,11 +88,11 @@ module zeppelin {
     $route,
     $routeParams,
     $location,
-    $rootScope,
+    $rootScope: IZeppelinRootScope,
     $http) {
 
     $scope.note = null;
-    $scope.showEditor = false;
+    $scope.showNameEditor = false;
     $scope.editorToggled = false;
     $scope.tableToggled = false;
     $scope.viewOnly = false;
@@ -128,15 +133,15 @@ module zeppelin {
 
     /** Remove the note and go back tot he main page */
     /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
-    $scope.removeNote = function(noteId) {
+    $scope.removeNote = function() {
       var result = confirm('Do you want to delete this notebook?');
       if (result) {
-        $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
+        $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
         $location.path('/#');
       }
     };
 
-    $scope.runNote = function() {
+    $scope.runAllNote = function() {
       var result = confirm('Run all paragraphs?');
       if (result) {
         $scope.$broadcast('runParagraph');
@@ -205,14 +210,14 @@ module zeppelin {
       if(config) {
         $scope.note.config = config;
       }
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
+      $rootScope.sendNewEvent(new ZNoteUpdateEvent($scope.note));
     };
 
     /** Update the note name */
     $scope.sendNewName = function() {
-      $scope.showEditor = false;
+      $scope.showNameEditor = false;
       if ($scope.note.name) {
-        $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
+        $rootScope.sendNewEvent(new ZNoteUpdateEvent($scope.note));
       }
     };
 
@@ -234,7 +239,6 @@ module zeppelin {
       //open interpreter binding setting when there're none selected
       getInterpreterBindings(getInterpreterBindingsCallBack);
     });
-
 
     var initializeLookAndFeel = function() {
       if (!$scope.note.config.looknfeel) {

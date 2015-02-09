@@ -109,6 +109,11 @@ module zeppelin {
     static lineChart = 'lineChart';
   }
 
+  class ParagraphResultType {
+    static TABLE = 'TABLE';
+    static HTML = 'HTML';
+  }
+
   interface IParagraphCtrlScope extends ng.IScope {
     init: (paragraph: Paragraph) => void;
     paragraph: Paragraph;
@@ -178,7 +183,7 @@ module zeppelin {
 
   zeppelinWebApp.controller('ParagraphCtrl', function(
     $scope: IParagraphCtrlScope,
-    $rootScope: ng.IRootScopeService,
+    $rootScope: IZeppelinRootScope,
     $route: any,
     $window: ng.IWindowService,
     $element: ng.IRootElementService,
@@ -200,12 +205,12 @@ module zeppelin {
       $scope.lastData = {};
       $scope.chart = {};
 
-      if ($scope.getResultType() === 'TABLE') {
+      if ($scope.getResultType() === ParagraphResultType.TABLE) {
         $scope.lastData.settings = angular.copy($scope.paragraph.settings);
         $scope.lastData.config = angular.copy($scope.paragraph.config);
         $scope.loadTableData($scope.paragraph.result);
         $scope.setGraphMode($scope.getGraphMode(), false, false);
-      } else if ($scope.getResultType() === 'HTML') {
+      } else if ($scope.getResultType() === ParagraphResultType.HTML) {
         $scope.renderHtml();
       }
     };
@@ -300,9 +305,9 @@ module zeppelin {
           $scope.paragraph.config = data.paragraph.config;
         }
 
-        if (newType === 'TABLE') {
+        if (newType === ParagraphResultType.TABLE) {
           $scope.loadTableData($scope.paragraph.result);
-          if (oldType !== 'TABLE' || resultRefreshed) {
+          if (oldType !== ParagraphResultType.TABLE || resultRefreshed) {
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
@@ -312,7 +317,7 @@ module zeppelin {
           } else {
             $scope.setGraphMode(newGraphMode, false, true);
           }
-        } else if (newType === 'HTML') {
+        } else if (newType === ParagraphResultType.HTML) {
           $scope.renderHtml();
         }
       }
@@ -328,8 +333,7 @@ module zeppelin {
 
     $scope.cancelParagraph = function() {
       console.log('Cancel %o', $scope.paragraph.id);
-      var data = {op: 'CANCEL_PARAGRAPH', data: {id: $scope.paragraph.id }};
-      $rootScope.$emit('sendNewEvent', data);
+      $rootScope.sendNewEvent(new ZCancelParagraphEvent($scope.paragraph));
     };
 
     $scope.runParagraph = function(data) {
@@ -715,7 +719,7 @@ module zeppelin {
       if (!result) {
         return;
       }
-      if (result.type === 'TABLE') {
+      if (result.type === ParagraphResultType.TABLE) {
         var columnNames = [];
         var rows = [];
         var array = [];
@@ -803,7 +807,7 @@ module zeppelin {
     var setTable = function(data, refresh) {
       var getTableContentFormat = function(d) {
         if (isNaN(d)) {
-          if (d.length>'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
+          if (d.length > '%html'.length && '%html ' === d.substring(0, '%html '.length)) {
             return 'html';
           } else {
             return '';
@@ -1012,7 +1016,7 @@ module zeppelin {
     };
 
     $scope.isGraphMode = function(graphName) {
-      if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName) {
+      if ($scope.getResultType() === ParagraphResultType.TABLE && $scope.getGraphMode() === graphName) {
         return true;
       } else {
         return false;
@@ -1056,8 +1060,8 @@ module zeppelin {
     /* Clear unknown columns from graph option */
     var clearUnknownColsFromGraphOption = function() {
       var unique = function(list) {
-        for (var i = 0; i<list.length; i++) {
-          for (var j = i + 1; j<list.length; j++) {
+        for (var i = 0; i < list.length; i++) {
+          for (var j = i + 1; j < list.length; j++) {
             if (angular.equals(list[i], list[j])) {
               list.splice(j, 1);
             }
@@ -1066,10 +1070,10 @@ module zeppelin {
       };
 
       var removeUnknown = function(list) {
-        for (var i = 0; i<list.length; i++) {
+        for (var i = 0; i < list.length; i++) {
           // remove non existing column
           var found = false;
-          for (var j=0; j<$scope.paragraph.result.columnNames.length; j++) {
+          for (var j = 0; j < $scope.paragraph.result.columnNames.length; j++) {
             var a = list[i];
             var b = $scope.paragraph.result.columnNames[j];
             if (a.index === b.index && a.name === b.name) {
@@ -1094,11 +1098,11 @@ module zeppelin {
 
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      if ($scope.paragraph.config.graph.keys.length===0 && $scope.paragraph.result.columnNames.length > 0) {
+      if ($scope.paragraph.config.graph.keys.length === 0 && $scope.paragraph.result.columnNames.length > 0) {
         $scope.paragraph.config.graph.keys.push($scope.paragraph.result.columnNames[0]);
       }
 
-      if ($scope.paragraph.config.graph.values.length===0 && $scope.paragraph.result.columnNames.length > 1) {
+      if ($scope.paragraph.config.graph.values.length === 0 && $scope.paragraph.result.columnNames.length > 1) {
         $scope.paragraph.config.graph.values.push($scope.paragraph.result.columnNames[1]);
       }
     };
@@ -1259,12 +1263,12 @@ module zeppelin {
       var traverse = function(sKey, s, rKey, r, func, rowName?, rowValue?, colName?) {
         //console.log('TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o', sKey, s, rKey, r, rowName, rowValue, colName);
 
-        if (s.type==='key') {
+        if (s.type === 'key') {
           rowName = concat(rowName, sKey);
           rowValue = concat(rowValue, rKey);
-        } else if (s.type==='group') {
+        } else if (s.type === 'group') {
           colName = concat(colName, rKey);
-        } else if (s.type==='value' && sKey===rKey || valueOnly) {
+        } else if (s.type === 'value' && sKey === rKey || valueOnly) {
           colName = concat(colName, rKey);
           func(rowName, rowValue, colName, r);
         }
@@ -1290,7 +1294,7 @@ module zeppelin {
       var values = $scope.paragraph.config.graph.values;
       var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
       var noKey = (keys.length === 0);
-      var isMultiBarChart = (chartType === 'multiBarChart');
+      var isMultiBarChart = (chartType === GraphMode.multiBarChart);
 
       var sKey = Object.keys(schema)[0];
 

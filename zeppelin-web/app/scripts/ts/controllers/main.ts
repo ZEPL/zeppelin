@@ -24,7 +24,15 @@
  * @author anthonycorbacho
  */
 module zeppelin {
-  zeppelinWebApp.controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
+  export interface IZeppelinRootScope extends ng.IRootScopeService {
+    sendNewEvent: (event: ZEvent) => void;
+  }
+
+  zeppelinWebApp.controller('MainCtrl', function(
+    $scope,
+    WebSocket: any,
+    $rootScope: IZeppelinRootScope,
+    $window) {
 
     $scope.WebSocketWaitingList = [];
     $scope.connected = false;
@@ -48,7 +56,7 @@ module zeppelin {
       }
     });
 
-    WebSocket.onmessage(function(event) {
+    WebSocket.onmessage(function(event: WebSocketEvent) {
       var payload;
       if (event.data) {
         payload = angular.fromJson(event.data);
@@ -88,6 +96,10 @@ module zeppelin {
         WebSocket.send(JSON.stringify(data));
       }
     };
+
+    $rootScope.sendNewEvent = function(event) {
+      $rootScope.$emit('sendNewEvent', event.toJson());
+    }
 
     /** get the childs event and sebd to the websocket server */
     $rootScope.$on('sendNewEvent', function(event, data) {

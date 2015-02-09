@@ -18,12 +18,12 @@ limitations under the License.
   <div class="noteAction" ng-show="note.id && !paragraphUrl">
     <h3 class="new_h3">
       <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
-             ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
-        <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
+             ng-show="showNameEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showNameEditor = false" autofocus/>
+        <p class="form-control-static2" ng-click="showNameEditor = true" ng-show="!showNameEditor">{{note.name || 'Note ' + note.id}}</p>
           <span class="labelBtn btn-group">
             <button type="button"
                     class="btn btn-default btn-xs"
-                    ng-click="runNote()"
+                    ng-click="runAllNote()"
                     ng-if="!isNoteRunning()"
                     tooltip-placement="top" tooltip="Run all the note">
               <i class="icon-control-play"></i>
@@ -45,7 +45,7 @@ limitations under the License.
 
             <button type="button"
                     class="btn btn-default btn-xs"
-                    ng-click="removeNote(note.id)"
+                    ng-click="removeNote()"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Remove the notebook">
               <i class="icon-trash"></i></button>

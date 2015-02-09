@@ -22,3 +22,17 @@ interface NVD3 {
   utils: any;
 }
 
+// angular-websocket
+
+interface WebSocketEvent {
+  data: any;
+}
+
+interface AngularWebSocket {
+  send: (object: any) => void;
+  onopen: (func: any) => void;
+  onmessage: (func: (event: WebSocketEvent) => void) => void;
+  onerror: (func: (event: WebSocketEvent) => void) => void;
+  onclose: (func: (event: WebSocketEvent) => void) => void;
+  currentState: () => string;
+}
