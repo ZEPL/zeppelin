@@ -27,7 +27,7 @@
 
 module zeppelin {
 
-  export interface Notebook {
+  export class Notebook {
     id: string;
     name: string;
     config: NotebookConfig;
@@ -35,7 +35,7 @@ module zeppelin {
     info: any;
   }
 
-  export interface NotebookConfig {
+  export class NotebookConfig {
     cron: string;
     looknfeel: string;
   }
