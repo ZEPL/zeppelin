@@ -27,29 +27,170 @@
  */
 
 module zeppelin {
-  zeppelinWebApp.controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element, $routeParams, $location, $timeout) {
 
-    $scope.paragraph = null;
-    $scope.editor = null;
+  class Paragraph {
+    id: string;
+    config: ParagraphConfig;
+    settings: any;
+
+    title: any;
+    jobName: any;
+    status: any;
+    dateStarted: any;
+    dateCreated: any;
+    dateFinished: any;
+
+    text: any;
+    result: any;
+    errorMessage: any;
+    aborted: any
+  }
+
+  class ParagraphGraph {
+    mode: string;
+    height: number;
+    optionOpen: boolean;
+    keys: any;
+    values: any;
+    groups: any;
+
+    constructor() {}
+  }
+
+  class ParagraphConfig {
+    title: boolean;
+    colWidth: number;
+    graph: ParagraphGraph;
+    editorHide: boolean;
+    tableHide: boolean;
+
+    initializeDefaultValues() {
+      if (!this.colWidth) {
+        this.colWidth = 12;
+      }
+      if (!this.graph) {
+        this.graph = new ParagraphGraph();
+      }
+      if (!this.graph.mode) {
+        this.graph.mode = GraphMode.table;
+      }
+      if (!this.graph.height) {
+        this.graph.height = 300;
+      }
+      if (!this.graph.optionOpen) {
+        this.graph.optionOpen = false;
+      }
+      if (!this.graph.keys) {
+        this.graph.keys = [];
+      }
+      if (!this.graph.values) {
+        this.graph.values = [];
+      }
+      if (!this.graph.groups) {
+        this.graph.groups = [];
+      }
+    }
+
+    constructor(c: ParagraphConfig) {
+      this.title = c.title;
+      this.colWidth = c.colWidth;
+      this.graph = c.graph;
+      this.editorHide = c.editorHide;
+      this.tableHide = c.tableHide;
+      this.initializeDefaultValues();
+    }
+  }
+
+  class GraphMode {
+    static table = 'table';
+    static multiBarChart = 'multiBarChart';
+    static pieChart = 'pieChart';
+    static stackedAreaChart = 'stackedAreaChart';
+    static lineChart = 'lineChart';
+  }
+
+  interface IParagraphCtrlScope {
+    init: (paragraph: Paragraph) => void;
+    paragraph: Paragraph;
+    chart: any;
+    editor: any;
+    asIframe: boolean;
+    currentProgress: number;
+
+    isRunning: () => boolean;
+    dirtyText: string;
+
+    colWidthOption: Array<number>;
+    showTitleEditor: boolean;
+    paragraphFocused: boolean;
+
+    loadTableData: (result: any) => void;
+    setGraphMode: (type: string, emit: boolean, refresh: boolean) => void;
+    renderHtml: () => void;
+    getIframeDimensions: () => number;
+    cancelParagraph: () => void;
+    runParagraph: (data: any) => void;
+    loadForm: (formulaire: any, params: any) => void;
+
+    aceChanged: () => void;
+    aceLoaded: (editor: any) => void;
+    getEditorValue: () => string;
+
+    moveUp: () => void;
+    moveDown: () => void;
+    insertNew: () => void;
+    removeParagraph: () => void;
+    toggleEditor: () => void;
+    closeEditor: () => void;
+    openEditor: () => void;
+    closeTable: () => void;
+    openTable: () => void;
+    showTitle: () => void;
+    hideTitle: () => void;
+    setTitle: () => void;
+    columnWidthClass: (n: number) => string;
+    changeColWidth: () => void;
+    toggleGraphOption: () => void;
+    toggleOutput: () => void;
+
+    handleFocus: (value: any) => void;
+    getExecutionTime: () => string;
+    getBase64ImageSrc: (data: any) => string;
+
+    isGraphMode: (graphName: string) => boolean;
+    onGraphOptionChange: () => void;
+    removeGraphOptionKeys: (idx: number) => void;
+    removeGraphOptionValues: (idx: number) => void;
+    removeGraphOptionGroups: (idx: number) => void;
+    setGraphOptionValueAggr: (idx: number, aggr: any) => void;
+    setGraphHeight: () => void;
+
+    goToSingleParagraph: () => void;
+
+    // to be refactored
+    lastData: any; // storing only settings and config?
+    getResultType: (p?: Paragraph) => string; // move into paragraph
+    getGraphMode: (p?: Paragraph) => string; // move into paragraph
+    $watch: any;
+    $digest: any;
+    d3: any;
+  }
+
+  zeppelinWebApp.controller('ParagraphCtrl', function($scope: IParagraphCtrlScope, $rootScope, $route, $window, $element, $routeParams, $location, $timeout) {
+
     var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
     // Controller init
     $scope.init = function(newParagraph) {
       $scope.paragraph = newParagraph;
-      $scope.chart = {};
-      $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
+      $scope.paragraph.config = new ParagraphConfig(newParagraph.config);
+
+      $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
       $scope.showTitleEditor = false;
       $scope.paragraphFocused = false;
-
-      if (!$scope.paragraph.config) {
-        $scope.paragraph.config = {};
-      }
-
-      initializeDefault();
-
-      if (!$scope.lastData) {
-        $scope.lastData = {};
-      }
+      $scope.currentProgress = 0;
+      $scope.lastData = {};
+      $scope.chart = {};
 
       if ($scope.getResultType() === 'TABLE') {
         $scope.lastData.settings = angular.copy($scope.paragraph.settings);
@@ -74,43 +215,6 @@ module zeppelin {
         }
       };
       $timeout(retryRenderer);
-
-    };
-
-    var initializeDefault = function() {
-      var config = $scope.paragraph.config;
-
-      if (!config.colWidth) {
-        config.colWidth = 12;
-      }
-
-      if (!config.graph) {
-        config.graph = {};
-      }
-
-      if (!config.graph.mode) {
-        config.graph.mode = 'table';
-      }
-
-      if (!config.graph.height) {
-        config.graph.height = 300;
-      }
-
-      if (!config.graph.optionOpen) {
-        config.graph.optionOpen = false;
-      }
-
-      if (!config.graph.keys) {
-        config.graph.keys = [];
-      }
-
-      if (!config.graph.values) {
-        config.graph.values = [];
-      }
-
-      if (!config.graph.groups) {
-        config.graph.groups = [];
-      }
     };
 
     $scope.getIframeDimensions = function () {
@@ -142,21 +246,21 @@ module zeppelin {
                data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
                !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
                !angular.equals(data.paragraph.config, $scope.lastData.config)
-  )
-  ) {
-  // store original data for comparison
-  $scope.lastData.settings = angular.copy(data.paragraph.settings);
-  $scope.lastData.config = angular.copy(data.paragraph.config);
+           )
+      ) {
+        // store original data for comparison
+        $scope.lastData.settings = angular.copy(data.paragraph.settings);
+        $scope.lastData.config = angular.copy(data.paragraph.config);
 
-  var oldType = $scope.getResultType();
-  var newType = $scope.getResultType(data.paragraph);
-  var oldGraphMode = $scope.getGraphMode();
-  var newGraphMode = $scope.getGraphMode(data.paragraph);
-  var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+        var oldType = $scope.getResultType();
+        var newType = $scope.getResultType(data.paragraph);
+        var oldGraphMode = $scope.getGraphMode();
+        var newGraphMode = $scope.getGraphMode(data.paragraph);
+        var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
 
-  //console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o', $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+        //console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o', $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
-  if ($scope.paragraph.text !== data.paragraph.text) {
+        if ($scope.paragraph.text !== data.paragraph.text) {
           if ($scope.dirtyText) {         // check if editor has local update
             if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
               $scope.paragraph.text = data.paragraph.text;
@@ -182,8 +286,8 @@ module zeppelin {
         $scope.paragraph.settings = data.paragraph.settings;
 
         if (!$scope.asIframe) {
-          $scope.paragraph.config = data.paragraph.config;
-          initializeDefault();
+          $scope.paragraph.config = new ParagraphConfig(data.paragraph.config);
+          $scope.paragraph.config.initializeDefaultValues();
         } else {
           data.paragraph.config.editorHide = true;
           data.paragraph.config.tableHide = false;
@@ -221,7 +325,6 @@ module zeppelin {
       var data = {op: 'CANCEL_PARAGRAPH', data: {id: $scope.paragraph.id }};
       $rootScope.$emit('sendNewEvent', data);
     };
-
 
     $scope.runParagraph = function(data) {
       var parapgraphData = {op: 'RUN_PARAGRAPH',
@@ -362,7 +465,6 @@ module zeppelin {
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
     };
-
 
     $scope.loadForm = function(formulaire, params) {
       var value = formulaire.defaultValue;
@@ -538,10 +640,6 @@ module zeppelin {
       return $scope.editor.getValue();
     };
 
-    $scope.getProgress = function() {
-      return ($scope.currentProgress) ? $scope.currentProgress : 0;
-    };
-
     $scope.getExecutionTime = function() {
       var pdata = $scope.paragraph;
       var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
@@ -603,7 +701,7 @@ module zeppelin {
       if (pdata.config.graph && pdata.config.graph.mode) {
         return pdata.config.graph.mode;
       } else {
-        return 'table';
+        return GraphMode.table;
       }
     };
 
@@ -664,7 +762,7 @@ module zeppelin {
         var height = $scope.paragraph.config.graph.height;
         $('#p' + $scope.paragraph.id + '_graph').height(height);
 
-        if (!type || type === 'table') {
+        if (!type || type === GraphMode.table) {
           setTable($scope.paragraph.result, refresh);
         }
         else {
@@ -794,7 +892,7 @@ module zeppelin {
       var d3g = [];
       // select yColumns.
 
-      if (type==='pieChart') {
+      if (type === GraphMode.pieChart) {
         var d = pivotDataToD3ChartFormat(p, true).d3g;
 
         $scope.chart[type].x(function(d) { return d.label;})
@@ -809,7 +907,7 @@ module zeppelin {
             });
           }
         }
-      } else if (type==='multiBarChart') {
+      } else if (type === GraphMode.multiBarChart) {
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
       } else {
@@ -853,7 +951,7 @@ module zeppelin {
             .duration(animationDuration)
             .call($scope.chart[type]);
         d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style('height', height + 'px');
-        nv.utils.windowResize($scope.chart[type].update);
+        //nv.utils.windowResize($scope.chart[type].update);
       };
 
       var retryRenderer = function() {
@@ -907,43 +1005,46 @@ module zeppelin {
       }
     };
 
-
     $scope.isGraphMode = function(graphName) {
-      if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
+      if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName) {
         return true;
       } else {
         return false;
       }
     };
 
-
     $scope.onGraphOptionChange = function() {
       clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+      var mode = $scope.paragraph.config.graph.mode;
+      $scope.setGraphMode(mode, true, false);
     };
 
     $scope.removeGraphOptionKeys = function(idx) {
       $scope.paragraph.config.graph.keys.splice(idx, 1);
       clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+      var mode = $scope.paragraph.config.graph.mode;
+      $scope.setGraphMode(mode, true, false);
     };
 
     $scope.removeGraphOptionValues = function(idx) {
       $scope.paragraph.config.graph.values.splice(idx, 1);
       clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+      var mode = $scope.paragraph.config.graph.mode;
+      $scope.setGraphMode(mode, true, false);
     };
 
     $scope.removeGraphOptionGroups = function(idx) {
       $scope.paragraph.config.graph.groups.splice(idx, 1);
       clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+      var mode = $scope.paragraph.config.graph.mode;
+      $scope.setGraphMode(mode, true, false);
     };
 
     $scope.setGraphOptionValueAggr = function(idx, aggr) {
       $scope.paragraph.config.graph.values[idx].aggr = aggr;
       clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+      var mode = $scope.paragraph.config.graph.mode;
+      $scope.setGraphMode(mode, true, false);
     };
 
     /* Clear unknown columns from graph option */
