@@ -26,13 +26,72 @@
  */
 
 module zeppelin {
-  zeppelinWebApp.controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
+
+  export interface Notebook {
+    id: string;
+    name: string;
+    config: NotebookConfig;
+    paragraphs: Array<Paragraph>;
+    info: any;
+  }
+
+  export interface NotebookConfig {
+    cron: string;
+    looknfeel: string;
+  }
+
+  interface INotebookCtrlScope extends ng.IScope {
+    note: Notebook;
+    showEditor: boolean;
+    editorToggled: boolean;
+    tableToggled: boolean;
+    viewOnly: boolean;
+    looknfeelOption: Array<string>;
+    cronOption: Array<any>;
+    interpreterSettings: Array<any>;
+    interpreterBindings: Array<any>;
+    showSetting: boolean;
+    interpreterSelectionListeners: any;
+
+    paragraphUrl: string;
+    asIframe: boolean;
+
+    getCronOptionNameFromValue: (value: string) => string;
+
+    removeNote: (noteId: string) => void;
+    runNote: () => void;
+    toggleAllEditor: () => void;
+    showAllEditor: () => void;
+    hideAllEditor: () => void;
+    toggleAllTable: () => void;
+    showAllTable: () => void;
+    hideAllTable: () => void;
+    isNoteRunning: () => void;
+    setLookAndFeel: (looknfeel: string) => void;
+    setConfig: (config?: NotebookConfig) => void;
+    setCronScheduler: (cronExpr: string) => void;
+    sendNewName: () => void;
+    interpreterBindingsOrig: any;
+    openSetting: () => void;
+    closeSetting: () => void;
+    toggleSetting: () => void;
+    saveSetting: () => void;
+  }
+
+  zeppelinWebApp.controller('NotebookCtrl', function(
+    $scope: INotebookCtrlScope,
+    $route,
+    $routeParams,
+    $location,
+    $rootScope,
+    $http) {
+
     $scope.note = null;
     $scope.showEditor = false;
     $scope.editorToggled = false;
     $scope.tableToggled = false;
     $scope.viewOnly = false;
-    $scope.looknfeelOption = [ 'default', 'simple', 'report'];
+    $scope.looknfeelOption = ['default', 'simple', 'report'];
     $scope.cronOption = [
       {name: 'None', value : undefined},
       {name: '1m', value: '0 0/1 * * * ?'},
@@ -263,7 +322,7 @@ module zeppelin {
 
     $rootScope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
       var focus = false;
-      for (var i=$scope.note.paragraphs.length-1; i>=0; i--) {
+      for (var i = $scope.note.paragraphs.length - 1; i >= 0; i--) {
         if (focus === false ) {
           if ($scope.note.paragraphs[i].id === currentParagraphId) {
               focus = true;
@@ -271,7 +330,7 @@ module zeppelin {
           }
         } else {
           var p = $scope.note.paragraphs[i];
-          if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
+          if (!p.config.editorHide && !p.config.tableHide) {
             $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
             break;
           }
@@ -289,7 +348,7 @@ module zeppelin {
           }
         } else {
           var p = $scope.note.paragraphs[i];
-          if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
+          if (!p.config.editorHide && !p.config.tableHide) {
             $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
             break;
           }
@@ -307,8 +366,8 @@ module zeppelin {
       $scope.note.config = note.config;
       $scope.note.info = note.info;
 
-      var newParagraphIds = note.paragraphs.map(function(x) {return x.id;});
-      var oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
+      var newParagraphIds = note.paragraphs.map(function(x, i, arr) {return x.id;});
+      var oldParagraphIds = $scope.note.paragraphs.map(function(x, i, arr) {return x.id;});
 
       var numNewParagraphs = newParagraphIds.length;
       var numOldParagraphs = oldParagraphIds.length;
@@ -401,7 +460,8 @@ module zeppelin {
     };
 
     $scope.closeSetting = function() {
-      if (isSettingDirty()) {
+      var isSettingDirty = !angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig);
+      if (isSettingDirty) {
         var result = confirm('Changes will be discarded');
         if (!result) {
           return;
@@ -435,14 +495,6 @@ module zeppelin {
         $scope.closeSetting();
       } else {
         $scope.openSetting();
-      }
-    };
-
-    var isSettingDirty = function() {
-      if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
-        return false;
-      } else {
-        return true;
       }
     };
   });

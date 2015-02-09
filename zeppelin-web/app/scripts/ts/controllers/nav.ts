@@ -20,13 +20,22 @@
  * @description
  * # NavCtrl
  * Controller of the top navigation, mainly use for the dropdown menu
- * 
+ *
  * @author anthonycorbacho
  */
 module zeppelin {
-  zeppelinWebApp.controller('NavCtrl', function($scope, $rootScope, $routeParams) {
+  interface INavCtrlScope extends ng.IScope {
+    notes: Array<Notebook>;
+
+    createNewNote: () => void;
+    isActive: (noteId: string) => boolean;
+  }
+
+  zeppelinWebApp.controller('NavCtrl', function(
+    $scope: INavCtrlScope,
+    $rootScope: ng.IRootScopeService, $routeParams) {
     /** Current list of notes (ids) */
-    $scope.notes = [];
+
     $('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
     /** Set the new menu */

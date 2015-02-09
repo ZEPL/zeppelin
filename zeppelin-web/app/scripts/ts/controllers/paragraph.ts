@@ -28,17 +28,17 @@
 
 module zeppelin {
 
-  class Paragraph {
+  export class Paragraph {
     id: string;
     config: ParagraphConfig;
     settings: any;
 
-    title: any;
-    jobName: any;
-    status: any;
-    dateStarted: any;
-    dateCreated: any;
-    dateFinished: any;
+    title: string;
+    jobName: string;
+    status: string;
+    dateStarted: string;
+    dateCreated: string;
+    dateFinished: string;
 
     text: any;
     result: any;
@@ -46,18 +46,7 @@ module zeppelin {
     aborted: any
   }
 
-  class ParagraphGraph {
-    mode: string;
-    height: number;
-    optionOpen: boolean;
-    keys: any;
-    values: any;
-    groups: any;
-
-    constructor() {}
-  }
-
-  class ParagraphConfig {
+  export class ParagraphConfig {
     title: boolean;
     colWidth: number;
     graph: ParagraphGraph;
@@ -101,6 +90,17 @@ module zeppelin {
     }
   }
 
+  export class ParagraphGraph {
+    mode: string;
+    height: number;
+    optionOpen: boolean;
+    keys: any;
+    values: any;
+    groups: any;
+
+    constructor() {}
+  }
+
   class GraphMode {
     static table = 'table';
     static multiBarChart = 'multiBarChart';
@@ -109,7 +109,7 @@ module zeppelin {
     static lineChart = 'lineChart';
   }
 
-  interface IParagraphCtrlScope {
+  interface IParagraphCtrlScope extends ng.IScope {
     init: (paragraph: Paragraph) => void;
     paragraph: Paragraph;
     chart: any;
@@ -171,12 +171,20 @@ module zeppelin {
     lastData: any; // storing only settings and config?
     getResultType: (p?: Paragraph) => string; // move into paragraph
     getGraphMode: (p?: Paragraph) => string; // move into paragraph
-    $watch: any;
-    $digest: any;
-    d3: any;
+    $watch: any; // treat in proper way
+    $digest: any; // treat in proper way
+    d3: any; //
   }
 
-  zeppelinWebApp.controller('ParagraphCtrl', function($scope: IParagraphCtrlScope, $rootScope, $route, $window, $element, $routeParams, $location, $timeout) {
+  zeppelinWebApp.controller('ParagraphCtrl', function(
+    $scope: IParagraphCtrlScope,
+    $rootScope: ng.IRootScopeService,
+    $route: any,
+    $window: ng.IWindowService,
+    $element: ng.IRootElementService,
+    $routeParams: any,
+    $location: any,
+    $timeout: ng.ITimeoutService) {
 
     var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
@@ -235,19 +243,17 @@ module zeppelin {
 
     // TODO: this may have impact on performance when there are many paragraphs in a note.
     $rootScope.$on('updateParagraph', function(event, data) {
-      if (data.paragraph.id === $scope.paragraph.id &&
-           (
-               data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
-               data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
-               data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-               data.paragraph.status !== $scope.paragraph.status ||
-               data.paragraph.jobName !== $scope.paragraph.jobName ||
-               data.paragraph.title !== $scope.paragraph.title ||
-               data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
-               !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
-               !angular.equals(data.paragraph.config, $scope.lastData.config)
-           )
-      ) {
+      if (data.paragraph.id !== $scope.paragraph.id) return;
+      if (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
+          data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
+          data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
+          data.paragraph.status !== $scope.paragraph.status ||
+          data.paragraph.jobName !== $scope.paragraph.jobName ||
+          data.paragraph.title !== $scope.paragraph.title ||
+          data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
+          !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
+          !angular.equals(data.paragraph.config, $scope.lastData.config)) {
+
         // store original data for comparison
         $scope.lastData.settings = angular.copy(data.paragraph.settings);
         $scope.lastData.config = angular.copy(data.paragraph.config);
@@ -951,7 +957,7 @@ module zeppelin {
             .duration(animationDuration)
             .call($scope.chart[type]);
         d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style('height', height + 'px');
-        //nv.utils.windowResize($scope.chart[type].update);
+        nv.utils.windowResize($scope.chart[type].update);
       };
 
       var retryRenderer = function() {
