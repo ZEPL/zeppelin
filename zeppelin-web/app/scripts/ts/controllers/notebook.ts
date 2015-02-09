@@ -66,7 +66,7 @@ module zeppelin {
     toggleAllTable: () => void;
     showAllTable: () => void;
     hideAllTable: () => void;
-    isNoteRunning: () => void;
+    isNoteRunning: () => boolean;
     setLookAndFeel: (looknfeel: string) => void;
     setConfig: (config?: NotebookConfig) => void;
     setCronScheduler: (cronExpr: string) => void;
@@ -139,7 +139,7 @@ module zeppelin {
     $scope.runNote = function() {
       var result = confirm('Run all paragraphs?');
       if (result) {
-        $scope.$emit('runParagraph');
+        $scope.$broadcast('runParagraph');
       }
     };
 
@@ -482,6 +482,7 @@ module zeppelin {
           $scope.showSetting = false;
         }).
         error(function(data, status, headers, config) {
+          alert('Error while saving interpreter setting!');
           console.log('Error %o %o', status, data.message);
         });
     };
