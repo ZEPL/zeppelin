@@ -148,7 +148,7 @@ module zeppelin {
           exec: function(editor) {
             var editorValue = editor.getValue();
             if (editorValue) {
-              $scope.$parent.runParagraph(editorValue);
+              $scope.$parent.runParagraph();
             }
           },
           readOnly: false

@@ -97,13 +97,13 @@ module zeppelin {
   }
 
   export class ZRunParagraphEvent extends ZEvent {
-    constructor(paragraph: Paragraph, content: string) {
+    constructor(paragraph: Paragraph) {
       super();
       this.op = OP.RUN_PARAGRAPH;
       this.data = {
         id: paragraph.id,
         title: paragraph.title,
-        paragraph: content,
+        paragraph: paragraph.text,
         config: paragraph.config,
         params: paragraph.settings.params
       };

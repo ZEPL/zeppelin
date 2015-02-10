@@ -75,7 +75,7 @@ limitations under the License.
         <div class="col-sm-3">
           <input class="form-control input-sm"
                  ng-if="!paragraph.settings.forms[formulaire.name].options"
-                 ng-enter="runParagraph(getEditorValue())"
+                 ng-enter="runParagraph()"
                  ng-model="paragraph.settings.params[formulaire.name]"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                  name="{{formulaire.name}}">
@@ -83,7 +83,7 @@ limitations under the License.
 
           <select class="form-control input-sm"
                  ng-if="paragraph.settings.forms[formulaire.name].options"
-                 ng-change="runParagraph(getEditorValue())"
+                 ng-change="runParagraph()"
                  ng-model="paragraph.settings.params[formulaire.name]"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                  name="{{formulaire.name}}"
@@ -128,7 +128,7 @@ limitations under the License.
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
       </div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
+      <span ng-if="paragraph.resultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
         <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()">
@@ -141,7 +141,7 @@ limitations under the License.
       </span>
 
       <div class="option lightBold" style="overflow: visible;"
-         ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
+         ng-if="paragraph.resultType()=='TABLE' && getGraphMode()!='table'
          && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
         All fields:
         <div class="allFields row">
@@ -218,38 +218,36 @@ limitations under the License.
             </span>
           </div>
         </div>
-
       </div>
-
 
       <div id="p{{paragraph.id}}_graph"
            class="graphContainer"
-           ng-class="{'noOverflow': getGraphMode()=='table'}"
-           ng-if="getResultType()=='TABLE'"
+           ng-class="{'noOverflow': isGraphMode('table')}"
+           ng-if="paragraph.resultType()=='TABLE'"
            allowresize="{{!asIframe && !viewOnly}}"
            resizable on-resize="setGraphHeight();">
 
-        <div ng-if="getGraphMode()=='table'"
+        <div ng-if="isGraphMode('table')"
              id="p{{paragraph.id}}_table"
              class="table">
         </div>
 
-        <div ng-if="getGraphMode()=='multiBarChart'"
+        <div ng-if="isGraphMode('multiBarChart')"
              id="p{{paragraph.id}}_multiBarChart">
           <svg></svg>
         </div>
 
-        <div ng-if="getGraphMode()=='pieChart'"
+        <div ng-if="isGraphMode('pieChart')"
              id="p{{paragraph.id}}_pieChart">
           <svg></svg>
         </div>
 
-        <div ng-if="getGraphMode()=='stackedAreaChart'"
+        <div ng-if="isGraphMode('stackedAreaChart')"
              id="p{{paragraph.id}}_stackedAreaChart">
           <svg></svg>
         </div>
 
-        <div ng-if="getGraphMode()=='lineChart'"
+        <div ng-if="isGraphMode('lineChart')"
              id="p{{paragraph.id}}_lineChart">
           <svg></svg>
         </div>
@@ -257,7 +255,7 @@ limitations under the License.
 
       <div id="{{paragraph.id}}_comment"
            class="text"
-           ng-if="getResultType()=='TABLE' && paragraph.result.comment"
+           ng-if="paragraph.resultType()=='TABLE' && paragraph.result.comment"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.comment">
       </div>
@@ -302,7 +300,7 @@ limitations under the License.
 
     <!-- Run / Cancel button -->
     <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph"
-          ng-click="runParagraph(getEditorValue())"
+          ng-click="runParagraph()"
           ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"

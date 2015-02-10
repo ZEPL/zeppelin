@@ -43,7 +43,28 @@ module zeppelin {
     text: any;
     result: any;
     errorMessage: any;
-    aborted: any
+    aborted: any; // not using?
+
+    constructor(p: Paragraph) {
+      angular.copy(p, this);
+      this.config = new ParagraphConfig(p.config);
+    }
+
+    graphMode() {
+      if (this.config.graph && this.config.graph.mode) {
+        return this.config.graph.mode;
+      } else {
+        return GraphMode.table; // default mode
+      }
+    }
+
+    resultType() {
+      if (this.result && this.result.type) {
+        return this.result.type;
+      } else {
+        return PResultType.TEXT;
+      }
+    }
   }
 
   export class ParagraphConfig {
@@ -109,9 +130,11 @@ module zeppelin {
     static lineChart = 'lineChart';
   }
 
-  class ParagraphResultType {
+  class PResultType {
+    static TEXT = 'TEXT';
     static TABLE = 'TABLE';
     static HTML = 'HTML';
+    static IMG = 'IMG';
   }
 
   export interface IParagraphCtrlScope extends ng.IScope {
@@ -133,7 +156,7 @@ module zeppelin {
     renderHtml: () => void;
     getIframeDimensions: () => number;
     cancelParagraph: () => void;
-    runParagraph: (data: any) => void;
+    runParagraph: () => void;
     loadForm: (formulaire: any, params: any) => void;
 
     moveUp: () => void;
@@ -168,8 +191,6 @@ module zeppelin {
 
     // to be refactored
     lastData: any; // storing only settings and config?
-    getResultType: (p?: Paragraph) => string; // move into paragraph
-    getGraphMode: (p?: Paragraph) => string; // move into paragraph
     $watch: any; // treat in proper way
     $digest: any; // treat in proper way
     d3: any; //
@@ -186,9 +207,8 @@ module zeppelin {
     $timeout: ng.ITimeoutService) {
 
     // Controller init
-    $scope.init = function(newParagraph) {
-      $scope.paragraph = newParagraph;
-      $scope.paragraph.config = new ParagraphConfig(newParagraph.config);
+    $scope.init = function(newParagraph: Paragraph) {
+      $scope.paragraph = new Paragraph(newParagraph);
 
       $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
       $scope.showTitleEditor = false;
@@ -196,12 +216,12 @@ module zeppelin {
       $scope.lastData = {};
       $scope.chart = {};
 
-      if ($scope.getResultType() === ParagraphResultType.TABLE) {
+      if ($scope.paragraph.resultType() === PResultType.TABLE) {
         $scope.lastData.settings = angular.copy($scope.paragraph.settings);
         $scope.lastData.config = angular.copy($scope.paragraph.config);
         $scope.loadTableData($scope.paragraph.result);
-        $scope.setGraphMode($scope.getGraphMode(), false, false);
-      } else if ($scope.getResultType() === ParagraphResultType.HTML) {
+        $scope.setGraphMode($scope.paragraph.graphMode(), false, false);
+      } else if ($scope.paragraph.resultType() === PResultType.HTML) {
         $scope.renderHtml();
       }
     };
@@ -239,30 +259,32 @@ module zeppelin {
 
     // TODO: this may have impact on performance when there are many paragraphs in a note.
     $scope.$on('updateParagraph', function(event, data) {
-      if (data.paragraph.id !== $scope.paragraph.id) return;
-      if (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
-          data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
-          data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-          data.paragraph.status !== $scope.paragraph.status ||
-          data.paragraph.jobName !== $scope.paragraph.jobName ||
-          data.paragraph.title !== $scope.paragraph.title ||
-          data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
-          !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
-          !angular.equals(data.paragraph.config, $scope.lastData.config)) {
+      var updatedParagraph = new Paragraph(data.paragraph);
+
+      if (updatedParagraph.id !== $scope.paragraph.id) return;
+      if (updatedParagraph.dateCreated !== $scope.paragraph.dateCreated ||
+          updatedParagraph.dateFinished !== $scope.paragraph.dateFinished ||
+          updatedParagraph.dateStarted !== $scope.paragraph.dateStarted ||
+          updatedParagraph.status !== $scope.paragraph.status ||
+          updatedParagraph.jobName !== $scope.paragraph.jobName ||
+          updatedParagraph.title !== $scope.paragraph.title ||
+          updatedParagraph.errorMessage !== $scope.paragraph.errorMessage ||
+          !angular.equals(updatedParagraph.settings, $scope.lastData.settings) ||
+          !angular.equals(updatedParagraph.config, $scope.lastData.config)) {
 
         // store original data for comparison
-        $scope.lastData.settings = angular.copy(data.paragraph.settings);
-        $scope.lastData.config = angular.copy(data.paragraph.config);
+        $scope.lastData.settings = angular.copy(updatedParagraph.settings);
+        $scope.lastData.config = angular.copy(updatedParagraph.config);
 
-        var oldType = $scope.getResultType();
-        var newType = $scope.getResultType(data.paragraph);
-        var oldGraphMode = $scope.getGraphMode();
-        var newGraphMode = $scope.getGraphMode(data.paragraph);
-        var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+        var oldType = $scope.paragraph.resultType();
+        var newType = updatedParagraph.resultType();
+        var oldGraphMode = $scope.paragraph.graphMode();
+        var newGraphMode = updatedParagraph.graphMode();
+        var resultRefreshed = (updatedParagraph.dateFinished !== $scope.paragraph.dateFinished);
 
         //console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o', $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
-        var updatedText = data.paragraph.text;
+        var updatedText = updatedParagraph.text;
         if ($scope.paragraph.text !== updatedText) {
           if ($scope.editingText) { // check if editor has local update
             $scope.paragraph.text = $scope.editingText;
@@ -275,29 +297,28 @@ module zeppelin {
         }
 
         /** push the rest */
-        $scope.paragraph.aborted = data.paragraph.aborted;
-        $scope.paragraph.dateCreated = data.paragraph.dateCreated;
-        $scope.paragraph.dateFinished = data.paragraph.dateFinished;
-        $scope.paragraph.dateStarted = data.paragraph.dateStarted;
-        $scope.paragraph.errorMessage = data.paragraph.errorMessage;
-        $scope.paragraph.jobName = data.paragraph.jobName;
-        $scope.paragraph.title = data.paragraph.title;
-        $scope.paragraph.status = data.paragraph.status;
-        $scope.paragraph.result = data.paragraph.result;
-        $scope.paragraph.settings = data.paragraph.settings;
+        $scope.paragraph.aborted = updatedParagraph.aborted;
+        $scope.paragraph.dateCreated = updatedParagraph.dateCreated;
+        $scope.paragraph.dateFinished = updatedParagraph.dateFinished;
+        $scope.paragraph.dateStarted = updatedParagraph.dateStarted;
+        $scope.paragraph.errorMessage = updatedParagraph.errorMessage;
+        $scope.paragraph.jobName = updatedParagraph.jobName;
+        $scope.paragraph.title = updatedParagraph.title;
+        $scope.paragraph.status = updatedParagraph.status;
+        $scope.paragraph.result = updatedParagraph.result;
+        $scope.paragraph.settings = updatedParagraph.settings;
 
         if (!$scope.asIframe) {
-          $scope.paragraph.config = new ParagraphConfig(data.paragraph.config);
-          $scope.paragraph.config.initializeDefaultValues();
+          $scope.paragraph.config = updatedParagraph.config;
         } else {
-          data.paragraph.config.editorHide = true;
-          data.paragraph.config.tableHide = false;
-          $scope.paragraph.config = data.paragraph.config;
+          updatedParagraph.config.editorHide = true;
+          updatedParagraph.config.tableHide = false;
+          $scope.paragraph.config = updatedParagraph.config;
         }
 
-        if (newType === ParagraphResultType.TABLE) {
+        if (newType === PResultType.TABLE) {
           $scope.loadTableData($scope.paragraph.result);
-          if (oldType !== ParagraphResultType.TABLE || resultRefreshed) {
+          if (oldType !== PResultType.TABLE || resultRefreshed) {
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
@@ -307,7 +328,7 @@ module zeppelin {
           } else {
             $scope.setGraphMode(newGraphMode, false, true);
           }
-        } else if (newType === ParagraphResultType.HTML) {
+        } else if (newType === PResultType.HTML) {
           $scope.renderHtml();
         }
       }
@@ -326,9 +347,8 @@ module zeppelin {
       $rootScope.sendEventToServer(new ZCancelParagraphEvent($scope.paragraph));
     };
 
-    $scope.runParagraph = function(content: string) {
-      var parapgraphData = new ZRunParagraphEvent($scope.paragraph, content);
-      $rootScope.sendEventToServer(parapgraphData);
+    $scope.runParagraph = function() {
+      $rootScope.sendEventToServer(new ZRunParagraphEvent($scope.paragraph));
     };
 
     $scope.moveUp = function() {
@@ -423,7 +443,7 @@ module zeppelin {
     };
 
     $scope.columnWidthClass = function(n) {
-      if ($scope.asIframe) {
+      if ($scope.asIframe || !n) {
         return 'col-md-12';
       } else {
         return 'col-md-' + n;
@@ -493,7 +513,7 @@ module zeppelin {
     });
 
     $scope.$on('runParagraph', function(event) {
-      $scope.runParagraph($scope.paragraph.text);
+      $scope.runParagraph();
     });
 
     $scope.$on('openEditor', function(event) {
@@ -512,34 +532,15 @@ module zeppelin {
       $scope.closeTable();
     });
 
-
-    $scope.getResultType = function(paragraph) {
-      var pdata = (paragraph) ? paragraph : $scope.paragraph;
-      if (pdata.result && pdata.result.type) {
-        return pdata.result.type;
-      } else {
-        return 'TEXT';
-      }
-    };
-
     $scope.getBase64ImageSrc = function(base64Data) {
       return 'data:image/png;base64,' + base64Data;
-    };
-
-    $scope.getGraphMode = function(paragraph) {
-      var pdata = (paragraph) ? paragraph : $scope.paragraph;
-      if (pdata.config.graph && pdata.config.graph.mode) {
-        return pdata.config.graph.mode;
-      } else {
-        return GraphMode.table;
-      }
     };
 
     $scope.loadTableData = function(result) {
       if (!result) {
         return;
       }
-      if (result.type === ParagraphResultType.TABLE) {
+      if (result.type === PResultType.TABLE) {
         var columnNames = [];
         var rows = [];
         var array = [];
@@ -648,7 +649,6 @@ module zeppelin {
         }
       };
 
-
       var renderTable = function() {
         var html = '';
         html += '<table class=\'table table-hover table-condensed\'>';
@@ -697,7 +697,6 @@ module zeppelin {
         }
       };
       $timeout(retryRenderer);
-
     };
 
     var setD3Chart = function(type, data, refresh) {
@@ -828,11 +827,9 @@ module zeppelin {
     };
 
     $scope.isGraphMode = function(graphName) {
-      if ($scope.getResultType() === ParagraphResultType.TABLE && $scope.getGraphMode() === graphName) {
-        return true;
-      } else {
-        return false;
-      }
+      return $scope.paragraph &&
+        $scope.paragraph.resultType() === PResultType.TABLE &&
+        $scope.paragraph.graphMode() === graphName;
     };
 
     $scope.onGraphOptionChange = function() {
@@ -1040,7 +1037,6 @@ module zeppelin {
           }
         }
       }
-
       //console.log('schema=%o, rows=%o', schema, rows);
 
       return {
@@ -1193,7 +1189,6 @@ module zeppelin {
             d3g[d3gIndex].key = colName;
           }
         }
-
       }
 
       return {
