@@ -46,14 +46,14 @@ module zeppelin {
     });
 
     var loadNotes = function() {
-      var e = new ZListNoteEvent();
-      $rootScope.sendNewEvent(e);
+      var e = new ZListNotesEvent();
+      $rootScope.sendEventToServer(e);
     };
     loadNotes();
 
     /** Create a new note */
     $scope.createNewNote = function() {
-      $rootScope.sendNewEvent(new ZNewNoteEvent());
+      $rootScope.sendEventToServer(new ZNewNoteEvent());
     };
 
     /** Check if the note url is equal to the current note */

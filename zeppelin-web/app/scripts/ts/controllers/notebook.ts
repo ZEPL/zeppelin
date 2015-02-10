@@ -126,7 +126,7 @@ module zeppelin {
 
     /** Init the new controller */
     var initNotebook = function() {
-      $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $routeParams.noteId}});
+      $rootScope.sendEventToServer(new ZGetNoteEvent($routeParams.noteId));
     };
 
     initNotebook();
@@ -136,7 +136,7 @@ module zeppelin {
     $scope.removeNote = function() {
       var result = confirm('Do you want to delete this notebook?');
       if (result) {
-        $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
+        $rootScope.sendEventToServer(new ZDeleteNoteEvent($scope.note));
         $location.path('/#');
       }
     };
@@ -210,14 +210,14 @@ module zeppelin {
       if(config) {
         $scope.note.config = config;
       }
-      $rootScope.sendNewEvent(new ZNoteUpdateEvent($scope.note));
+      $rootScope.sendEventToServer(new ZNoteUpdateEvent($scope.note));
     };
 
     /** Update the note name */
     $scope.sendNewName = function() {
       $scope.showNameEditor = false;
       if ($scope.note.name) {
-        $rootScope.sendNewEvent(new ZNoteUpdateEvent($scope.note));
+        $rootScope.sendEventToServer(new ZNoteUpdateEvent($scope.note));
       }
     };
 
@@ -256,7 +256,7 @@ module zeppelin {
       noteCopy.config = note.config;
       noteCopy.info = note.info;
       noteCopy.paragraphs = [];
-      for (var i=0; i<note.paragraphs.length; i++) {
+      for (var i = 0; i < note.paragraphs.length; i++) {
         if (note.paragraphs[i].id === paragraphId) {
           noteCopy.paragraphs[0] = note.paragraphs[i];
           if (!noteCopy.paragraphs[0].config) {
@@ -272,25 +272,25 @@ module zeppelin {
 
     $scope.$on('moveParagraphUp', function(event, paragraphId) {
       var newIndex = -1;
-      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === paragraphId) {
-          newIndex = i-1;
+          newIndex = i - 1;
           break;
         }
       }
 
-      if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      if (newIndex < 0 || newIndex >= $scope.note.paragraphs.length) {
         return;
       }
-      $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+      $rootScope.sendEventToServer(new ZMoveParagraphEvent(paragraphId, newIndex));
     });
 
     // create new paragraph on current position
     $scope.$on('insertParagraph', function(event, paragraphId) {
       var newIndex = -1;
-      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === paragraphId) {
-          newIndex = i+1;
+          newIndex = i + 1;
           break;
         }
       }
@@ -302,14 +302,14 @@ module zeppelin {
       if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
         return;
       }
-      $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
+      $rootScope.sendEventToServer(new ZInsertParagraphEvent(newIndex));
     });
 
     $scope.$on('moveParagraphDown', function(event, paragraphId) {
       var newIndex = -1;
-      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === paragraphId) {
-          newIndex = i+1;
+          newIndex = i + 1;
           break;
         }
       }
@@ -317,7 +317,7 @@ module zeppelin {
       if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
         return;
       }
-      $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+      $rootScope.sendEventToServer(new ZMoveParagraphEvent(paragraphId, newIndex));
     });
 
     $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){

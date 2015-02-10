@@ -333,40 +333,32 @@ module zeppelin {
 
     $scope.cancelParagraph = function() {
       console.log('Cancel %o', $scope.paragraph.id);
-      $rootScope.sendNewEvent(new ZCancelParagraphEvent($scope.paragraph));
+      $rootScope.sendEventToServer(new ZCancelParagraphEvent($scope.paragraph));
     };
 
-    $scope.runParagraph = function(data) {
-      var parapgraphData = {op: 'RUN_PARAGRAPH',
-                            data: {
-                                id: $scope.paragraph.id,
-                                title: $scope.paragraph.title,
-                                paragraph: data,
-                                config: $scope.paragraph.config,
-                                params: $scope.paragraph.settings.params
-                            }
-                           };
-      $rootScope.$emit('sendNewEvent', parapgraphData);
+    $scope.runParagraph = function(content: string) {
+      var parapgraphData = new ZRunParagraphEvent($scope.paragraph, content);
+      $rootScope.sendEventToServer(parapgraphData);
     };
 
     $scope.moveUp = function() {
-      $rootScope.$emit('moveParagraphUp', $scope.paragraph.id);
+      $scope.$emit('moveParagraphUp', $scope.paragraph.id);
     };
 
     $scope.moveDown = function() {
-      $rootScope.$emit('moveParagraphDown', $scope.paragraph.id);
+      $scope.$emit('moveParagraphDown', $scope.paragraph.id);
     };
 
     $scope.insertNew = function() {
-      $rootScope.$emit('insertParagraph', $scope.paragraph.id);
+      $scope.$emit('insertParagraph', $scope.paragraph.id);
     };
 
     $scope.removeParagraph = function() {
       var result = confirm('Do you want to delete this paragraph?');
       if (result) {
         console.log('Remove paragraph');
-        var paragraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
-        $rootScope.$emit('sendNewEvent', paragraphData);
+        var paragraphData = new ZRemoveParagraphEvent($scope.paragraph);
+        $rootScope.sendEventToServer(paragraphData);
       }
     };
 
@@ -385,7 +377,7 @@ module zeppelin {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.editorHide = true;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.openEditor = function() {
@@ -395,7 +387,7 @@ module zeppelin {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.editorHide = false;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.closeTable = function() {
@@ -405,7 +397,7 @@ module zeppelin {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.tableHide = true;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.openTable = function() {
@@ -415,7 +407,7 @@ module zeppelin {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.tableHide = false;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.showTitle = function() {
@@ -423,7 +415,7 @@ module zeppelin {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.title = true;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.hideTitle = function() {
@@ -431,13 +423,13 @@ module zeppelin {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.title = false;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.setTitle = function() {
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.columnWidthClass = function(n) {
@@ -453,7 +445,7 @@ module zeppelin {
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.toggleGraphOption = function() {
@@ -465,7 +457,7 @@ module zeppelin {
       }
       var newParams = angular.copy($scope.paragraph.settings.params);
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.toggleOutput = function() {
@@ -473,7 +465,7 @@ module zeppelin {
       newConfig.tableHide = !newConfig.tableHide;
       var newParams = angular.copy($scope.paragraph.settings.params);
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     $scope.loadForm = function(formulaire, params) {
@@ -524,14 +516,7 @@ module zeppelin {
                 if (!$scope.editor.isFocused() ){ return;}
 
                 var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column));
-                $rootScope.$emit('sendNewEvent', {
-                    op : 'COMPLETION',
-                    data : {
-                        id : $scope.paragraph.id,
-                        buf : buf,
-                        cursor : buf.length
-                    }
-                });
+                $rootScope.sendEventToServer(new ZCodeCompletionEvent($scope.paragraph, buf));
 
                 $scope.$on('completionList', function(event, data) {
                     if (data.completions) {
@@ -788,20 +773,12 @@ module zeppelin {
       // graph options
       newConfig.graph.mode = newMode;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
-    var commitParagraph = function(title, text, config, params) {
-      var parapgraphData = {
-        op: 'COMMIT_PARAGRAPH',
-        data: {
-          id: $scope.paragraph.id,
-          title : title,
-          paragraph: text,
-          params: params,
-          config: config
-        }};
-      $rootScope.$emit('sendNewEvent', parapgraphData);
+    var commitParagraph = function(config, params) {
+      var parapgraphData = new ZCommitParagraphEvent($scope.paragraph, config, params);
+      $rootScope.sendEventToServer(parapgraphData);
     };
 
     var setTable = function(data, refresh) {
@@ -1398,7 +1375,7 @@ module zeppelin {
 
       newConfig.graph.height = height;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(newConfig, newParams);
     };
 
     /** Utility function */

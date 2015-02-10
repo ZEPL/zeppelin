@@ -25,7 +25,7 @@
  */
 module zeppelin {
   export interface IZeppelinRootScope extends ng.IRootScopeService {
-    sendNewEvent: (event: ZEvent) => void;
+    sendEventToServer: (event: ZEvent) => void;
   }
 
   zeppelinWebApp.controller('MainCtrl', function(
@@ -56,6 +56,7 @@ module zeppelin {
       }
     });
 
+    // treat message from zeppelin-server
     WebSocket.onmessage(function(event: WebSocketEvent) {
       var payload;
       if (event.data) {
@@ -97,12 +98,12 @@ module zeppelin {
       }
     };
 
-    $rootScope.sendNewEvent = function(event) {
-      $rootScope.$emit('sendNewEvent', event.toJson());
+    $rootScope.sendEventToServer = function(event) {
+      $rootScope.$emit('sendEventToServer', event.toJson());
     }
 
     /** get the childs event and sebd to the websocket server */
-    $rootScope.$on('sendNewEvent', function(event, data) {
+    $rootScope.$on('sendEventToServer', function(event, data) {
       if (!event.defaultPrevented) {
         send(data);
         event.preventDefault();
