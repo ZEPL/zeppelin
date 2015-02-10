@@ -114,20 +114,19 @@ module zeppelin {
     static HTML = 'HTML';
   }
 
-  interface IParagraphCtrlScope extends ng.IScope {
+  export interface IParagraphCtrlScope extends ng.IScope {
     init: (paragraph: Paragraph) => void;
     paragraph: Paragraph;
     chart: any;
-    editor: any;
     asIframe: boolean;
     currentProgress: number;
 
+    editingText: string;
+
     isRunning: () => boolean;
-    dirtyText: string;
 
     colWidthOption: Array<number>;
     showTitleEditor: boolean;
-    paragraphFocused: boolean;
 
     loadTableData: (result: any) => void;
     setGraphMode: (type: string, emit: boolean, refresh: boolean) => void;
@@ -136,10 +135,6 @@ module zeppelin {
     cancelParagraph: () => void;
     runParagraph: (data: any) => void;
     loadForm: (formulaire: any, params: any) => void;
-
-    aceChanged: () => void;
-    aceLoaded: (editor: any) => void;
-    getEditorValue: () => string;
 
     moveUp: () => void;
     moveDown: () => void;
@@ -158,7 +153,6 @@ module zeppelin {
     toggleGraphOption: () => void;
     toggleOutput: () => void;
 
-    handleFocus: (value: any) => void;
     getExecutionTime: () => string;
     getBase64ImageSrc: (data: any) => string;
 
@@ -191,8 +185,6 @@ module zeppelin {
     $location: any,
     $timeout: ng.ITimeoutService) {
 
-    var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
-
     // Controller init
     $scope.init = function(newParagraph) {
       $scope.paragraph = newParagraph;
@@ -200,7 +192,6 @@ module zeppelin {
 
       $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
       $scope.showTitleEditor = false;
-      $scope.paragraphFocused = false;
       $scope.currentProgress = 0;
       $scope.lastData = {};
       $scope.chart = {};
@@ -271,16 +262,15 @@ module zeppelin {
 
         //console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o', $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
-        if ($scope.paragraph.text !== data.paragraph.text) {
-          if ($scope.dirtyText) {         // check if editor has local update
-            if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
-              $scope.paragraph.text = data.paragraph.text;
-              $scope.dirtyText = undefined;
-            } else { // if there're local update, keep it.
-              $scope.paragraph.text = $scope.dirtyText;
+        var updatedText = data.paragraph.text;
+        if ($scope.paragraph.text !== updatedText) {
+          if ($scope.editingText) { // check if editor has local update
+            $scope.paragraph.text = $scope.editingText;
+            if ($scope.editingText === updatedText) {  // when local update is the same from remote, clear local update
+              $scope.editingText = undefined;
             }
           } else {
-            $scope.paragraph.text = data.paragraph.text;
+            $scope.paragraph.text = updatedText;
           }
         }
 
@@ -481,159 +471,6 @@ module zeppelin {
       $scope.paragraph.settings.params[formulaire.name] = value;
     };
 
-    $scope.aceChanged = function() {
-      $scope.dirtyText = $scope.editor.getSession().getValue();
-    };
-
-    $scope.aceLoaded = function(_editor) {
-      var langTools = ace.require('ace/ext/language_tools');
-      var Range = ace.require('ace/range').Range;
-
-      $scope.editor = _editor;
-      if (_editor.container.id !== '{{paragraph.id}}_editor') {
-        $scope.editor.renderer.setShowGutter(false);
-        $scope.editor.setHighlightActiveLine(false);
-        $scope.editor.focus();
-        var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
-        setEditorHeight(_editor.container.id, hight);
-
-        $scope.editor.getSession().setUseWrapMode(true);
-        if (navigator.appVersion.indexOf('Mac') !== -1 ) {
-          $scope.editor.setKeyboardHandler('ace/keyboard/emacs');
-        } else if (navigator.appVersion.indexOf('Win') !== -1 ||
-                   navigator.appVersion.indexOf('X11') !== -1 ||
-                   navigator.appVersion.indexOf('Linux') !== -1) {
-          // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
-        }
-
-        $scope.editor.setOptions({
-            enableBasicAutocompletion: true,
-            enableSnippets: false,
-            enableLiveAutocompletion:false
-        });
-        var remoteCompleter = {
-            getCompletions : function(editor, session, pos, prefix, callback) {
-                if (!$scope.editor.isFocused() ){ return;}
-
-                var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column));
-                $rootScope.sendEventToServer(new ZCodeCompletionEvent($scope.paragraph, buf));
-
-                $scope.$on('completionList', function(event, data) {
-                    if (data.completions) {
-                        var completions = [];
-                        for (var c in data.completions) {
-                            var v = data.completions[c];
-                            completions.push({
-                                name:v,
-                                value:v,
-                                score:300
-                            });
-                        }
-                        callback(null, completions);
-                    }
-                });
-            }
-        };
-        langTools.addCompleter(remoteCompleter);
-
-        $scope.handleFocus = function(value) {
-          $scope.paragraphFocused = value;
-          // Protect against error in case digest is already running
-          $timeout(function() {
-            // Apply changes since they come from 3rd party library
-            $scope.$digest();
-          });
-        };
-
-        $scope.editor.on('focus', function() {
-          $scope.handleFocus(true);
-        });
-
-        $scope.editor.on('blur', function() {
-          $scope.handleFocus(false);
-        });
-
-
-        $scope.editor.getSession().on('change', function(e, editSession) {
-          hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
-          setEditorHeight(_editor.container.id, hight);
-          $scope.editor.resize();
-        });
-
-
-        var code = $scope.editor.getSession().getValue();
-        if (String(code).startsWith('%sql')) {
-          $scope.editor.getSession().setMode(editorMode.sql);
-        } else if ( String(code).startsWith('%md')) {
-          $scope.editor.getSession().setMode(editorMode.markdown);
-        } else {
-          $scope.editor.getSession().setMode(editorMode.scala);
-        }
-
-        $scope.editor.commands.addCommand({
-          name: 'run',
-          bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},
-          exec: function(editor) {
-            var editorValue = editor.getValue();
-            if (editorValue) {
-              $scope.runParagraph(editorValue);
-            }
-          },
-          readOnly: false
-        });
-
-        // autocomplete on '.'
-        /*
-        $scope.editor.commands.on('afterExec', function(e, t) {
-          if (e.command.name == 'insertstring' && e.args == '.' ) {
-        var all = e.editor.completers;
-        //e.editor.completers = [remoteCompleter];
-        e.editor.execCommand('startAutocomplete');
-        //e.editor.completers = all;
-      }
-        });
-        */
-
-        // autocomplete on 'ctrl + .'
-        $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
-        $scope.editor.commands.bindKey('ctrl-space', null);
-
-        // handle cursor moves
-        $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
-        $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
-          if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
-          } else {
-              var numRows;
-              var currentRow;
-              if (keyCode === 38 || (keyCode === 80 && e.ctrlKey)) {  // UP
-                  numRows = $scope.editor.getSession().getLength();
-                  currentRow = $scope.editor.getCursorPosition().row;
-                  if (currentRow === 0) {
-                      // move focus to previous paragraph
-                      $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
-                  }
-              } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
-                  numRows = $scope.editor.getSession().getLength();
-                  currentRow = $scope.editor.getCursorPosition().row;
-                  if (currentRow === numRows-1) {
-                      // move focus to next paragraph
-                      $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
-                  }
-              }
-          }
-          this.origOnCommandKey(e, hashId, keyCode);
-        };
-      }
-    };
-
-    var setEditorHeight = function(id, height) {
-      $('#' + id).height(height.toString() + 'px');
-    };
-
-    $scope.getEditorValue = function() {
-      return $scope.editor.getValue();
-    };
-
     $scope.getExecutionTime = function() {
       var pdata = $scope.paragraph;
       var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
@@ -651,13 +488,12 @@ module zeppelin {
 
     $scope.$on('focusParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId) {
-        $scope.editor.focus();
         $('body').scrollTo('#' + paragraphId + '_editor', 300, {offset:-60});
       }
     });
 
     $scope.$on('runParagraph', function(event) {
-      $scope.runParagraph($scope.editor.getValue());
+      $scope.runParagraph($scope.paragraph.text);
     });
 
     $scope.$on('openEditor', function(event) {
