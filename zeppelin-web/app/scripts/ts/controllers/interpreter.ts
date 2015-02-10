@@ -25,7 +25,7 @@
  */
 
 module zeppelin {
-  zeppelinWebApp.controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
+  angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
 
     var remoteSettingToLocalSetting = function(settingId, setting) {
       var property = {};

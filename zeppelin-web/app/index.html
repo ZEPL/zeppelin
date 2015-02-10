@@ -62,7 +62,7 @@ limitations under the License.
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
+          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
         </div>
 
         <div class="collapse navbar-collapse" ng-controller="NavCtrl">
@@ -73,8 +73,11 @@ limitations under the License.
                 <li><a href="javascript:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a></li>
                 <li class="divider"></li>
                 <div id="notebook-list" class="scrollbar-container">
-                  <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
-				</div>
+                  <li ng-repeat="note in notes track by $index"
+                      ng-class="{'active' : isActive(note.id)}">
+                    <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
+                  </li>
+                </div>
               </ul>
             </li>
             <li>

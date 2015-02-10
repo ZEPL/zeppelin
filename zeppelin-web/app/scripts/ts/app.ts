@@ -75,7 +75,7 @@ module zeppelin {
    *
    * @author anthonycorbacho
    */
-  export var zeppelinWebApp = angular.module('zeppelinWebApp', [
+  angular.module('zeppelinWebApp', [
     'ngAnimate',
     'ngCookies',
     'ngRoute',

@@ -28,7 +28,7 @@ module zeppelin {
     sendEventToServer: (event: ZEvent) => void;
   }
 
-  zeppelinWebApp.controller('MainCtrl', function(
+  angular.module('zeppelinWebApp').controller('MainCtrl', function(
     $scope,
     WebSocket: any,
     $rootScope: IZeppelinRootScope,
@@ -65,15 +65,15 @@ module zeppelin {
       console.log('Receive << %o, %o, %o', payload.op, payload, $scope);
       var op = payload.op;
       var data = payload.data;
-      if (op === 'NOTE') {
+      if (op === OP.NOTE) {
         $scope.$broadcast('setNoteContent', data.note);
-      } else if (op === 'NOTES_INFO') {
+      } else if (op === OP.NOTES_INFO) {
         $scope.$broadcast('setNoteMenu', data.notes);
-      } else if (op === 'PARAGRAPH') {
+      } else if (op === OP.PARAGRAPH) {
         $scope.$broadcast('updateParagraph', data);
-      } else if (op === 'PROGRESS') {
+      } else if (op === OP.PROGRESS) {
         $scope.$broadcast('updateProgress', data);
-      } else if (op === 'COMPLETION_LIST') {
+      } else if (op === OP.COMPLETION_LIST) {
         $scope.$broadcast('completionList', data);
       }
     });
@@ -98,7 +98,7 @@ module zeppelin {
       }
     };
 
-    $rootScope.sendEventToServer = function(event) {
+    $rootScope.sendEventToServer = function(event: ZEvent) {
       $rootScope.$emit('sendEventToServer', event.toJson());
     }
 

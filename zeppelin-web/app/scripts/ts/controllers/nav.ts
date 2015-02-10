@@ -32,36 +32,28 @@ module zeppelin {
     isActive: (noteId: string) => boolean;
   }
 
-  zeppelinWebApp.controller('NavCtrl', function(
+  angular.module('zeppelinWebApp').controller('NavCtrl', function(
     $scope: INavCtrlScope,
     $rootScope: IZeppelinRootScope,
     $routeParams) {
     /** Current list of notes (ids) */
-
     $('#notebook-list').perfectScrollbar({suppressScrollX: true});
+
+    // load notes
+    $rootScope.sendEventToServer(new ZListNotesEvent());
 
     /** Set the new menu */
     $scope.$on('setNoteMenu', function(event, notes) {
         $scope.notes = notes;
     });
 
-    var loadNotes = function() {
-      var e = new ZListNotesEvent();
-      $rootScope.sendEventToServer(e);
-    };
-    loadNotes();
-
-    /** Create a new note */
     $scope.createNewNote = function() {
       $rootScope.sendEventToServer(new ZNewNoteEvent());
     };
 
     /** Check if the note url is equal to the current note */
     $scope.isActive = function(noteId) {
-      if ($routeParams.noteId === noteId) {
-        return true;
-      }
-      return false;
+      return $routeParams.noteId === noteId;
     };
   });
 }

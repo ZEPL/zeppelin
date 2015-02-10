@@ -181,7 +181,7 @@ module zeppelin {
     d3: any; //
   }
 
-  zeppelinWebApp.controller('ParagraphCtrl', function(
+  angular.module('zeppelinWebApp').controller('ParagraphCtrl', function(
     $scope: IParagraphCtrlScope,
     $rootScope: IZeppelinRootScope,
     $route: any,
@@ -535,7 +535,6 @@ module zeppelin {
             }
         };
         langTools.addCompleter(remoteCompleter);
-
 
         $scope.handleFocus = function(value) {
           $scope.paragraphFocused = value;

@@ -83,7 +83,7 @@ module zeppelin {
     getCronOptionNameFromValue: (value: string) => string;
   }
 
-  zeppelinWebApp.controller('NotebookCtrl', function(
+  angular.module('zeppelinWebApp').controller('NotebookCtrl', function(
     $scope: INotebookCtrlScope,
     $route,
     $routeParams,
