@@ -62,8 +62,6 @@ module zeppelin {
     // notebook controls
     runAllNote: () => void;
     toggleAllEditor: () => void;
-    showAllEditor: () => void;
-    hideAllEditor: () => void;
     toggleAllTable: () => void;
     showAllTable: () => void;
     hideAllTable: () => void;
@@ -150,19 +148,11 @@ module zeppelin {
 
     $scope.toggleAllEditor = function() {
       if ($scope.editorToggled) {
-        $scope.hideAllEditor();
+        $scope.$broadcast('closeEditor');
       } else {
-        $scope.showAllEditor();
+        $scope.$broadcast('openEditor');
       }
       $scope.editorToggled = !$scope.editorToggled;
-    };
-
-    $scope.showAllEditor = function() {
-      $scope.$broadcast('openEditor');
-    };
-
-    $scope.hideAllEditor = function() {
-      $scope.$broadcast('closeEditor');
     };
 
     $scope.toggleAllTable = function() {
@@ -185,7 +175,7 @@ module zeppelin {
     $scope.isNoteRunning = function() {
       var running = false;
       if(!$scope.note){ return false; }
-      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if ( $scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
           running = true;
           break;

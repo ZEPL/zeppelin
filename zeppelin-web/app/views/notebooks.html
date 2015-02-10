@@ -156,16 +156,16 @@ limitations under the License.
   <div class="note-jump"></div>
 
   <!-- Include the paragraphs according to the note -->
-  <div id="{{currentParagraph.id}}_paragraphColumn_main"
+  <div id="{{paragraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
-       ng-class="columnWidthClass(currentParagraph.config.colWidth)"
+       ng-class="columnWidthClass(paragraph.config.colWidth)"
        class="paragraph-col">
-    <div id="{{currentParagraph.id}}_paragraphColumn"
+    <div id="{{paragraph.id}}_paragraphColumn"
          ng-include src="'views/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
-         ng-hide="currentParagraph.config.tableHide && viewOnly">
+         ng-hide="paragraph.config.tableHide && viewOnly">
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

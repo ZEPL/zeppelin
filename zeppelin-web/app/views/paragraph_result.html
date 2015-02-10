@@ -1,0 +1,207 @@
+<!--
+Copyright 2014 NFLabs
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div ng-controller="ParagraphResultCtrl"
+     ng-Init="init()"
+     class='tableDisplay'
+     ng-show="!paragraph.config.tableHide"
+  >
+  <div id="{{paragraph.id}}_switch"
+       ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
+       class="btn-group"
+       style='margin-bottom: 10px;'>
+    <button type="button" class="btn btn-default btn-sm"
+            ng-class="{'active': isGraphMode('table')}"
+            ng-click="setGraphMode('table', true)" ><i class="fa fa-table"></i>
+    </button>
+    <button type="button" class="btn btn-default btn-sm"
+            ng-class="{'active': isGraphMode('multiBarChart')}"
+            ng-click="setGraphMode('multiBarChart', true)"><i class="fa fa-bar-chart"></i>
+    </button>
+    <button type="button" class="btn btn-default btn-sm"
+            ng-class="{'active': isGraphMode('pieChart')}"
+            ng-click="setGraphMode('pieChart', true)"><i class="fa fa-pie-chart"></i>
+    </button>
+    <button type="button" class="btn btn-default btn-sm"
+            ng-class="{'active': isGraphMode('stackedAreaChart')}"
+            ng-click="setGraphMode('stackedAreaChart', true)"><i class="fa fa-area-chart"></i>
+    </button>
+    <button type="button" class="btn btn-default btn-sm"
+            ng-class="{'active': isGraphMode('lineChart')}"
+            ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
+    </button>
+  </div>
+  <span ng-if="paragraph.resultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
+        style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
+    <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
+       ng-click="toggleGraphOption()">
+      settings <span class="fa fa-caret-up"></span>
+    </a>
+    <a class="btnText" ng-if="!paragraph.config.graph.optionOpen"
+       ng-click="toggleGraphOption()" >
+      settings <span class="fa fa-caret-down"></span>
+    </a>
+  </span>
+
+  <div class="option lightBold" style="overflow: visible;"
+     ng-if="paragraph.resultType()=='TABLE' && getGraphMode()!='table'
+     && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
+    All fields:
+    <div class="allFields row">
+      <ul class="noDot">
+        <li class="liVertical" ng-repeat="col in paragraph.result.columnNames">
+          <div class="btn btn-default btn-xs"
+               data-drag="true"
+               data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+               ng-model="paragraph.result.columnNames"
+               jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+             {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <span class="columns lightBold">
+          Keys
+          <ul data-drop="true"
+              ng-model="paragraph.config.graph.keys"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              class="list-unstyled">
+            <li ng-repeat="item in paragraph.config.graph.keys">
+              <button class="btn btn-primary btn-xs">
+                {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
+              </button>
+            </li>
+          </ul>
+        </span>
+      </div>
+      <div class="col-md-4">
+        <span class="columns lightBold">
+          Groups
+          <ul data-drop="true"
+              ng-model="paragraph.config.graph.groups"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              class="list-unstyled">
+            <li ng-repeat="item in paragraph.config.graph.groups">
+              <button class="btn btn-success btn-xs">
+                {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionGroups($index)"></span>
+              </button>
+            </li>
+          </ul>
+        </span>
+      </div>
+      <div class="col-md-4">
+        <span class="columns lightBold">
+          Values
+          <ul data-drop="true"
+              ng-model="paragraph.config.graph.values"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              class="list-unstyled">
+            <li ng-repeat="item in paragraph.config.graph.values">
+              <div class="btn-group">
+                <div class="btn btn-info btn-xs dropdown-toggle"
+                     type="button"
+                     data-toggle="dropdown">
+                  {{item.name | limitTo: 30}}{{item.name.length > 30 ? '...' : ''}}
+                  <font style="color:#EEEEEE;"><span class="lightBold" style="text-transform: uppercase;">{{item.aggr}}</span></font>
+                  <span class="fa fa-close" ng-click="removeGraphOptionValues($index)"></span>
+                </div>
+                <ul class="dropdown-menu" role="menu">
+                  <li ng-click="setGraphOptionValueAggr($index, 'sum')"><a>sum</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'count')"><a>count</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'avg')"><a>avg</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'min')"><a>min</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'max')"><a>max</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div id="p{{paragraph.id}}_graph"
+       class="graphContainer"
+       ng-class="{'noOverflow': isGraphMode('table')}"
+       ng-if="paragraph.resultType()=='TABLE'"
+       allowresize="{{!asIframe && !viewOnly}}"
+       resizable on-resize="setGraphHeight();">
+
+    <div ng-if="isGraphMode('table')"
+         id="p{{paragraph.id}}_table"
+         class="table">
+    </div>
+
+    <div ng-if="isGraphMode('multiBarChart')"
+         id="p{{paragraph.id}}_multiBarChart">
+      <svg></svg>
+    </div>
+
+    <div ng-if="isGraphMode('pieChart')"
+         id="p{{paragraph.id}}_pieChart">
+      <svg></svg>
+    </div>
+
+    <div ng-if="isGraphMode('stackedAreaChart')"
+         id="p{{paragraph.id}}_stackedAreaChart">
+      <svg></svg>
+    </div>
+
+    <div ng-if="isGraphMode('lineChart')"
+         id="p{{paragraph.id}}_lineChart">
+      <svg></svg>
+    </div>
+  </div>
+
+  <div id="{{paragraph.id}}_comment"
+       class="text"
+       ng-if="paragraph.resultType()=='TABLE' && paragraph.result.comment"
+       ng-Init="loadResultType(paragraph.result)"
+       ng-bind-html="paragraph.result.comment">
+  </div>
+
+  <div id="{{paragraph.id}}_text"
+       class="text"
+       ng-if="paragraph.result.type == 'TEXT'"
+       ng-Init="loadResultType(paragraph.result)"
+       ng-bind="paragraph.result.msg">
+  </div>
+
+  <div id="p{{paragraph.id}}_html"
+       ng-if="paragraph.result.type == 'HTML'"
+       ng-Init="loadResultType(paragraph.result)">
+  </div>
+
+  <img id="{{paragraph.id}}_img"
+       ng-if="paragraph.result.type == 'IMG'"
+       ng-Init="loadResultType(paragraph.result)"
+       ng-src="{{paragraph.base64ImageSrc()}}">
+  </img>
+
+  <div id="{{paragraph.id}}_error"
+       class="error"
+       ng-if="paragraph.status == 'ERROR'"
+       ng-bind="paragraph.errorMessage">
+  </div>
+
+  <div id="{{paragraph.id}}_executionTime"
+       class="executionTime"
+       ng-bind-html="paragraph.executionTimeString()">
+  </div>
+</div>
