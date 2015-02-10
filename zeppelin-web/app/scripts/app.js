@@ -31,14 +31,6 @@
   */
 function getPort() {
   var port = Number(location.port);
-  if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) {
-    port = 80;
-  } else if (location.protocol === 'https:' && (port === 'undifined' || port === 0)) {
-    port = 443;
-  } else if (port === 3333 || port === 9000) {
-    port = 8080;
-  }
-  return port+1;
 }
 
 function getWebsocketProtocol() {
