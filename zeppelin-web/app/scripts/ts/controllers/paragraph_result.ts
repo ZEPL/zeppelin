@@ -29,12 +29,9 @@ module zeppelin {
 
     chart: any;
 
-    setGraphMode: (type: string, emit: boolean, refresh: boolean) => void;
-
-    d3: any;
-
+    setGraphMode: (type: string) => void;
+    drawGraph: (refresh?: boolean) => void;
     renderHtml: () => void;
-
     loadTableData: (result: any) => void;
 
     onGraphOptionChange: () => void;
@@ -42,6 +39,8 @@ module zeppelin {
     removeGraphOptionValues: (idx: number) => void;
     removeGraphOptionGroups: (idx: number) => void;
     setGraphOptionValueAggr: (idx: number, aggr: any) => void;
+
+    d3: any;
 
     $parent: IParagraphCtrlScope;
   }
@@ -59,7 +58,7 @@ module zeppelin {
         $scope.$parent.lastData.settings = angular.copy($scope.$parent.paragraph.settings);
         $scope.$parent.lastData.config = angular.copy($scope.$parent.paragraph.config);
         $scope.loadTableData($scope.$parent.paragraph.result);
-        $scope.setGraphMode($scope.$parent.paragraph.graphMode(), false, false);
+        $scope.drawGraph();
       } else if ($scope.$parent.paragraph.resultType() === PResultType.HTML) {
         $scope.renderHtml();
       }
@@ -85,9 +84,9 @@ module zeppelin {
         }
         /** User changed the chart type? */
         if (oldGraphMode !== newGraphMode) {
-          $scope.setGraphMode(newGraphMode, false, false);
+          $scope.setGraphMode(newGraphMode);
         } else {
-          $scope.setGraphMode(newGraphMode, false, true);
+          $scope.drawGraph();
         }
       } else if (newType === PResultType.HTML) {
         $scope.renderHtml();
@@ -157,33 +156,28 @@ module zeppelin {
       }
     };
 
-    $scope.setGraphMode = function(type, emit, refresh) {
-      if (emit) {
-        setNewMode(type);
-      } else {
-        clearUnknownColsFromGraphOption();
-        // set graph height
-        var height = $scope.$parent.paragraph.config.graph.height;
-        $('#p' + $scope.$parent.paragraph.id + '_graph').height(height);
+    $scope.setGraphMode = function(type) {
+      $scope.$parent.paragraph.config.graph.mode = type;
+      $scope.$parent.commitParagraph();
+      $scope.drawGraph();
+    };
 
-        if (!type || type === GraphMode.table) {
-          setTable($scope.$parent.paragraph.result, refresh);
-        }
-        else {
-          setD3Chart(type, $scope.$parent.paragraph.result, refresh);
-        }
+    $scope.drawGraph = function(refresh?: boolean) {
+      var refresh = refresh ? refresh : true;
+      var type = $scope.$parent.paragraph.config.graph.mode;
+
+      clearUnknownColsFromGraphOption();
+      // set graph height
+      var height = $scope.$parent.paragraph.config.graph.height;
+      $('#p' + $scope.$parent.paragraph.id + '_graph').height(height);
+
+      if (!type || type === GraphMode.table) {
+        setTable($scope.$parent.paragraph.result, refresh);
       }
-    };
-
-    var setNewMode = function(newMode) {
-      var newConfig = angular.copy($scope.$parent.paragraph.config);
-      var newParams = angular.copy($scope.$parent.paragraph.settings.params);
-
-      // graph options
-      newConfig.graph.mode = newMode;
-
-      $scope.$parent.commitParagraph(newConfig, newParams);
-    };
+      else {
+        setD3Chart(type, $scope.$parent.paragraph.result, refresh);
+      }
+    }
 
     var setTable = function(data, refresh) {
       var getTableContentFormat = function(d) {
@@ -394,41 +388,34 @@ module zeppelin {
     };
 
     $scope.onGraphOptionChange = function() {
-      clearUnknownColsFromGraphOption();
-      var mode = $scope.$parent.paragraph.config.graph.mode;
-      $scope.setGraphMode(mode, true, false);
+      $scope.drawGraph();
+      $scope.$parent.commitParagraph();
     };
 
     $scope.removeGraphOptionKeys = function(idx) {
       $scope.$parent.paragraph.config.graph.keys.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      var mode = $scope.$parent.paragraph.config.graph.mode;
-      $scope.setGraphMode(mode, true, false);
+      $scope.onGraphOptionChange();
     };
 
     $scope.removeGraphOptionValues = function(idx) {
       $scope.$parent.paragraph.config.graph.values.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      var mode = $scope.$parent.paragraph.config.graph.mode;
-      $scope.setGraphMode(mode, true, false);
+      $scope.onGraphOptionChange();
     };
 
     $scope.removeGraphOptionGroups = function(idx) {
       $scope.$parent.paragraph.config.graph.groups.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      var mode = $scope.$parent.paragraph.config.graph.mode;
-      $scope.setGraphMode(mode, true, false);
+      $scope.onGraphOptionChange();
     };
 
     $scope.setGraphOptionValueAggr = function(idx, aggr) {
       $scope.$parent.paragraph.config.graph.values[idx].aggr = aggr;
-      clearUnknownColsFromGraphOption();
-      var mode = $scope.$parent.paragraph.config.graph.mode;
-      $scope.setGraphMode(mode, true, false);
+      $scope.onGraphOptionChange();
     };
 
     /* Clear unknown columns from graph option */
     var clearUnknownColsFromGraphOption = function() {
+      var graph = $scope.$parent.paragraph.config.graph;
+
       var unique = function(list) {
         for (var i = 0; i < list.length; i++) {
           for (var j = i + 1; j < list.length; j++) {
@@ -457,19 +444,20 @@ module zeppelin {
         }
       };
 
-      unique($scope.$parent.paragraph.config.graph.keys);
-      removeUnknown($scope.$parent.paragraph.config.graph.keys);
+      unique(graph.keys);
+      removeUnknown(graph.keys);
 
-      removeUnknown($scope.$parent.paragraph.config.graph.values);
+      removeUnknown(graph.values);
 
-      unique($scope.$parent.paragraph.config.graph.groups);
-      removeUnknown($scope.$parent.paragraph.config.graph.groups);
+      unique(graph.groups);
+      removeUnknown(graph.groups);
     };
 
     var pivot = function(data) {
-      var keys = $scope.$parent.paragraph.config.graph.keys;
-      var groups = $scope.$parent.paragraph.config.graph.groups;
-      var values = $scope.$parent.paragraph.config.graph.values;
+      var graph = $scope.$parent.paragraph.config.graph;
+      var keys = graph.keys;
+      var groups = graph.groups;
+      var values = graph.values;
 
       var aggrFunc = {
         sum : function(a,b) {
@@ -647,9 +635,10 @@ module zeppelin {
         }
       };
 
-      var keys = $scope.$parent.paragraph.config.graph.keys;
-      var groups = $scope.$parent.paragraph.config.graph.groups;
-      var values = $scope.$parent.paragraph.config.graph.values;
+      var graph = $scope.$parent.paragraph.config.graph;
+      var keys = graph.keys;
+      var groups = graph.groups;
+      var values = graph.values;
       var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
       var noKey = (keys.length === 0);
       var isMultiBarChart = (chartType === GraphMode.multiBarChart);
@@ -747,15 +736,17 @@ module zeppelin {
       };
     };
 
-
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      if ($scope.$parent.paragraph.config.graph.keys.length === 0 && $scope.$parent.paragraph.result.columnNames.length > 0) {
-        $scope.$parent.paragraph.config.graph.keys.push($scope.$parent.paragraph.result.columnNames[0]);
+      var graph = $scope.$parent.paragraph.config.graph;
+      var columnNames = $scope.$parent.paragraph.result.columnNames;
+
+      if (graph.keys.length === 0 && columnNames.length > 0) {
+        graph.keys.push(columnNames[0]);
       }
 
-      if ($scope.$parent.paragraph.config.graph.values.length === 0 && $scope.$parent.paragraph.result.columnNames.length > 1) {
-        $scope.$parent.paragraph.config.graph.values.push($scope.$parent.paragraph.result.columnNames[1]);
+      if (graph.values.length === 0 && columnNames.length > 1) {
+        graph.values.push(columnNames[1]);
       }
     };
   });

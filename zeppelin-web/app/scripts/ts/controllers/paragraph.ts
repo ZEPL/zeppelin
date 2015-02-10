@@ -149,17 +149,16 @@ module zeppelin {
   export interface IParagraphCtrlScope extends ng.IScope {
     init: (paragraph: Paragraph) => void;
     paragraph: Paragraph;
-    asIframe: boolean;
-    currentProgress: number;
 
     editingText: string;
-
-    isRunningOrPending: () => boolean;
-
     colWidthOption: Array<number>;
+
+    // status flags
+    asIframe: boolean;
+    currentProgress: number;
+    isRunningOrPending: () => boolean;
     showTitleEditor: boolean;
 
-    renderHtml: () => void;
     getIframeDimensions: () => number;
 
     loadForm: (formulaire: any, params: any) => void;
@@ -186,7 +185,6 @@ module zeppelin {
 
     setGraphHeight: () => void;
 
-
     // to be refactored
     lastData: any; // storing only settings and config? what use?
     $watch: any; // treat in proper way
@@ -200,8 +198,7 @@ module zeppelin {
     $window: ng.IWindowService,
     $element: ng.IRootElementService,
     $routeParams: any,
-    $location: any,
-    $timeout: ng.ITimeoutService) {
+    $location: any) {
 
     // Controller init
     $scope.init = function(newParagraph: Paragraph) {
