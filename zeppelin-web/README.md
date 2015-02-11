@@ -4,11 +4,14 @@ This is a Zeppelin web frontend project.
 
 ## Compile Zeppelin web
 If you want to compile the WebApplication, you will have to simply run `mvn package`.
-This will Download all the dependencies including node js and npm (you will find the binaries in the folder `zeppelin-web/node`).
+This will Download all the dependencies including node js and npm 
+(you will find the binaries in the folder `zeppelin-web/node`).
 
-We also provide some **helper script** for bower and grunt (you dont need to install them).
+We also provide some **helper script** for bower and grunt 
+(you dont need to install them).
 
-In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
+In case of the error 
+`ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
 
 change your git config with `git config --global url."https://".insteadOf git://`
 
@@ -20,7 +23,6 @@ Try to add to the `.bowerrc` file the following content:
   "https-proxy" : "http://<host>:<port>"
 ```
 
-
 and retry to build again.
 
 ## Contribute on Zeppelin Web
@@ -28,16 +30,24 @@ If you wish to help us to contribute on Zeppelin Web, you will need to install s
 Here this is a good start to understand how zeppelin web is architectured.
 http://www.sitepoint.com/kickstart-your-angularjs-development-with-yeoman-grunt-and-bower/
 
+Also, Zeppelin uses Typescript http://www.typescriptlang.org/ to maintain 
+stable structure of javascript codes . 
+You can read a good article on using AngularJs with Typescript in the next link. 
+http://www.scottlogic.com/blog/2014/08/26/StrongTypingWithAngularJS.html
+ 
 ### Run the application in dev mode
 ``./grunt serve``
 
 ### Build the application
 `./grunt build`
 
-### Add composents to Zeppelin Webapp
+### Add components to Zeppelin Webapp
  * New controller : `yo angular:controller <controlerName>`
  * New directive : `yo angular:directive <directiveName>`
  * New service : `yo angular:service <serviceName>`
+ 
+(Currently, adding components by Yeoman (yo) is broken, 
+because officially Yeoman doesn't support Typescript. 
 
  ### Add plugin
  
