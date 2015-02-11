@@ -47,7 +47,18 @@ http://www.scottlogic.com/blog/2014/08/26/StrongTypingWithAngularJS.html
  * New service : `yo angular:service <serviceName>`
  
 (Currently, adding components by Yeoman (yo) is broken, 
-because officially Yeoman doesn't support Typescript. 
+because officially Yeoman doesn't support Typescript.)
+
+You can generate codes by manually installing yo and linking generator. 
+reference: https://github.com/yeoman/yeoman/blob/master/contributing.md
+
+generator supporting Typescript:
+https://github.com/eggers/generator-angular
+
+command: 
+`yo angular:controller <name> --typescript`
+
+(Need test if a generated codes works well.)
 
  ### Add plugin
  
