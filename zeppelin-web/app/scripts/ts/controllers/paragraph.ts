@@ -42,16 +42,17 @@ module zeppelin {
     dateCreated: string;
     dateFinished: string;
 
-    result: any;
+    result: ParagraphResult;
     errorMessage: any;
     aborted: any; // not using?
 
     constructor(p: Paragraph) {
       angular.copy(p, this);
       this.config = new ParagraphConfig(p.config);
+      this.result = new ParagraphResult(p.result);
     }
 
-    graphMode() {
+    graphMode(): string {
       if (this.config.graph && this.config.graph.mode) {
         return this.config.graph.mode;
       } else {
@@ -59,15 +60,7 @@ module zeppelin {
       }
     }
 
-    resultType() {
-      if (this.result && this.result.type) {
-        return this.result.type;
-      } else {
-        return PResultType.TEXT;
-      }
-    }
-
-    executionTimeString() {
+    executionTimeString(): string {
       var timeMs = Date.parse(this.dateFinished) - Date.parse(this.dateStarted);
       if (isNaN(timeMs)) {
         return '&nbsp;';
@@ -75,8 +68,22 @@ module zeppelin {
       return 'Took ' + (timeMs/1000) + ' seconds';
     }
 
-    base64ImageSrc() {
+    base64ImageSrc(): string {
       return 'data:image/png;base64,' + this.result.msg;
+    }
+  }
+
+  export class ParagraphResult {
+    type: string;
+    msg: string;
+    columnNames: Array<any>;
+    msgTable: Array<any>;
+
+    constructor(r: ParagraphResult) {
+      angular.copy(r, this);
+      if (!this.type) {
+        this.type = PResultType.TEXT;
+      }
     }
   }
 
@@ -146,6 +153,11 @@ module zeppelin {
     static IMG = 'IMG';
   }
 
+  export class PStatus {
+    static RUNNING = 'RUNNING';
+    static PENDING = 'PENDING';
+  }
+
   export interface IParagraphCtrlScope extends ng.IScope {
     init: (paragraph: Paragraph) => void;
     paragraph: Paragraph;
@@ -177,7 +189,7 @@ module zeppelin {
     goToSingleParagraph: () => void;
     removeParagraph: () => void;
 
-    commitParagraph: (config?: ParagraphConfig, params?) => void;
+    commitParagraph: () => void;
 
     // chart
     toggleGraphOption: () => void;
@@ -280,7 +292,7 @@ module zeppelin {
     });
 
     $scope.isRunningOrPending = function() {
-      return $scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING';
+      return $scope.paragraph.status === PStatus.RUNNING || $scope.paragraph.status === PStatus.PENDING;
     };
 
     $scope.cancelParagraph = function() {
@@ -331,11 +343,8 @@ module zeppelin {
     };
 
     $scope.toggleOutput = function() {
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.tableHide = !newConfig.tableHide;
-      var newParams = angular.copy($scope.paragraph.settings.params);
-
-      $scope.commitParagraph(newConfig, newParams);
+      $scope.paragraph.config.tableHide = !$scope.paragraph.config.tableHide;
+      $scope.commitParagraph();
     };
 
     $scope.loadForm = function(formulaire, params) {
@@ -387,14 +396,14 @@ module zeppelin {
       $scope.commitParagraph();
     });
 
-    $scope.commitParagraph = function(config?: ParagraphConfig, params?) {
-      var parapgraphData = new ZCommitParagraphEvent($scope.paragraph, config, params);
+    $scope.commitParagraph = function() {
+      var parapgraphData = new ZCommitParagraphEvent($scope.paragraph);
       $rootScope.sendEventToServer(parapgraphData);
     };
 
     $scope.isGraphMode = function(graphName) {
       return $scope.paragraph &&
-        $scope.paragraph.resultType() === PResultType.TABLE &&
+        $scope.paragraph.result.type === PResultType.TABLE &&
         $scope.paragraph.graphMode() === graphName;
     };
 
@@ -403,13 +412,6 @@ module zeppelin {
       $scope.paragraph.config.graph.height = height;
       $scope.commitParagraph();
     };
-
-    /** Utility function */
-    if (typeof String.prototype.startsWith !== 'function') {
-      String.prototype.startsWith = function(str) {
-        return this.slice(0, str.length) === str;
-      };
-    }
 
     $scope.goToSingleParagraph = function () {
       var noteId = $route.current.pathParams.noteId;

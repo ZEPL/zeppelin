@@ -1,4 +1,5 @@
 module zeppelin {
+  'use strict';
 
   // ported from Message.java, zeppelin-server
   export class OP {
@@ -123,15 +124,15 @@ module zeppelin {
   }
 
   export class ZCommitParagraphEvent extends ZEvent {
-    constructor(paragraph: Paragraph, config?, params?) {
+    constructor(paragraph: Paragraph) {
       super();
       this.op = OP.COMMIT_PARAGRAPH;
       this.data = {
         id: paragraph.id,
         title: paragraph.title,
         paragraph: paragraph.text,
-        params: params ? params : paragraph.settings.params,
-        config: config ? config : paragraph.config
+        params: paragraph.settings.params,
+        config: paragraph.config
       };
     }
   }

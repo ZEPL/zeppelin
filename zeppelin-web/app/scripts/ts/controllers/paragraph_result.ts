@@ -26,6 +26,7 @@ module zeppelin {
 
   interface IParagraphResultCtrlScope extends ng.IScope {
     init: () => void;
+    paragraph: Paragraph;
 
     chart: any;
 
@@ -52,14 +53,15 @@ module zeppelin {
 
     // Controller init
     $scope.init = function() {
+      $scope.paragraph = $scope.$parent.paragraph;
       $scope.chart = {};
 
-      if ($scope.$parent.paragraph.resultType() === PResultType.TABLE) {
-        $scope.$parent.lastData.settings = angular.copy($scope.$parent.paragraph.settings);
-        $scope.$parent.lastData.config = angular.copy($scope.$parent.paragraph.config);
-        $scope.loadTableData($scope.$parent.paragraph.result);
+      if ($scope.paragraph.result.type === PResultType.TABLE) {
+        $scope.$parent.lastData.settings = angular.copy($scope.paragraph.settings);
+        $scope.$parent.lastData.config = angular.copy($scope.paragraph.config);
+        $scope.loadTableData($scope.paragraph.result);
         $scope.drawGraph();
-      } else if ($scope.$parent.paragraph.resultType() === PResultType.HTML) {
+      } else if ($scope.paragraph.result.type === PResultType.HTML) {
         $scope.renderHtml();
       }
     };
@@ -67,17 +69,17 @@ module zeppelin {
     $scope.$on('updateParagraph', function(event, data) {
       var updatedParagraph = new Paragraph(data.paragraph);
 
-      if (updatedParagraph.id !== $scope.$parent.paragraph.id) return;
+      if (updatedParagraph.id !== $scope.paragraph.id) return;
 
-      var oldType = $scope.$parent.paragraph.resultType();
-      var newType = updatedParagraph.resultType();
-      var oldGraphMode = $scope.$parent.paragraph.graphMode();
+      var oldType = $scope.paragraph.result.type;
+      var newType = updatedParagraph.result.type;
+      var oldGraphMode = $scope.paragraph.graphMode();
       var newGraphMode = updatedParagraph.graphMode();
-      var resultRefreshed = (updatedParagraph.dateFinished !== $scope.$parent.paragraph.dateFinished);
+      var resultRefreshed = (updatedParagraph.dateFinished !== $scope.paragraph.dateFinished);
 
 
       if (newType === PResultType.TABLE) {
-        $scope.loadTableData($scope.$parent.paragraph.result);
+        $scope.loadTableData($scope.paragraph.result);
         if (oldType !== PResultType.TABLE || resultRefreshed) {
           clearUnknownColsFromGraphOption();
           selectDefaultColsForGraphOption();
@@ -95,9 +97,9 @@ module zeppelin {
 
     $scope.renderHtml = function() {
       var retryRenderer = function() {
-        if ($('#p' + $scope.$parent.paragraph.id + '_html').length) {
+        if ($('#p' + $scope.paragraph.id + '_html').length) {
           try {
-            $('#p' + $scope.$parent.paragraph.id + '_html').html($scope.$parent.paragraph.result.msg);
+            $('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
           } catch(err) {
             console.log('HTML rendering error %o', err);
           }
@@ -157,29 +159,29 @@ module zeppelin {
     };
 
     $scope.setGraphMode = function(type) {
-      $scope.$parent.paragraph.config.graph.mode = type;
+      $scope.paragraph.config.graph.mode = type;
       $scope.$parent.commitParagraph();
       $scope.drawGraph();
     };
 
     $scope.drawGraph = function(refresh?: boolean) {
       var refresh = refresh ? refresh : true;
-      var type = $scope.$parent.paragraph.config.graph.mode;
+      var type = $scope.paragraph.config.graph.mode;
 
       clearUnknownColsFromGraphOption();
       // set graph height
-      var height = $scope.$parent.paragraph.config.graph.height;
-      $('#p' + $scope.$parent.paragraph.id + '_graph').height(height);
+      var height = $scope.paragraph.config.graph.height;
+      $('#p' + $scope.paragraph.id + '_graph').height(height);
 
       if (!type || type === GraphMode.table) {
-        setTable($scope.$parent.paragraph.result, refresh);
+        drawTable($scope.paragraph.result);
       }
       else {
-        setD3Chart(type, $scope.$parent.paragraph.result, refresh);
+        drawD3Chart(type, $scope.paragraph.result, refresh);
       }
     }
 
-    var setTable = function(data, refresh) {
+    var drawTable = function(data) {
       var getTableContentFormat = function(d) {
         if (isNaN(d)) {
           if (d.length > '%html'.length && '%html ' === d.substring(0, '%html '.length)) {
@@ -216,14 +218,14 @@ module zeppelin {
         html += '<table class=\'table table-hover table-condensed\'>';
         html += '  <thead>';
         html += '    <tr style=\'background-color: #F6F6F6; font-weight: bold;\'>';
-        for (var c in $scope.$parent.paragraph.result.columnNames) {
-          html += '<th>' + $scope.$parent.paragraph.result.columnNames[c].name + '</th>';
+        for (var c in $scope.paragraph.result.columnNames) {
+          html += '<th>' + $scope.paragraph.result.columnNames[c].name + '</th>';
         }
         html += '    </tr>';
         html += '  </thead>';
 
-        for (var r in $scope.$parent.paragraph.result.msgTable) {
-          var row = $scope.$parent.paragraph.result.msgTable[r];
+        for (var r in $scope.paragraph.result.msgTable) {
+          var row = $scope.paragraph.result.msgTable[r];
           html += '    <tr>';
           for (var index in row) {
             var v = row[index].value;
@@ -238,16 +240,16 @@ module zeppelin {
         }
         html += '</table>';
 
-        $('#p' + $scope.$parent.paragraph.id + '_table').html(html);
-        $('#p' + $scope.$parent.paragraph.id + '_table').perfectScrollbar();
+        $('#p' + $scope.paragraph.id + '_table').html(html);
+        $('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
 
         // set table height
-        var height = $scope.$parent.paragraph.config.graph.height;
-        $('#p' + $scope.$parent.paragraph.id + '_table').height(height);
+        var height = $scope.paragraph.config.graph.height;
+        $('#p' + $scope.paragraph.id + '_table').height(height);
       };
 
       var retryRenderer = function() {
-        if ($('#p' + $scope.$parent.paragraph.id + '_table').length) {
+        if ($('#p' + $scope.paragraph.id + '_table').length) {
           try {
             renderTable();
           } catch(err) {
@@ -260,7 +262,7 @@ module zeppelin {
       $timeout(retryRenderer);
     };
 
-    var setD3Chart = function(type, data, refresh) {
+    var drawD3Chart = function(type, data, refresh) {
       if (!$scope.chart[type]) {
         var chart = nv.models[type]();
         $scope.chart[type] = chart;
@@ -268,8 +270,8 @@ module zeppelin {
 
       var p = pivot(data);
 
-      var xColIndexes = $scope.$parent.paragraph.config.graph.keys;
-      var yColIndexes = $scope.$parent.paragraph.config.graph.values;
+      var xColIndexes = $scope.paragraph.config.graph.keys;
+      var yColIndexes = $scope.paragraph.config.graph.values;
 
       var d3g = [];
       // select yColumns.
@@ -313,7 +315,7 @@ module zeppelin {
           // TODO force destroy previous chart
         }
 
-        var height = $scope.$parent.paragraph.config.graph.height;
+        var height = $scope.paragraph.config.graph.height;
 
         var animationDuration = 300;
         var numberOfDataThreshold = 150;
@@ -326,18 +328,18 @@ module zeppelin {
         } catch(ignoreErr) {
         }
 
-        var chartEl = d3.select('#p' + $scope.$parent.paragraph.id + '_' + type + ' svg')
-          .attr('height', $scope.$parent.paragraph.config.graph.height)
+        var chartEl = d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
+          .attr('height', $scope.paragraph.config.graph.height)
           .datum(d3g)
           .transition()
           .duration(animationDuration)
           .call($scope.chart[type]);
-        d3.select('#p' + $scope.$parent.paragraph.id + '_' + type + ' svg').style('height', height + 'px');
+        d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style('height', height + 'px');
         nv.utils.windowResize($scope.chart[type].update);
       };
 
       var retryRenderer = function() {
-        if ($('#p' + $scope.$parent.paragraph.id + '_' + type + ' svg').length !== 0) {
+        if ($('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
           try {
             renderChart();
           } catch(err) {
@@ -414,7 +416,7 @@ module zeppelin {
 
     /* Clear unknown columns from graph option */
     var clearUnknownColsFromGraphOption = function() {
-      var graph = $scope.$parent.paragraph.config.graph;
+      var graph = $scope.paragraph.config.graph;
 
       var unique = function(list) {
         for (var i = 0; i < list.length; i++) {
@@ -430,9 +432,9 @@ module zeppelin {
         for (var i = 0; i < list.length; i++) {
           // remove non existing column
           var found = false;
-          for (var j = 0; j < $scope.$parent.paragraph.result.columnNames.length; j++) {
+          for (var j = 0; j < $scope.paragraph.result.columnNames.length; j++) {
             var a = list[i];
-            var b = $scope.$parent.paragraph.result.columnNames[j];
+            var b = $scope.paragraph.result.columnNames[j];
             if (a.index === b.index && a.name === b.name) {
               found = true;
               break;
@@ -454,7 +456,7 @@ module zeppelin {
     };
 
     var pivot = function(data) {
-      var graph = $scope.$parent.paragraph.config.graph;
+      var graph = $scope.paragraph.config.graph;
       var keys = graph.keys;
       var groups = graph.groups;
       var values = graph.values;
@@ -589,7 +591,7 @@ module zeppelin {
 
       var schema = data.schema;
       var rows = data.rows;
-      var values = $scope.$parent.paragraph.config.graph.values;
+      var values = $scope.paragraph.config.graph.values;
 
       var concat = function(o, n) {
         if (!o) {
@@ -635,7 +637,7 @@ module zeppelin {
         }
       };
 
-      var graph = $scope.$parent.paragraph.config.graph;
+      var graph = $scope.paragraph.config.graph;
       var keys = graph.keys;
       var groups = graph.groups;
       var values = graph.values;
@@ -738,8 +740,8 @@ module zeppelin {
 
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      var graph = $scope.$parent.paragraph.config.graph;
-      var columnNames = $scope.$parent.paragraph.result.columnNames;
+      var graph = $scope.paragraph.config.graph;
+      var columnNames = $scope.paragraph.result.columnNames;
 
       if (graph.keys.length === 0 && columnNames.length > 0) {
         graph.keys.push(columnNames[0]);
@@ -750,4 +752,10 @@ module zeppelin {
       }
     };
   });
+
+  if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (str: string) : boolean {
+      return this.indexOf(str) === 0;
+    };
+  }
 }

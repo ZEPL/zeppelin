@@ -44,7 +44,7 @@ limitations under the License.
             ng-click="setGraphMode('lineChart')"><i class="fa fa-line-chart"></i>
     </button>
   </div>
-  <span ng-if="paragraph.resultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
+  <span ng-if="paragraph.result.type=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
         style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
     <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
        ng-click="toggleGraphOption()">
@@ -57,7 +57,7 @@ limitations under the License.
   </span>
 
   <div class="option lightBold" style="overflow: visible;"
-     ng-if="paragraph.resultType()=='TABLE' && getGraphMode()!='table'
+     ng-if="paragraph.result.type=='TABLE' && getGraphMode()!='table'
      && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
     All fields:
     <div class="allFields row">
@@ -139,7 +139,7 @@ limitations under the License.
   <div id="p{{paragraph.id}}_graph"
        class="graphContainer"
        ng-class="{'noOverflow': isGraphMode('table')}"
-       ng-if="paragraph.resultType()=='TABLE'"
+       ng-if="paragraph.result.type=='TABLE'"
        allowresize="{{!asIframe && !viewOnly}}"
        resizable on-resize="setGraphHeight();">
 
@@ -171,7 +171,7 @@ limitations under the License.
 
   <div id="{{paragraph.id}}_comment"
        class="text"
-       ng-if="paragraph.resultType()=='TABLE' && paragraph.result.comment"
+       ng-if="paragraph.result.type=='TABLE' && paragraph.result.comment"
        ng-Init="loadResultType(paragraph.result)"
        ng-bind-html="paragraph.result.comment">
   </div>
