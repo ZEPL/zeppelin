@@ -76,7 +76,10 @@ function addJarInDir(){
     done
   fi
 }
-  
+
+addJarInDir "${ZEPPELIN_HOME}/interpreter/spark"
+addJarInDir "${ZEPPELIN_HOME}/interpreter/sh"
+addJarInDir "${ZEPPELIN_HOME}/interpreter/md"
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
@@ -103,7 +106,7 @@ export ZEPPELIN_CLASSPATH
 export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
-# Text encoding for 
+# Text encoding for
 # read/write job into files,
 # receiving/displaying query/result.
 if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
