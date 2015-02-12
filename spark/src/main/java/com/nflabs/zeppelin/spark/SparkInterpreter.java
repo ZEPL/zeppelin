@@ -50,12 +50,15 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterInfo;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.spark.dep.DependencyContext;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 import com.nflabs.zeppelin.spark.mon.SparkClusterResourceMonitor;
 
@@ -110,15 +113,31 @@ public class SparkInterpreter extends Interpreter {
     out = new ByteArrayOutputStream();
   }
 
+  public SparkInterpreter(Properties property, SparkContext sc) {
+    this(property);
+
+    this.sc = sc;
+    env = SparkEnv.get();
+    sparkListener = setupListeners(this.sc);
+  }
 
   public synchronized SparkContext getSparkContext() {
     if (sc == null) {
       sc = createSparkContext();
       env = SparkEnv.get();
-      sparkListener = new JobProgressListener(sc.getConf());
-      sc.listenerBus().addListener(sparkListener);
+      sparkListener = setupListeners(sc);
     }
     return sc;
+  }
+
+  public boolean isSparkContextInitialized() {
+    return sc != null;
+  }
+
+  private static JobProgressListener setupListeners(SparkContext context) {
+    JobProgressListener pl = new JobProgressListener(context.getConf());
+    context.listenerBus().addListener(pl);
+    return pl;
   }
 
   public SQLContext getSQLContext() {
@@ -140,6 +159,21 @@ public class SparkInterpreter extends Interpreter {
       dep = new DependencyResolver(intp, sc);
     }
     return dep;
+  }
+
+  private DepInterpreter getDepInterpreter() {
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup == null) return null;
+    for (Interpreter intp : intpGroup) {
+      if (intp.getClassName().equals(DepInterpreter.class.getName())) {
+        Interpreter p = intp;
+        while (p instanceof WrappedInterpreter) {
+          p = ((WrappedInterpreter) p).getInnerInterpreter();
+        }
+        return (DepInterpreter) p;
+      }
+    }
+    return null;
   }
 
   public SparkContext createSparkContext() {
@@ -214,7 +248,7 @@ public class SparkInterpreter extends Interpreter {
 
     /*
      * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path throuh
+     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
      * nsc.Settings.classpath.
      *
      * >> val settings = new Settings() >> settings.usejavacp.value = true >>
@@ -253,6 +287,23 @@ public class SparkInterpreter extends Interpreter {
           classpath += File.pathSeparator;
         }
         classpath += u.getFile();
+      }
+    }
+
+    // add dependency from DepInterpreter
+    DepInterpreter depInterpreter = getDepInterpreter();
+    if (depInterpreter != null) {
+      DependencyContext depc = depInterpreter.getDependencyContext();
+      if (depc != null) {
+        List<File> files = depc.getFiles();
+        if (files != null) {
+          for (File f : files) {
+            if (classpath.length() > 0) {
+              classpath += File.pathSeparator;
+            }
+            classpath += f.getAbsolutePath();
+          }
+        }
       }
     }
 
@@ -295,6 +346,14 @@ public class SparkInterpreter extends Interpreter {
       rm = new SparkClusterResourceMonitor(sc);
     }
 
+    if (sc.getPoolForName("fair").isEmpty()) {
+      Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
+      int minimumShare = 0;
+      int weight = 1;
+      Pool pool = new Pool("fair", schedulingMode, minimumShare, weight);
+      sc.taskScheduler().rootPool().addSchedulable(pool);
+    }
+
     sqlc = getSQLContext();
 
     dep = getDependencyResolver();
@@ -321,6 +380,25 @@ public class SparkInterpreter extends Interpreter {
         + "_binder.get(\"hiveContext\").asInstanceOf[org.apache.spark.sql.hive.HiveContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
     intp.interpret("import sqlc._");
+
+    // add jar
+    if (depInterpreter != null) {
+      DependencyContext depc = depInterpreter.getDependencyContext();
+      if (depc != null) {
+        List<File> files = depc.getFilesDist();
+        if (files != null) {
+          for (File f : files) {
+            if (f.getName().toLowerCase().endsWith(".jar")) {
+              sc.addJar(f.getAbsolutePath());
+              logger.info("sc.addJar(" + f.getAbsolutePath() + ")");
+            } else {
+              sc.addFile(f.getAbsolutePath());
+              logger.info("sc.addFile(" + f.getAbsolutePath() + ")");
+            }
+          }
+        }
+      }
+    }
   }
 
   private List<File> currentClassPath() {
