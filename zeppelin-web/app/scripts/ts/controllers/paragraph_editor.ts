@@ -132,7 +132,6 @@ module zeppelin {
           $scope.editor.resize();
         });
 
-
         var code = $scope.editor.getSession().getValue();
         if (String(code).startsWith('%sql')) {
           $scope.editor.getSession().setMode(editorMode.sql);
