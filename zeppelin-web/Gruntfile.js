@@ -359,12 +359,12 @@ module.exports = function (grunt) {
 
     typescript: {
       base: {
-        src: ['<%= yeoman.app %>/scripts/ts/**/*.ts'],
-        dest: '<%= yeoman.app %>/scripts/js/',
+        src: ['<%= yeoman.app %>/typescripts/**/*.ts'],
+        dest: '<%= yeoman.app %>/scripts/',
         options: {
           module: 'amd', //or commonjs
           target: 'es5', //or es3
-          basePath: '<%= yeoman.app %>/scripts/ts',
+          basePath: '<%= yeoman.app %>/typescripts/',
           sourceMap: true,
           declaration: true
         }

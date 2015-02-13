@@ -1,0 +1,4 @@
+# Typescript outputs
+*.js
+*.d.ts
+*.js.map
