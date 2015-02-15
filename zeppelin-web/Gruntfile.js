@@ -27,22 +27,27 @@ module.exports = function (grunt) {
     // Project settings
     yeoman: appConfig,
 
+
+    // lint typescript files
+    tslint: {
+      options: {
+        configuration: grunt.file.readJSON("tslint.json")
+      },
+      files: {
+        src: ['<%= yeoman.app %>/typescripts/**/*.ts']
+      }
+    },
+
+
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
         files: ['bower.json'],
         tasks: ['wiredep']
       },
-      js: {
-        files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
-        tasks: ['newer:jshint:all'],
-        options: {
-          livereload: '<%= connect.options.livereload %>'
-        }
-      },
       scripts: {
         files: ['<%= yeoman.app %>/typescripts/**/*.ts'],
-        tasks: ['typescript'],
+        tasks: ['typescript', 'tslint'],
         options: {
             spawn: false,
             livereload: '<%= connect.options.livereload %>'
@@ -382,11 +387,11 @@ module.exports = function (grunt) {
     grunt.task.run([
       'clean:server',
       'typescript',
+      'tslint',
       'wiredep',
       'concurrent:dist',
       'autoprefixer',
       'connect:livereload',
-      /*'newer:jshint'*/
       'watch'
     ]);
   });
@@ -408,6 +413,7 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'typescript',
+    'tslint',
     'wiredep',
     'useminPrepare',
     'concurrent:dist',
@@ -417,13 +423,11 @@ module.exports = function (grunt) {
     'copy:dist',
     'cssmin',
     'uglify',
-    /*'filerev',*/
     'usemin',
     'htmlmin'
   ]);
 
   grunt.registerTask('default', [
-    'newer:jshint',
     /*
      * Since we dont have test (or up to date) there is no reason to keep this task
      * I am commented this, but can be changed in the future (if someone want to implement front tests).
