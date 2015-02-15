@@ -11,7 +11,7 @@ interface JQuery {
 }
 
 // nvd3
-declare var nv: NVD3
+declare var nv: NVD3;
 
 interface NVD3 {
   models: any;

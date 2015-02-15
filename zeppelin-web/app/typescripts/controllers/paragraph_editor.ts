@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -23,6 +22,8 @@
  */
 
 module zeppelin {
+
+'use strict';
 
   interface IParagraphEditorCtrlScope extends ng.IScope {
     editor: any;
@@ -67,7 +68,8 @@ module zeppelin {
         $scope.editor.renderer.setShowGutter(false);
         $scope.editor.setHighlightActiveLine(false);
         $scope.editor.focus();
-        var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
+        var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight;
+        hight += $scope.editor.renderer.scrollBar.getWidth();
         setEditorHeight(_editor.container.id, hight);
 
         $scope.editor.getSession().setUseWrapMode(true);
@@ -82,11 +84,12 @@ module zeppelin {
         $scope.editor.setOptions({
           enableBasicAutocompletion: true,
           enableSnippets: false,
-          enableLiveAutocompletion:false
+          enableLiveAutocompletion: false
         });
+
         var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
-            if (!$scope.editor.isFocused() ){ return;}
+            if (!$scope.editor.isFocused()) { return; }
 
             var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column));
             $rootScope.sendEventToServer(new ZCodeCompletionEvent($scope.$parent.paragraph, buf));
@@ -97,9 +100,9 @@ module zeppelin {
                 for (var c in data.completions) {
                   var v = data.completions[c];
                   completions.push({
-                    name:v,
-                    value:v,
-                    score:300
+                    name: v,
+                    value: v,
+                    score: 300
                   });
                 }
                 callback(null, completions);
@@ -186,7 +189,7 @@ module zeppelin {
             } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
               numRows = $scope.editor.getSession().getLength();
               currentRow = $scope.editor.getCursorPosition().row;
-              if (currentRow === numRows-1) {
+              if (currentRow === (numRows - 1)) {
                 // move focus to next paragraph
                 $rootScope.$emit('moveFocusToNextParagraph', $scope.$parent.paragraph.id);
               }

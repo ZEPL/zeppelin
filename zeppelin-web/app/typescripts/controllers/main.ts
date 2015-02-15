@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -23,7 +22,11 @@
  *
  * @author anthonycorbacho
  */
+
 module zeppelin {
+
+ 'use strict';
+
   export interface IZeppelinRootScope extends ng.IRootScopeService {
     sendEventToServer: (event: ZEvent) => void;
   }
@@ -100,7 +103,7 @@ module zeppelin {
 
     $rootScope.sendEventToServer = function(event: ZEvent) {
       $rootScope.$emit('sendEventToServer', event.toJson());
-    }
+    };
 
     /** get the childs event and sebd to the websocket server */
     $rootScope.$on('sendEventToServer', function(event, data) {
