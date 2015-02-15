@@ -41,10 +41,11 @@ module.exports = function (grunt) {
         }
       },
       scripts: {
-        files: ['<%= yeoman.app %>/scripts/ts/**/*.ts'],
+        files: ['<%= yeoman.app %>/typescripts/**/*.ts'],
         tasks: ['typescript'],
         options: {
-            spawn: false
+            spawn: false,
+            livereload: '<%= connect.options.livereload %>'
         }
       },
       jsTest: {
