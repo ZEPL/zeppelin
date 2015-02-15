@@ -18,12 +18,12 @@ limitations under the License.
   <div class="noteAction" ng-show="note.id && !paragraphUrl">
     <h3 class="new_h3">
       <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
-             ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
-        <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
+             ng-show="showNameEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showNameEditor = false" autofocus/>
+        <p class="form-control-static2" ng-click="showNameEditor = true" ng-show="!showNameEditor">{{note.name || 'Note ' + note.id}}</p>
           <span class="labelBtn btn-group">
             <button type="button"
                     class="btn btn-default btn-xs"
-                    ng-click="runNote()"
+                    ng-click="runAllNote()"
                     ng-if="!isNoteRunning()"
                     tooltip-placement="top" tooltip="Run all the note">
               <i class="icon-control-play"></i>
@@ -45,7 +45,7 @@ limitations under the License.
 
             <button type="button"
                     class="btn btn-default btn-xs"
-                    ng-click="removeNote(note.id)"
+                    ng-click="removeNote()"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Remove the notebook">
               <i class="icon-trash"></i></button>
@@ -156,16 +156,16 @@ limitations under the License.
   <div class="note-jump"></div>
 
   <!-- Include the paragraphs according to the note -->
-  <div id="{{currentParagraph.id}}_paragraphColumn_main"
+  <div id="{{paragraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
-       ng-class="columnWidthClass(currentParagraph.config.colWidth)"
+       ng-class="columnWidthClass(paragraph.config.colWidth)"
        class="paragraph-col">
-    <div id="{{currentParagraph.id}}_paragraphColumn"
+    <div id="{{paragraph.id}}_paragraphColumn"
          ng-include src="'views/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
-         ng-hide="currentParagraph.config.tableHide && viewOnly">
+         ng-hide="paragraph.config.tableHide && viewOnly">
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

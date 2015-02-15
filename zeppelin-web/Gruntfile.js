@@ -27,17 +27,30 @@ module.exports = function (grunt) {
     // Project settings
     yeoman: appConfig,
 
+
+    // lint typescript files
+    tslint: {
+      options: {
+        configuration: grunt.file.readJSON("tslint.json")
+      },
+      files: {
+        src: ['<%= yeoman.app %>/typescripts/**/*.ts']
+      }
+    },
+
+
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
         files: ['bower.json'],
         tasks: ['wiredep']
       },
-      js: {
-        files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
-        tasks: ['newer:jshint:all'],
+      scripts: {
+        files: ['<%= yeoman.app %>/typescripts/**/*.ts'],
+        tasks: ['typescript', 'tslint'],
         options: {
-          livereload: '<%= connect.options.livereload %>'
+            spawn: false,
+            livereload: '<%= connect.options.livereload %>'
         }
       },
       jsTest: {
@@ -348,9 +361,23 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
-    }
-  });
+    },
 
+    typescript: {
+      base: {
+        src: ['<%= yeoman.app %>/typescripts/**/*.ts'],
+        dest: '<%= yeoman.app %>/scripts/',
+        options: {
+          module: 'amd', //or commonjs
+          target: 'es5', //or es3
+          basePath: '<%= yeoman.app %>/typescripts/',
+          sourceMap: true,
+          declaration: true
+        }
+      }
+    }
+
+  });
 
   grunt.registerTask('serve', 'Compile then start a connect web server', function (target) {
     if (target === 'dist') {
@@ -359,11 +386,12 @@ module.exports = function (grunt) {
 
     grunt.task.run([
       'clean:server',
+      'typescript',
+      'tslint',
       'wiredep',
-      'concurrent:server',
+      'concurrent:dist',
       'autoprefixer',
       'connect:livereload',
-      /*'newer:jshint'*/
       'watch'
     ]);
   });
@@ -375,6 +403,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
+    'typescript',
     'concurrent:test',
     'autoprefixer',
     'connect:test',
@@ -383,6 +412,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
+    'typescript',
+    'tslint',
     'wiredep',
     'useminPrepare',
     'concurrent:dist',
@@ -392,13 +423,11 @@ module.exports = function (grunt) {
     'copy:dist',
     'cssmin',
     'uglify',
-    /*'filerev',*/
     'usemin',
     'htmlmin'
   ]);
 
   grunt.registerTask('default', [
-    'newer:jshint',
     /*
      * Since we dont have test (or up to date) there is no reason to keep this task
      * I am commented this, but can be changed in the future (if someone want to implement front tests).
