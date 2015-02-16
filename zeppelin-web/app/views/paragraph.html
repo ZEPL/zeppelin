@@ -25,7 +25,7 @@ limitations under the License.
            ng-model="paragraph.title"
            ng-show="showTitleEditor"
            ng-delete="showTitleEditor = false"
-           ng-enter="setTitle(); showTitleEditor = false"/>
+           ng-enter="commitParagraph(); showTitleEditor = false"/>
     <div ng-click="showTitleEditor = !asIframe && !viewOnly"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
@@ -34,7 +34,8 @@ limitations under the License.
 
   <div>
     <div ng-show="!paragraph.config.editorHide">
-      <div id="{{paragraph.id}}_editor"
+      <div ng-controller="ParagraphEditorCtrl"
+           id="{{$parent.paragraph.id}}_editor"
            style="opacity: 1;"
            class="editor"
            ui-ace="{
@@ -43,23 +44,23 @@ limitations under the License.
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
-           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
+           ng-class="{'disable': isRunningOrPending()}">
       </div>
     </div>
 
     <div id="{{paragraph.id}}_runControl" class="runControl">
-      <div ng-if="(getProgress()<=0 || getProgress()>=100) && (paragraph.status=='RUNNING' )">
+      <div ng-if="(currentProgress<=0 || currentProgress>=100) && (paragraph.status=='RUNNING' )">
         <div id="{{paragraph.id}}_progress"
              class="progress">
             <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
           <span class="sr-only"></span>
         </div>
       </div>
-      <div ng-if="getProgress()>0 && getProgress()<100 && paragraph.status=='RUNNING'">
+      <div ng-if="currentProgress>0 && currentProgress<100 && paragraph.status=='RUNNING'">
         <div id="{{paragraph.id}}_progress"
              class="progress">
-          <div class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
-          <span class="sr-only">{{getProgress()}}%</span>
+          <div class="progress-bar" role="progressbar" style="width:{{currentProgress}}%;"></div>
+          <span class="sr-only">{{currentProgress}}%</span>
         </div>
       </div>
     </div>
@@ -70,21 +71,21 @@ limitations under the License.
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loadForm(formulaire, paragraph.settings.params)">
-        <label class="col-sm-1 control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
+        <label class="col-sm-1 control-label input-sm" ng-class="{'disable': isRunningOrPending()}">{{formulaire.name}}</label>
         <div class="col-sm-3">
           <input class="form-control input-sm"
                  ng-if="!paragraph.settings.forms[formulaire.name].options"
-                 ng-enter="runParagraph(getEditorValue())"
+                 ng-enter="runParagraph()"
                  ng-model="paragraph.settings.params[formulaire.name]"
-                 ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
+                 ng-class="{'disable': isRunningOrPending()}"
                  name="{{formulaire.name}}">
           </input>
 
           <select class="form-control input-sm"
                  ng-if="paragraph.settings.forms[formulaire.name].options"
-                 ng-change="runParagraph(getEditorValue())"
+                 ng-change="runParagraph()"
                  ng-model="paragraph.settings.params[formulaire.name]"
-                 ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
+                 ng-class="{'disable': isRunningOrPending()}"
                  name="{{formulaire.name}}"
                  ng-options="option.value as (option.displayName||option.value) for option in paragraph.settings.forms[formulaire.name].options"
                  >
@@ -101,211 +102,24 @@ limitations under the License.
     </form>
 
     <!-- Rendering -->
-    <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
-      <div id="{{paragraph.id}}_switch"
-           ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
-           class="btn-group"
-           style='margin-bottom: 10px;'>
-        <button type="button" class="btn btn-default btn-sm"
-                ng-class="{'active': isGraphMode('table')}"
-                ng-click="setGraphMode('table', true)" ><i class="fa fa-table"></i>
-        </button>
-        <button type="button" class="btn btn-default btn-sm"
-                ng-class="{'active': isGraphMode('multiBarChart')}"
-                ng-click="setGraphMode('multiBarChart', true)"><i class="fa fa-bar-chart"></i>
-        </button>
-        <button type="button" class="btn btn-default btn-sm"
-                ng-class="{'active': isGraphMode('pieChart')}"
-                ng-click="setGraphMode('pieChart', true)"><i class="fa fa-pie-chart"></i>
-        </button>
-        <button type="button" class="btn btn-default btn-sm"
-                ng-class="{'active': isGraphMode('stackedAreaChart')}"
-                ng-click="setGraphMode('stackedAreaChart', true)"><i class="fa fa-area-chart"></i>
-        </button>
-        <button type="button" class="btn btn-default btn-sm"
-                ng-class="{'active': isGraphMode('lineChart')}"
-                ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
-        </button>
-      </div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
-            style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
-        <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
-           ng-click="toggleGraphOption()">
-          settings <span class="fa fa-caret-up"></span>
-        </a>
-        <a class="btnText" ng-if="!paragraph.config.graph.optionOpen"
-           ng-click="toggleGraphOption()" >
-          settings <span class="fa fa-caret-down"></span>
-        </a>
-      </span>
-
-      <div class="option lightBold" style="overflow: visible;"
-         ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
-         && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
-        All fields:
-        <div class="allFields row">
-          <ul class="noDot">
-            <li class="liVertical" ng-repeat="col in paragraph.result.columnNames">
-              <div class="btn btn-default btn-xs"
-                   data-drag="true"
-                   data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
-                   ng-model="paragraph.result.columnNames"
-                   jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
-                 {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <div class="row">
-          <div class="col-md-4">
-            <span class="columns lightBold">
-              Keys
-              <ul data-drop="true"
-                  ng-model="paragraph.config.graph.keys"
-                  jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
-                  class="list-unstyled">
-                <li ng-repeat="item in paragraph.config.graph.keys">
-                  <button class="btn btn-primary btn-xs">
-                    {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
-                  </button>
-                </li>
-              </ul>
-            </span>
-          </div>
-          <div class="col-md-4">
-            <span class="columns lightBold">
-              Groups
-              <ul data-drop="true"
-                  ng-model="paragraph.config.graph.groups"
-                  jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
-                  class="list-unstyled">
-                <li ng-repeat="item in paragraph.config.graph.groups">
-                  <button class="btn btn-success btn-xs">
-                    {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionGroups($index)"></span>
-                  </button>
-                </li>
-              </ul>
-            </span>
-          </div>
-          <div class="col-md-4">
-            <span class="columns lightBold">
-              Values
-              <ul data-drop="true"
-                  ng-model="paragraph.config.graph.values"
-                  jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
-                  class="list-unstyled">
-                <li ng-repeat="item in paragraph.config.graph.values">
-                  <div class="btn-group">
-                    <div class="btn btn-info btn-xs dropdown-toggle"
-                         type="button"
-                         data-toggle="dropdown">
-                      {{item.name | limitTo: 30}}{{item.name.length > 30 ? '...' : ''}}
-                      <font style="color:#EEEEEE;"><span class="lightBold" style="text-transform: uppercase;">{{item.aggr}}</span></font>
-                      <span class="fa fa-close" ng-click="removeGraphOptionValues($index)"></span>
-                    </div>
-                    <ul class="dropdown-menu" role="menu">
-                      <li ng-click="setGraphOptionValueAggr($index, 'sum')"><a>sum</a></li>
-                      <li ng-click="setGraphOptionValueAggr($index, 'count')"><a>count</a></li>
-                      <li ng-click="setGraphOptionValueAggr($index, 'avg')"><a>avg</a></li>
-                      <li ng-click="setGraphOptionValueAggr($index, 'min')"><a>min</a></li>
-                      <li ng-click="setGraphOptionValueAggr($index, 'max')"><a>max</a></li>
-                    </ul>
-                  </div>
-                </li>
-              </ul>
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-
-      <div id="p{{paragraph.id}}_graph"
-           class="graphContainer"
-           ng-class="{'noOverflow': getGraphMode()=='table'}"
-           ng-if="getResultType()=='TABLE'"
-           allowresize="{{!asIframe && !viewOnly}}"
-           resizable on-resize="setGraphHeight();">
-
-        <div ng-if="getGraphMode()=='table'"
-             id="p{{paragraph.id}}_table"
-             class="table">
-        </div>
-
-        <div ng-if="getGraphMode()=='multiBarChart'"
-             id="p{{paragraph.id}}_multiBarChart">
-          <svg></svg>
-        </div>
-
-        <div ng-if="getGraphMode()=='pieChart'"
-             id="p{{paragraph.id}}_pieChart">
-          <svg></svg>
-        </div>
-
-        <div ng-if="getGraphMode()=='stackedAreaChart'"
-             id="p{{paragraph.id}}_stackedAreaChart">
-          <svg></svg>
-        </div>
-
-        <div ng-if="getGraphMode()=='lineChart'"
-             id="p{{paragraph.id}}_lineChart">
-          <svg></svg>
-        </div>
-      </div>
-
-      <div id="{{paragraph.id}}_comment"
-           class="text"
-           ng-if="getResultType()=='TABLE' && paragraph.result.comment"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-bind-html="paragraph.result.comment">
-      </div>
-
-      <div id="{{paragraph.id}}_text"
-           class="text"
-           ng-if="paragraph.result.type == 'TEXT'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-bind="paragraph.result.msg">
-      </div>
-
-      <div id="p{{paragraph.id}}_html"
-           ng-if="paragraph.result.type == 'HTML'"
-           ng-Init="loadResultType(paragraph.result)">
-      </div>
-
-      <img id="{{paragraph.id}}_img"
-           ng-if="paragraph.result.type == 'IMG'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
-      </img>
-
-      <div id="{{paragraph.id}}_error"
-           class="error"
-           ng-if="paragraph.status == 'ERROR'"
-           ng-bind="paragraph.errorMessage">
-      </div>
-
-      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()">
-      </div>
-    </div>
+    <div ng-include src="'views/paragraph_result.html'"></div>
   </div>
   <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
-
     <span>
       {{paragraph.status}}
     </span>
 
     <span ng-if="paragraph.status=='RUNNING'">
-      {{getProgress()}}%
+      {{currentProgress}}%
     </span>
 
     <!-- Run / Cancel button -->
     <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph"
-          ng-click="runParagraph(getEditorValue())"
-          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
+          ng-click="runParagraph()"
+          ng-show="!isRunningOrPending()"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"
-          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+          ng-show="isRunningOrPending()"></span>
 
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
           ng-click="toggleEditor()"></span>
@@ -323,7 +137,7 @@ limitations under the License.
           <form style="display:inline; margin-left:5px;">
             <select ng-model="paragraph.config.colWidth"
                     class="selectpicker"
-                    ng-change="changeColWidth()"
+                    ng-change="commitParagraph()"
                     ng-options="col for col in colWidthOption"></select>
           </form>
           </a>
@@ -343,10 +157,10 @@ limitations under the License.
         <li>
           <!-- paragraph handler -->
           <a class="fa fa-font" style="cursor:pointer"
-             ng-click="hideTitle()"
+             ng-click="paragraph.config.title = false; commitParagraph()"
              ng-show="paragraph.config.title"> Hide title</a>
           <a class="fa fa-font" style="cursor:pointer"
-             ng-click="showTitle()"
+             ng-click="paragraph.config.title = true; commitParagraph()"
              ng-show="!paragraph.config.title"> Show title</a>
         </li>
 

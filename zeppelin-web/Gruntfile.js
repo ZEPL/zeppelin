@@ -40,6 +40,13 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         }
       },
+      scripts: {
+        files: ['<%= yeoman.app %>/scripts/ts/**/*.ts'],
+        tasks: ['typescript'],
+        options: {
+            spawn: false
+        }
+      },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: ['newer:jshint:test', 'karma']
@@ -348,9 +355,23 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
-    }
-  });
+    },
 
+    typescript: {
+      base: {
+        src: ['<%= yeoman.app %>/typescripts/**/*.ts'],
+        dest: '<%= yeoman.app %>/scripts/',
+        options: {
+          module: 'amd', //or commonjs
+          target: 'es5', //or es3
+          basePath: '<%= yeoman.app %>/typescripts/',
+          sourceMap: true,
+          declaration: true
+        }
+      }
+    }
+
+  });
 
   grunt.registerTask('serve', 'Compile then start a connect web server', function (target) {
     if (target === 'dist') {
@@ -359,8 +380,9 @@ module.exports = function (grunt) {
 
     grunt.task.run([
       'clean:server',
+      'typescript',
       'wiredep',
-      'concurrent:server',
+      'concurrent:dist',
       'autoprefixer',
       'connect:livereload',
       /*'newer:jshint'*/
@@ -375,6 +397,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
+    'typescript',
     'concurrent:test',
     'autoprefixer',
     'connect:test',
@@ -383,6 +406,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
+    'typescript',
     'wiredep',
     'useminPrepare',
     'concurrent:dist',
