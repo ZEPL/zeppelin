@@ -204,50 +204,49 @@ public class SparkInterpreter extends Interpreter {
   public SparkContext createSparkContext() {
 
     // This synchronized statement on the class level is for the case when
-    // different threads call this method on different objects. It also deals
-    // with different threads calling this method on the same object
+    // different threads call this method on different objects.
     synchronized (getClass()) {
       if (singletonSparkContext != null) {
         return singletonSparkContext;
       }
-    }
 
-    System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
+      System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
 
-    String execUri = System.getenv("SPARK_EXECUTOR_URI");
-    String[] jars = SparkILoop.getAddedJars();
-    SparkConf conf =
-        new SparkConf()
-            .setMaster(getProperty("master"))
-            .setAppName(getProperty("spark.app.name"))
-            .setJars(jars)
-            .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
+      String execUri = System.getenv("SPARK_EXECUTOR_URI");
+      String[] jars = SparkILoop.getAddedJars();
+      SparkConf conf =
+          new SparkConf()
+              .setMaster(getProperty("master"))
+              .setAppName(getProperty("spark.app.name"))
+              .setJars(jars)
+              .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
 
-    if (execUri != null) {
-      conf.set("spark.executor.uri", execUri);
-    }
-    if (System.getenv("SPARK_HOME") != null) {
-      conf.setSparkHome(System.getenv("SPARK_HOME"));
-    }
+      if (execUri != null) {
+        conf.set("spark.executor.uri", execUri);
+      }
+      if (System.getenv("SPARK_HOME") != null) {
+        conf.setSparkHome(System.getenv("SPARK_HOME"));
+      }
 
-    conf.set("spark.scheduler.mode", "FAIR");
+      conf.set("spark.scheduler.mode", "FAIR");
 
-    Properties intpProperty = getProperty();
+      Properties intpProperty = getProperty();
 
-    for (Object k : intpProperty.keySet()) {
-      String key = (String) k;
-      if (key.startsWith("spark.")) {
-        Object value = intpProperty.get(key);
-        if (value != null
-            && value instanceof String
-            && !((String) value).trim().isEmpty()) {
-          conf.set(key, (String) value);
+      for (Object k : intpProperty.keySet()) {
+        String key = (String) k;
+        if (key.startsWith("spark.")) {
+          Object value = intpProperty.get(key);
+          if (value != null
+              && value instanceof String
+              && !((String) value).trim().isEmpty()) {
+            conf.set(key, (String) value);
+          }
         }
       }
-    }
 
-    SparkContext sparkContext = new SparkContext(conf);
-    return sparkContext;
+      singletonSparkContext = new SparkContext(conf);
+      return singletonSparkContext;
+    }
   }
 
   private static String getSystemDefault(
