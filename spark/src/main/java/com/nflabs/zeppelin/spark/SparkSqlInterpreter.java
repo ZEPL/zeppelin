@@ -119,8 +119,10 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     SparkContext sc = sqlc.sparkContext();
+
+    String poolName = "fair_pool_" + getProperty("zeppelin.interpreter.name");
     if (concurrentSQL()) {
-      sc.setLocalProperty("spark.scheduler.pool", "fair");
+      sc.setLocalProperty("spark.scheduler.pool", poolName);
     } else {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }

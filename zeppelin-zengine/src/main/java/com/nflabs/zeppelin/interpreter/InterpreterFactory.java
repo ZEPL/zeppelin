@@ -125,6 +125,7 @@ public class InterpreterFactory {
 
             boolean found = false;
             Properties p = new Properties();
+            p.put("zeppelin.interpreter.name", groupName);
             for (RegisteredInterpreter info : infos) {
               if (found == false && info.getClassName().equals(className)) {
                 found = true;
@@ -195,6 +196,7 @@ public class InterpreterFactory {
       String group = (String) set.get("group");
       Properties properties = new Properties();
       properties.putAll((Map<String, String>) set.get("properties"));
+      properties.put("zeppelin.interpreter.name", name);
 
       InterpreterGroup interpreterGroup = createInterpreterGroup(group, properties);
       InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, interpreterGroup);
@@ -203,7 +205,6 @@ public class InterpreterFactory {
 
     this.interpreterBindings = bindings;
   }
-
 
   private void saveToFile() throws IOException {
     String jsonString;
