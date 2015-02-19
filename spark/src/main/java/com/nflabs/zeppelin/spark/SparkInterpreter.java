@@ -67,7 +67,13 @@ import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 public class SparkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
+  private static SparkContext singletonSparkContext;
+  private static int numSparkContextHandles;
+
   static {
+    singletonSparkContext = null;
+    numSparkContextHandles = 0;
+
     Interpreter.register(
         "spark",
         "spark",
@@ -84,8 +90,8 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault(null, "spark.cores.max", ""),
                 "Total number of cores to use. Empty value uses all available core.")
             .add("args", "", "spark commandline args").build());
-
   }
+
 
   private ZeppelinContext z;
   private SparkILoop interpreter;
@@ -111,16 +117,42 @@ public class SparkInterpreter extends Interpreter {
   public SparkInterpreter(Properties property, SparkContext sc) {
     this(property);
 
+    // Only one SparkContext per JVM
+    synchronized (getClass()) {
+      singletonSparkContext = sc;
+    }
+
     this.sc = sc;
     env = SparkEnv.get();
     sparkListener = setupListeners(this.sc);
   }
 
   public synchronized SparkContext getSparkContext() {
+
+    // Only one SparkContext can exist per JVM because a SparkContext
+    // uses states global to the JVM
+    synchronized (getClass()) {
+      if (singletonSparkContext == null) {
+        System.err.println("singleSparkContext is null. creating one from getSparkContext");
+        singletonSparkContext = createSparkContext();
+      }
+    }
+
     if (sc == null) {
-      sc = createSparkContext();
+      sc = singletonSparkContext;
       env = SparkEnv.get();
       sparkListener = setupListeners(sc);
+
+      // Create a pool for each Interpreter
+      int minimumShare = 0;
+      int weight = 1;
+      String poolName = "fair_pool_" + getProperty("zeppelin.interpreter.name");
+      if (sc.getPoolForName(poolName).isEmpty()) {
+        Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FIFO();
+        Pool pool = new Pool(poolName, schedulingMode, minimumShare, weight);
+        sc.taskScheduler().rootPool().addSchedulable(pool);
+        sc.setLocalProperty("spark.scheduler.pool", poolName);
+      }
     }
     return sc;
   }
@@ -172,41 +204,51 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public SparkContext createSparkContext() {
-    System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
 
-    String execUri = System.getenv("SPARK_EXECUTOR_URI");
-    String[] jars = SparkILoop.getAddedJars();
-    SparkConf conf =
-        new SparkConf()
-            .setMaster(getProperty("master"))
-            .setAppName(getProperty("spark.app.name"))
-            .setJars(jars)
-            .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
+    // This synchronized statement on the class level is for the case when
+    // different threads call this method on different objects.
+    synchronized (getClass()) {
+      if (singletonSparkContext != null) {
+        return singletonSparkContext;
+      }
 
-    if (execUri != null) {
-      conf.set("spark.executor.uri", execUri);
-    }
-    if (System.getenv("SPARK_HOME") != null) {
-      conf.setSparkHome(System.getenv("SPARK_HOME"));
-    }
-    conf.set("spark.scheduler.mode", "FAIR");
+      System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
 
-    Properties intpProperty = getProperty();
+      String execUri = System.getenv("SPARK_EXECUTOR_URI");
+      String[] jars = SparkILoop.getAddedJars();
+      SparkConf conf =
+          new SparkConf()
+              .setMaster(getProperty("master"))
+              .setAppName(getProperty("spark.app.name"))
+              .setJars(jars)
+              .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
 
-    for (Object k : intpProperty.keySet()) {
-      String key = (String) k;
-      if (key.startsWith("spark.")) {
-        Object value = intpProperty.get(key);
-        if (value != null
-            && value instanceof String
-            && !((String) value).trim().isEmpty()) {
-          conf.set(key, (String) value);
+      if (execUri != null) {
+        conf.set("spark.executor.uri", execUri);
+      }
+      if (System.getenv("SPARK_HOME") != null) {
+        conf.setSparkHome(System.getenv("SPARK_HOME"));
+      }
+
+      conf.set("spark.scheduler.mode", "FAIR");
+
+      Properties intpProperty = getProperty();
+
+      for (Object k : intpProperty.keySet()) {
+        String key = (String) k;
+        if (key.startsWith("spark.")) {
+          Object value = intpProperty.get(key);
+          if (value != null
+              && value instanceof String
+              && !((String) value).trim().isEmpty()) {
+            conf.set(key, (String) value);
+          }
         }
       }
-    }
 
-    SparkContext sparkContext = new SparkContext(conf);
-    return sparkContext;
+      singletonSparkContext = new SparkContext(conf);
+      return singletonSparkContext;
+    }
   }
 
   private static String getSystemDefault(
@@ -323,13 +365,9 @@ public class SparkInterpreter extends Interpreter {
 
     completor = new SparkJLineCompletion(intp);
 
-    sc = getSparkContext();
-    if (sc.getPoolForName("fair").isEmpty()) {
-      Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
-      int minimumShare = 0;
-      int weight = 1;
-      Pool pool = new Pool("fair", schedulingMode, minimumShare, weight);
-      sc.taskScheduler().rootPool().addSchedulable(pool);
+    synchronized (getClass()) {
+      sc = getSparkContext();
+      numSparkContextHandles++;
     }
 
     sqlc = getSQLContext();
@@ -636,9 +674,17 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    sc.stop();
-    sc = null;
+    // In case different notes are using the same interpreter (and SparkContext)
+    // don't stop the SparkContext yet.
+    synchronized (getClass()) {
+      numSparkContextHandles--;
+      if (numSparkContextHandles == 0) {
+        singletonSparkContext.stop();
+        singletonSparkContext = null;
+      }
+    }
 
+    sc = null;
     intp.close();
   }
 
@@ -657,3 +703,4 @@ public class SparkInterpreter extends Interpreter {
         SparkInterpreter.class.getName() + this.hashCode());
   }
 }
+
