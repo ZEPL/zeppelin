@@ -68,9 +68,11 @@ public class SparkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   private static SparkContext singletonSparkContext;
+  private static int numSparkContextHandles;
 
   static {
     singletonSparkContext = null;
+    numSparkContextHandles = 0;
 
     Interpreter.register(
         "spark",
@@ -363,7 +365,10 @@ public class SparkInterpreter extends Interpreter {
 
     completor = new SparkJLineCompletion(intp);
 
-    sc = getSparkContext();
+    synchronized (getClass()) {
+      sc = getSparkContext();
+      numSparkContextHandles++;
+    }
 
     sqlc = getSQLContext();
 
@@ -670,11 +675,14 @@ public class SparkInterpreter extends Interpreter {
   @Override
   public void close() {
     // In case different notes are using the same interpreter (and SparkContext)
-    // don't stop the SparkContext yet. If multi-process interpreters are
-    // implemented, then these lines can be uncommented again
-    // 
-    // sc.stop();
-    // sc = null;
+    // don't stop the SparkContext yet.
+    synchronized (getClass()) {
+      numSparkContextHandles--;
+      if (numSparkContextHandles == 0) {
+        sc.stop();
+        sc = null;
+      }
+    }
 
     intp.close();
   }
