@@ -679,11 +679,12 @@ public class SparkInterpreter extends Interpreter {
     synchronized (getClass()) {
       numSparkContextHandles--;
       if (numSparkContextHandles == 0) {
-        sc.stop();
-        sc = null;
+        singletonSparkContext.stop();
+        singletonSparkContext = null;
       }
     }
 
+    sc = null;
     intp.close();
   }
 
