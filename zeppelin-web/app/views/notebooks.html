@@ -148,20 +148,6 @@ limitations under the License.
     </div>
     <br />
     <div>
-      <h5>Markdown interpreter</h5>
-      <div>
-        <p class="fa fa-pencil-square-o dropdown"> Code block syntax highlighting style
-          <form style="display:inline; margin-left:5px;">
-            <select ng-model="note.config.codeHighlightStyle"
-                    class="selectpicker"
-                    ng-change="changeCodeHighlightStyle(note.config.codeHighlightStyle)"
-                    ng-options="style for style in codeHighlightStyles"></select>
-          </form>
-        </p>
-      </div>
-    </div>
-    <br />
-    <div>
       <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
       <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
     </div>

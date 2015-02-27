@@ -324,16 +324,6 @@ module.exports = function (grunt) {
           cwd: 'bower_components/jquery-ui/themes/base/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/styles/images'
-        }, {
-          expand: true,
-          cwd: 'bower_components/highlightjs/styles',
-          src: '{,*/}*.css',
-          dest: '.tmp/styles_nonconcat/styles/highlightjs'
-        }, {
-          expand: true,
-          cwd: 'bower_components/highlightjs/styles',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '<%= yeoman.dist %>/styles/highlightjs'
         }]
       },
       styles: {

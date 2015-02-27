@@ -29,7 +29,6 @@ angular.module('zeppelinWebApp')
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
   $scope.looknfeel = 'default';
-  $scope.codeHighlightStyle = 'GitHub';
 
   var init = function() {
     $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
@@ -108,13 +107,6 @@ angular.module('zeppelinWebApp')
   $rootScope.$on('setLookAndFeel', function(event, data) {
     if (!event.defaultPrevented && data && data !== '') {
       $scope.looknfeel = data;
-      event.preventDefault();
-    }
-  });
-
-  $rootScope.$on('changeCodeHighlightStyle', function(event, data) {
-    if (!event.defaultPrevented && data && data !== '') {
-      $scope.codeHighlightStyle = data;
       event.preventDefault();
     }
   });

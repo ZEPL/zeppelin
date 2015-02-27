@@ -58,14 +58,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return value;
   };
 
-  var getCodeHighlightStyles = function() {
-    var allStyles = jQuery.makeArray($('link[title]'));
-    return jQuery.map( allStyles, function(style, index) {
-      return style.title;
-    });
-  };
-  $scope.codeHighlightStyles = getCodeHighlightStyles();
-
   /** Init the new controller */
   var initNotebook = function() {
     $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $routeParams.noteId}});
@@ -141,18 +133,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.setConfig();
   };
 
-  $scope.changeCodeHighlightStyle = function(style) {
-    if(style) {
-      $scope.note.config.codeHighlightStyle = style;
-      $scope.setConfig();
-      $rootScope.$emit('changeCodeHighlightStyle', $scope.note.config.codeHighlightStyle);
-
-      $('link[title]').each(function(i, link) {
-        link.disabled = (link.title !== style);
-      });
-    }
-  };
-
   /** Set cron expression for this note **/
   $scope.setCronScheduler = function(cronExpr) {
     $scope.note.config.cron = cronExpr;
@@ -190,7 +170,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       updateNote(note);
     }
     initializeLookAndFeel();
-    initializeCodeHighlightStyle();
     //open interpreter binding setting when there're none selected
     getInterpreterBindings(getInterpreterBindingsCallBack);
   });
@@ -203,18 +182,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
     }
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
-  };
-
-  var initializeCodeHighlightStyle = function() {
-    if (!$scope.note.config.codeHighlightStyle) {
-      $scope.note.config.codeHighlightStyle = 'GitHub';
-    }
-
-   var style = $scope.note.config.codeHighlightStyle;
-    $('link[title]').each(function(i, link) {
-      link.disabled = (link.title !== style);
-    });
-    $rootScope.$emit('changeCodeHighlightStyle', style);
   };
 
   var cleanParagraphExcept = function(paragraphId, note) {
@@ -424,7 +391,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.openSetting = function() {
     $scope.showSetting = true;
-    $scope.note.config.codeHighlightStyleOrig = $scope.note.config.codeHighlightStyle;
     getInterpreterBindings();
   };
 
@@ -435,7 +401,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         return;
       }
     }
-    $scope.changeCodeHighlightStyle($scope.note.config.codeHighlightStyleOrig);
     $scope.showSetting = false;
   };
 
@@ -468,8 +433,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   var isSettingDirty = function() {
-    if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig) &&
-        $scope.note.config.codeHighlightStyle === $scope.note.config.codeHighlightStyleOrig) {
+    if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig) {
       return false;
     } else {
       return true;
