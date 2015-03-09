@@ -65,6 +65,8 @@ angular.module('zeppelinWebApp')
       if ($('#p'+$scope.paragraph.id+'_html').length) {
         try {
           $('#p'+$scope.paragraph.id+'_html').html($scope.paragraph.result.msg);
+
+          $('#p'+$scope.paragraph.id+'_html').find('pre code').each(function(i, e) { hljs.highlightBlock(e); });
         } catch(err) {
           console.log('HTML rendering error %o', err);
         }
@@ -205,6 +207,17 @@ angular.module('zeppelinWebApp')
         }
       } else if (newType === 'HTML') {
         $scope.renderHtml();
+      }
+
+      var code = $scope.dirtyText;
+      if (code) {
+        if (code.startsWith('%sql')) {
+          $scope.editor.getSession().setMode(editorMode.sql);
+        } else if ( code.startsWith('%md')) {
+          $scope.editor.getSession().setMode(editorMode.markdown);
+        } else {
+          $scope.editor.getSession().setMode(editorMode.scala);
+        }
       }
     }
   });
@@ -391,6 +404,7 @@ angular.module('zeppelinWebApp')
       $scope.editor.renderer.setShowGutter(false);
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.focus();
+      $scope.editor.setTheme('ace/theme/github');
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
       setEditorHeight(_editor.container.id, hight);
 
@@ -533,6 +547,7 @@ angular.module('zeppelinWebApp')
   var setEditorHeight = function(id, height) {
     $('#' + id).height(height.toString() + 'px');
   };
+
 
   $scope.getEditorValue = function() {
     return $scope.editor.getValue();

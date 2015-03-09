@@ -58,6 +58,7 @@ module.exports = function (grunt) {
         files: [
           '<%= yeoman.app %>/{,*/}*.html',
           '.tmp/styles/{,*/}*.css',
+          '.tmp/styles_noncocat/{,*/}*.css',
           '<%= yeoman.app %>/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
         ]
       }
@@ -166,6 +167,7 @@ module.exports = function (grunt) {
       },
       app: {
         src: ['<%= yeoman.app %>/index.html'],
+        exclude: [ 'bower_components/highlightjs/styles/default.css' ],
         ignorePath:  /\.\.\//
       }
     },
@@ -214,15 +216,19 @@ module.exports = function (grunt) {
     // By default, your `index.html`'s <!-- Usemin block --> will take care of
     // minification. These next options are pre-configured if you do not wish
     // to use the Usemin blocks.
-    // cssmin: {
-    //   dist: {
-    //     files: {
-    //       '<%= yeoman.dist %>/styles/main.css': [
-    //         '.tmp/styles/{,*/}*.css'
-    //       ]
-    //     }
-    //   }
-    // },
+
+    // Explicit processing for special css directories
+    cssmin: {
+       dist: {
+         files: [{
+           expand: true,
+           dot: true,
+           cwd: '.tmp/styles_nonconcat/',
+           dest: '<%= yeoman.dist %>',
+           src: 'styles/{,*/}*.css'
+         }]
+       }
+    },
     // uglify: {
     //   dist: {
     //     files: {
@@ -301,7 +307,7 @@ module.exports = function (grunt) {
           expand : true,
           dot : true,
           cwd: '<%= yeoman.app %>',
-          dest: '<%= yeoman.dist %>',
+          dest: '.tmp/styles_nonconcat/',
           src: ['styles/looknfeel/*']
         }, {
           expand: true,

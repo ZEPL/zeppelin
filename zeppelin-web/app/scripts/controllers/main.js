@@ -111,5 +111,4 @@ angular.module('zeppelinWebApp')
       event.preventDefault();
     }
   });
-
 });
