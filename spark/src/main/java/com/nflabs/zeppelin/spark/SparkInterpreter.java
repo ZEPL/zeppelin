@@ -449,33 +449,27 @@ public class SparkInterpreter extends Interpreter {
    * Interpret a single line.
    */
   @Override
-  public InterpreterResult interpret(String line, InterpreterContext context) {
-    z.setInterpreterContext(context);
-    if (line == null || line.trim().length() == 0) {
-      return new InterpreterResult(Code.SUCCESS);
-    }
-    return interpret(line.split("\n"), context);
-  }
-
-  public InterpreterResult interpret(String[] lines, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context) {
     synchronized (this) {
+      z.setInterpreterContext(context);
+      if (st == null || st.trim().length() == 0) {
+        return new InterpreterResult(Code.SUCCESS);
+      }
+
       sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-      InterpreterResult r = interpretInput(lines);
+      InterpreterResult r = interpretInput(st);
       sc.clearJobGroup();
       return r;
     }
   }
-
-  public InterpreterResult interpretInput(String[] lines) {
+  
+  public InterpreterResult interpretInput(String st) {
     SparkEnv.set(env);
 
     // add print("") to make sure not finishing with comment
     // see https://github.com/NFLabs/zeppelin/issues/151
-    String[] linesToRun = new String[lines.length + 1];
-    for (int i = 0; i < lines.length; i++) {
-      linesToRun[i] = lines[i];
-    }
-    linesToRun[lines.length] = "print(\"\")";
+    String printEmptyString = "print(\"\")";
+    String[] linesToRun = new String[] {st, printEmptyString};
 
     Console.setOut((java.io.PrintStream) binder.get("out"));
     out.reset();
@@ -509,7 +503,6 @@ public class SparkInterpreter extends Interpreter {
       return new InterpreterResult(r, out.toString());
     }
   }
-
 
   @Override
   public void cancel(InterpreterContext context) {
