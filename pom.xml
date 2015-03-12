@@ -1290,6 +1290,15 @@
 				<jets3t.version>0.9.0</jets3t.version>
 			</properties>
 		</profile>
+		
+		<profile>
+			<id>hadoop-2.6</id>
+			<properties>
+				<hadoop.version>2.6.0</hadoop.version>
+				<protobuf.version>2.5.0</protobuf.version>
+				<jets3t.version>0.9.0</jets3t.version>
+			</properties>
+		</profile>
 
                 <profile>
                         <id>mapr3</id>

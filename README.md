@@ -58,6 +58,10 @@ Yarn (Hadoop 2.2.x and later)
 ```
 mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
 ```
+Apache Bigtop (version 0.9+, Hadoop 2.6.0 and Spark 1.2.1)
+```
+mvn clean package -Pspark-1.2 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+```
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
