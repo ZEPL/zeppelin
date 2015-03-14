@@ -67,6 +67,11 @@ if [[ -z "$ZEPPELIN_INTERPRETER_DIR" ]]; then
   export ZEPPELIN_INTERPRETER_DIR="${ZEPPELIN_HOME}/interpreter"
 fi
 
+ls ${ZEPPELIN_HOME}/interpreter/spark/spark-core_2.10* | grep 'spark[-]core_2[.]10[-]1[.]2' > /dev/null 2> /dev/null
+if [[ $? -eq 0 ]]; then
+   export SPARK_1_2_WORKAROUND
+fi
+
 if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
   . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
 fi
@@ -80,7 +85,12 @@ function addJarInDir(){
     done
   fi
 }
-  
+
+if [[ -z "${SPARK_1_2_WORKAROUND}" ]]; then
+  addJarInDir "${ZEPPELIN_HOME}/interpreter/spark"
+  addJarInDir "${ZEPPELIN_HOME}/interpreter/sh"
+  addJarInDir "${ZEPPELIN_HOME}/interpreter/md"
+fi
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
@@ -112,7 +122,7 @@ export ZEPPELIN_CLASSPATH
 export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
-# Text encoding for 
+# Text encoding for
 # read/write job into files,
 # receiving/displaying query/result.
 if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
