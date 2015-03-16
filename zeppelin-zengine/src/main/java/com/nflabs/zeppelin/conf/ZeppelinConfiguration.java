@@ -358,7 +358,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "com.nflabs.zeppelin.spark.SparkSqlInterpreter,"
         + "com.nflabs.zeppelin.spark.DepInterpreter,"
         + "com.nflabs.zeppelin.markdown.Markdown,"
-        + "com.nflabs.zeppelin.shell.ShellInterpreter"),
+        + "com.nflabs.zeppelin.shell.ShellInterpreter,"
+        + "com.nflabs.zeppelin.tajo.TajoInterpreter"),
         ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
         ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
         ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
