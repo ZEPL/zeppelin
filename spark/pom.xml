@@ -30,10 +30,11 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-zengine</artifactId>
+      <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -85,7 +86,6 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.0.17.Final</version>
     </dependency>
 
     <dependency>
@@ -117,6 +117,12 @@
    <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-streaming-twitter_2.10</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-catalyst_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
             
@@ -240,6 +246,19 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+    
+  <profiles>
+    <profile>
+      <id>yarn</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-yarn_2.10</artifactId>
+          <version>${spark.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
   
   <build>
     <plugins>

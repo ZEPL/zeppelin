@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.server;
 
 import java.io.File;
 import java.net.URI;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -74,11 +75,13 @@ public class ZeppelinServer extends Application {
 
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
-    final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
+    //Below is commented since zeppelin-docs module is removed.
+    //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    //contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
 
     notebookServer.start();
@@ -90,6 +93,8 @@ public class ZeppelinServer extends Application {
       @Override public void run() {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
+          notebook.getInterpreterFactory().close();
+
           jettyServer.stop();
           notebookServer.stop();
         } catch (Exception e) {
@@ -98,6 +103,18 @@ public class ZeppelinServer extends Application {
         LOG.info("Bye");
       }
     });
+
+
+    // when zeppelin is started inside of ide (especially for eclipse)
+    // for graceful shutdown, input any key in console window
+    if (System.getenv("ZEPPELIN_IDENT_STRING") == null) {
+      try {
+        System.in.read();
+      } catch (IOException e) {
+      }
+      System.exit(0);
+    }
+
     jettyServer.join();
   }
 
@@ -245,7 +262,7 @@ public class ZeppelinServer extends Application {
    *
    * @return WebAppContext with swagger ui context
    */
-  private static WebAppContext setupWebAppSwagger(
+  /*private static WebAppContext setupWebAppSwagger(
       ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
@@ -261,7 +278,7 @@ public class ZeppelinServer extends Application {
     // Bind swagger-ui to the path HOST/docs
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
     return webApp;
-  }
+  }*/
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();

@@ -17,6 +17,7 @@ import org.quartz.SchedulerException;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterOption;
 import com.nflabs.zeppelin.interpreter.mock.MockInterpreter1;
 import com.nflabs.zeppelin.interpreter.mock.MockInterpreter2;
 import com.nflabs.zeppelin.notebook.repo.NotebookRepo;
@@ -55,7 +56,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter1.register("mock1", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false));
     notebookRepo = new VFSNotebookRepo(conf, notebookDir.toURI());
 		notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
 	}
@@ -88,7 +89,7 @@ public class NotebookTest implements JobListenerFactory{
 	@Test
 	public void testPersist() throws IOException, SchedulerException{
 		Note note = notebook.createNote();
-		
+
 		// run with default repl
 		Paragraph p1 = note.addParagraph();
 		p1.setText("hello world");

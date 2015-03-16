@@ -19,7 +19,11 @@
 # limitations under the License.
 #
 
-FWDIR="$(cd $(dirname "$0"); pwd)"
+if [ -L ${BASH_SOURCE-$0} ]; then
+  FWDIR=$(dirname $(readlink "${BASH_SOURCE-$0}"))
+else
+  FWDIR=$(dirname "${BASH_SOURCE-$0}")
+fi
 
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
   # Make ZEPPELIN_HOME look cleaner in logs by getting rid of the
@@ -79,6 +83,7 @@ function addJarInDir(){
   
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
@@ -99,6 +104,10 @@ if [[ ! -z "${HADOOP_HOME}" ]] && [[ -d "${HADOOP_HOME}" ]]; then
   addJarInDir "${HADOOP_HOME}"
 fi
 
+if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+  ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+fi
+
 export ZEPPELIN_CLASSPATH
 export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
@@ -114,8 +123,21 @@ if [[ -z "$ZEPPELIN_MEM" ]]; then
   export ZEPPELIN_MEM="-Xmx1024m -XX:MaxPermSize=512m"
 fi
 
-JAVA_OPTS+="${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
+JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
 export JAVA_OPTS
+
+# jvm options for interpreter process
+if [[ -z "${ZEPPELIN_INTP_JAVA_OPTS}" ]]; then
+  export ZEPPELIN_INTP_JAVA_OPTS="${ZEPPELIN_JAVA_OPTS}"
+fi
+
+if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
+  export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
+fi
+
+JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_INTP_MEM}"
+export JAVA_INTP_OPTS
+
 
 if [[ -n "${JAVA_HOME}" ]]; then
   ZEPPELIN_RUNNER="${JAVA_HOME}/bin/java"

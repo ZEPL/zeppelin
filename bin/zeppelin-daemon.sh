@@ -21,7 +21,11 @@
 # description: Start and stop daemon script for.
 #
 
-BIN=$(dirname "${BASH_SOURCE-$0}")
+if [ -L ${BASH_SOURCE-$0} ]; then
+  BIN=$(dirname $(readlink "${BASH_SOURCE-$0}"))
+else
+  BIN=$(dirname ${BASH_SOURCE-$0})
+fi
 BIN=$(cd "${BIN}">/dev/null; pwd)
 
 . "${BIN}/common.sh"
@@ -137,18 +141,32 @@ function start() {
 
 function stop() {
   local pid
+
+  # zeppelin daemon kill
   if [[ ! -f "${ZEPPELIN_PID}" ]]; then
     echo "${ZEPPELIN_NAME} is not running"
-    return 0
-  fi
-  pid=$(cat ${ZEPPELIN_PID})
-  if [[ -z "${pid}" ]]; then
-    echo "${ZEPPELIN_NAME} is not running"
   else
-    wait_for_zeppelin_to_die $pid
-    $(rm -f ${ZEPPELIN_PID})
-    action_msg "${ZEPPELIN_NAME} stop" "${SET_OK}"
+    pid=$(cat ${ZEPPELIN_PID})
+    if [[ -z "${pid}" ]]; then
+      echo "${ZEPPELIN_NAME} is not running"
+    else
+      wait_for_zeppelin_to_die $pid
+      $(rm -f ${ZEPPELIN_PID})
+      action_msg "${ZEPPELIN_NAME} stop" "${SET_OK}"
+    fi
   fi
+
+  # list all pid that used in remote interpreter and kill them
+  for f in ${ZEPPELIN_PID_DIR}/*.pid; do
+    if [[ ! -f ${f} ]]; then
+      continue;
+    fi
+
+    pid=$(cat ${f})
+    wait_for_zeppelin_to_die $pid
+    $(rm -f ${f})
+  done
+
 }
 
 function find_zeppelin_process() {

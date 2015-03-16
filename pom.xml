@@ -67,6 +67,7 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<modules>
+		<module>zeppelin-interpreter</module>
 		<module>zeppelin-zengine</module>
 		<module>spark</module>
 		<module>markdown</module>
@@ -80,6 +81,7 @@
 		<spark.version>1.1.1</spark.version>
 		<scala.version>2.10.4</scala.version>
 		<scala.binary.version>2.10</scala.binary.version>
+                <scala.macros.version>2.0.1</scala.macros.version>
 		<mesos.version>0.18.1</mesos.version>
 		<mesos.classifier>shaded-protobuf</mesos.classifier>
 		<akka.group>org.spark-project.akka</akka.group>
@@ -92,6 +94,7 @@
 		<hbase.version>0.94.6</hbase.version>
 		<zookeeper.version>3.4.5</zookeeper.version>
 		<hive.version>0.12.0</hive.version>
+                <derby.version>10.4.2.0</derby.version>
 		<parquet.version>1.4.3</parquet.version>
 		<jblas.version>1.2.3</jblas.version>
 		<jetty.version>8.1.14.v20131031</jetty.version>
@@ -100,9 +103,14 @@
 		<codahale.metrics.version>3.0.0</codahale.metrics.version>
 		<avro.version>1.7.6</avro.version>
 		<jets3t.version>0.7.1</jets3t.version>
+                <commons.math3.version>3.2</commons.math3.version>
+                <commons.httpclient.version>4.3.6</commons.httpclient.version>
+                <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
+                <snappy.version>1.0.5</snappy.version>
+                <io.netty.version>4.0.17.Final</io.netty.version>
+
 		<guava.version>15.0</guava.version>
 		<scalatest.version>2.2.1</scalatest.version>
-
 		<PermGen>64m</PermGen>
 		<MaxPermGen>512m</MaxPermGen>
 
@@ -163,7 +171,7 @@
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
-				<version>4.3.6</version>
+				<version>${commons.httpclient.version}</version>
 			</dependency>
 
 			<dependency>
@@ -193,7 +201,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-math3</artifactId>
-				<version>3.2</version>
+				<version>${commons.math3.version}</version>
 			</dependency>
 
 			<dependency>
@@ -280,7 +288,7 @@
 			<dependency>
 				<groupId>org.xerial.snappy</groupId>
 				<artifactId>snappy-java</artifactId>
-				<version>1.0.5</version>
+				<version>${snappy.version}</version>
 			</dependency>
 
 			<dependency>
@@ -305,6 +313,12 @@
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
 				<version>${protobuf.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.twitter</groupId>
+				<artifactId>parquet-hadoop-bundle</artifactId>
+				<version>${parquet.version}</version>
 			</dependency>
 
 			<dependency>
@@ -393,7 +407,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-all</artifactId>
-				<version>4.0.17.Final</version>
+				<version>${io.netty.version}</version>
 			</dependency>
 
 			<dependency>
@@ -405,7 +419,7 @@
 			<dependency>
 				<groupId>org.apache.derby</groupId>
 				<artifactId>derby</artifactId>
-				<version>10.4.2.0</version>
+				<version>${derby.version}</version>
 			</dependency>
 
 			<dependency>
@@ -756,13 +770,13 @@
 				<!-- Matches the version of jackson-core-asl pulled in by avro -->
 				<groupId>org.codehaus.jackson</groupId>
 				<artifactId>jackson-mapper-asl</artifactId>
-				<version>1.8.8</version>
+				<version>${codehaus.jackson.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.codehaus.jackson</groupId>
 				<artifactId>jackson-core-asl</artifactId>
-				<version>1.8.8</version>
+				<version>${codehaus.jackson.version}</version>
 			</dependency>
 
 			<dependency>
@@ -873,6 +887,7 @@
 						</goals>
 						<configuration>
 							<failOnViolation>true</failOnViolation>
+                                                        <excludes>com/nflabs/zeppelin/interpreter/thrift/*</excludes>
 						</configuration>
 					</execution>
 				</executions>
@@ -1217,6 +1232,62 @@
 				</plugins>
 			</build>
 		</profile>
+
+                <profile>
+                        <id>spark-1.1</id>
+                        <dependencies>
+                               
+                        </dependencies>
+                        <properties>
+                                <spark.version>1.1.1</spark.version>
+                        </properties>
+                </profile>
+
+                <profile>
+                        <id>spark-1.2</id>
+                        <dependencies>
+                        </dependencies>
+                        <properties>
+                                <akka.version>2.3.4-spark</akka.version>
+                                <spark.version>1.2.1</spark.version>
+		                <hive.version>0.13.1a</hive.version>
+                                <derby.version>10.10.1.1</derby.version>
+		                <parquet.version>1.6.0rc3</parquet.version>
+		                <chill.version>0.5.0</chill.version>
+                                <commons.httpclient.version>4.2.6</commons.httpclient.version>
+                                <commons.math3.version>3.1.1</commons.math3.version>
+                                <io.netty.version>4.0.23.Final</io.netty.version>
+                        </properties>
+                </profile>
+
+                <profile>
+                        <id>spark-1.3</id>
+                        <dependencies>
+                        </dependencies>
+                        <properties>
+                                <akka.version>2.3.4-spark</akka.version>
+                                <spark.version>1.3.0</spark.version>
+                                <mesos.version>0.21.0</mesos.version>
+                                <hbase.version>0.98.7</hbase.version>
+                                <hbase.artifact>hbase</hbase.artifact>
+                                <hive.group>org.spark-project.hive</hive.group>
+                                <hive.version>0.13.1a</hive.version>
+                                <derby.version>10.10.1.1</derby.version>
+                                <orbit.version>3.0.0.v201112011016</orbit.version>
+                                <parquet.version>1.6.0rc3</parquet.version>
+                                <chill.version>0.5.0</chill.version>
+                                <ivy.version>2.4.0</ivy.version>
+                                <oro.version>2.0.8</oro.version>
+                                <avro.mapred.classifier></avro.mapred.classifier>
+                                <codahale.metrics.version>3.1.0</codahale.metrics.version>
+                                <commons.httpclient.version>4.2.6</commons.httpclient.version>
+                                <commons.math3.version>3.1.1</commons.math3.version>
+                                <io.netty.version>4.0.23.Final</io.netty.version>
+                                <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
+                                <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
+                                <snappy.version>1.1.1.6</snappy.version>
+                        </properties>
+                </profile>
 
 		<profile>
 			<id>hadoop-0.23</id>
