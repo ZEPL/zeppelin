@@ -12,8 +12,10 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SQLContext.QueryExecution;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
+import org.apache.spark.sql.catalyst.expressions.GenericRow;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +27,14 @@ import scala.collection.JavaConverters;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
-import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -53,13 +55,15 @@ public class SparkSqlInterpreter extends Interpreter {
         SparkSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.useHiveContext", "false",
+                "Use HiveContext instead of SQLContext if it is true.")
             .add("zeppelin.spark.concurrentSQL", "false",
                 "Execute multiple SQL concurrently if set true.")
             .build());
   }
 
   private String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
   }
 
   private int maxResult;
@@ -70,7 +74,10 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT",
+        "zeppelin.spark.maxResult",
+        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
   }
 
   private SparkInterpreter getSparkInterpreter() {
@@ -89,6 +96,10 @@ public class SparkSqlInterpreter extends Interpreter {
     return null;
   }
 
+  private boolean useHiveContext() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
@@ -96,12 +107,20 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void close() {}
 
+  @Override
+  public Object getValue(String name) {
+    return null;
+  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
 
-    sqlc = getSparkInterpreter().getSQLContext();
+    if (useHiveContext()) {
+      sqlc = getSparkInterpreter().getHiveContext();
+    } else {
+      sqlc = getSparkInterpreter().getSQLContext();
+    }
 
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
@@ -111,15 +130,11 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-
-    // SchemaRDD - spark 1.1, 1.2, DataFrame - spark 1.3
-    Object rdd;
-    Object[] rows = null;
+    DataFrame rdd;
+    Row[] rows = null;
     try {
       rdd = sqlc.sql(st);
-
-      Method take = rdd.getClass().getMethod("take", int.class);
-      rows = (Object[]) take.invoke(rdd, maxResult + 1);
+      rows = rdd.take(maxResult + 1);
     } catch (Exception e) {
       logger.error("Error", e);
       sc.clearJobGroup();
@@ -127,22 +142,10 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = null;
-
     // get field names
-    Method queryExecution;
-    QueryExecution qe;
-    try {
-      queryExecution = rdd.getClass().getMethod("queryExecution");
-      qe = (QueryExecution) queryExecution.invoke(rdd);
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
     List<Attribute> columns =
         scala.collection.JavaConverters.asJavaListConverter(
-            qe.analyzed().output()).asJava();
-
+            rdd.queryExecution().analyzed().output()).asJava();
     for (Attribute col : columns) {
       if (msg == null) {
         msg = col.name();
@@ -150,34 +153,26 @@ public class SparkSqlInterpreter extends Interpreter {
         msg += "\t" + col.name();
       }
     }
-
     msg += "\n";
 
     // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
     // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
     // NullType, NumericType, ShortType, StringType, StructType
 
-    try {
-      for (int r = 0; r < maxResult && r < rows.length; r++) {
-        Object row = rows[r];
-        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
-        Method apply = row.getClass().getMethod("apply", int.class);
+    for (int r = 0; r < maxResult && r < rows.length; r++) {
+      Row row = rows[r];
 
-        for (int i = 0; i < columns.size(); i++) {
-          if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg += apply.invoke(row, i).toString();
-          } else {
-            msg += "null";
-          }
-          if (i != columns.size() - 1) {
-            msg += "\t";
-          }
+      for (int i = 0; i < columns.size(); i++) {
+        if (!row.isNullAt(i)) {
+          msg += row.apply(i).toString();
+        } else {
+          msg += "null";
         }
-        msg += "\n";
+        if (i != columns.size() - 1) {
+          msg += "\t";
+        }
       }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
+      msg += "\n";
     }
 
     if (rows.length > maxResult) {
@@ -194,6 +189,11 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkContext sc = sqlc.sparkContext();
 
     sc.cancelJobGroup(getJobGroup(context));
+  }
+
+  @Override
+  public void bindValue(String name, Object o) {
+
   }
 
   @Override
@@ -224,8 +224,6 @@ public class SparkSqlInterpreter extends Interpreter {
         } else if (sc.version().startsWith("1.1")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.2")) {
-          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
-        } else if (sc.version().startsWith("1.3")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           logger.warn("Spark {} getting progress information not supported" + sc.version());
@@ -320,23 +318,8 @@ public class SparkSqlInterpreter extends Interpreter {
       int maxConcurrency = 10;
       return SchedulerFactory.singleton().createOrGetParallelScheduler(
           SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
-    } else {
-      // getSparkInterpreter() calls open() inside.
-      // That means if SparkInterpreter is not opened, it'll wait until SparkInterpreter open.
-      // In this moment UI displays 'READY' or 'FINISHED' instead of 'PENDING' or 'RUNNING'.
-      // It's because of scheduler is not created yet, and scheduler is created by this function.
-      // Therefore, we can still use getSparkInterpreter() here, but it's better and safe
-      // to getSparkInterpreter without opening it.
-      for (Interpreter intp : getInterpreterGroup()) {
-        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-          Interpreter p = intp;
-          return p.getScheduler();
-        } else {
-          continue;
-        }
-      }
-      throw new InterpreterException("Can't find SparkInterpreter");
     }
+    return getSparkInterpreter().getScheduler();
   }
 
   @Override

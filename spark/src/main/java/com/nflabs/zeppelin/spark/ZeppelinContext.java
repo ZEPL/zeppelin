@@ -10,14 +10,20 @@ import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.DataFrameHolder;
+import org.apache.spark.sql.GroupedData;
 import org.apache.spark.sql.hive.HiveContext;
 
 import scala.Tuple2;
 import scala.collection.Iterable;
 
-import com.nflabs.zeppelin.display.GUI;
-import com.nflabs.zeppelin.display.Input.ParamOption;
+import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.notebook.Paragraph;
+import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
+import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 /**
@@ -32,10 +38,12 @@ public class ZeppelinContext {
   private InterpreterContext interpreterContext;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
+      HiveContext hiveContext,
       InterpreterContext interpreterContext,
       DependencyResolver dep, PrintStream printStream) {
     this.sc = sc;
     this.sqlContext = sql;
+    this.hiveContext = hiveContext;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.out = printStream;
@@ -44,13 +52,11 @@ public class ZeppelinContext {
   public SparkContext sc;
   public SQLContext sqlContext;
   public HiveContext hiveContext;
-  private GUI gui;
+  private Setting form;
 
-  /* spark-1.3
-  public SchemaRDD sql(String sql) {
+  public DataFrame sql(String sql) {
     return sqlContext.sql(sql);
   }
-  */
 
   /**
    * Load dependency for interpreter and runtime (driver).
@@ -178,7 +184,7 @@ public class ZeppelinContext {
   }
 
   public Object input(String name, Object defaultValue) {
-    return gui.input(name, defaultValue);
+    return form.input(name, defaultValue);
   }
 
   public Object select(String name, scala.collection.Iterable<Tuple2<Object, String>> options) {
@@ -197,15 +203,14 @@ public class ZeppelinContext {
       paramOptions[i++] = new ParamOption(valueAndDisplayValue._1(), valueAndDisplayValue._2());
     }
 
-    return gui.select(name, "", paramOptions);
+    return form.select(name, "", paramOptions);
   }
 
-  public void setGui(GUI o) {
-    this.gui = o;
+  public void setFormSetting(Setting o) {
+    this.form = o;
   }
 
   public void run(String lines) {
-    /*
     String intpName = Paragraph.getRequiredReplName(lines);
     String scriptBody = Paragraph.getScriptBody(lines);
     Interpreter intp = interpreterContext.getParagraph().getRepl(intpName);
@@ -219,8 +224,6 @@ public class ZeppelinContext {
     } else {
       out.println("Unknown error");
     }
-    */
-    throw new RuntimeException("Missing implementation");
   }
 
   private void restartInterpreter() {
