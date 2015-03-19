@@ -28,6 +28,18 @@ module.exports = function (grunt) {
     yeoman: appConfig,
 
 
+    // use ngAnnotate instead og ngMin
+    ngAnnotate: {
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '.tmp/concat/scripts',
+          src: '*.js',
+          dest: '.tmp/concat/scripts'
+        }]
+      }
+    },
+
     // lint typescript files
     tslint: {
       options: {
@@ -37,7 +49,6 @@ module.exports = function (grunt) {
         src: ['<%= yeoman.app %>/typescripts/**/*.ts']
       }
     },
-
 
     // Watches files for changes and runs tasks based on the changed files
     watch: {
@@ -49,8 +60,8 @@ module.exports = function (grunt) {
         files: ['<%= yeoman.app %>/typescripts/**/*.ts'],
         tasks: ['typescript', 'tslint'],
         options: {
-            spawn: false,
-            livereload: '<%= connect.options.livereload %>'
+          spawn: false,
+          livereload: '<%= connect.options.livereload %>'
         }
       },
       jsTest: {
@@ -278,20 +289,6 @@ module.exports = function (grunt) {
       }
     },
 
-    // ngmin tries to make the code safe for minification automatically by
-    // using the Angular long form for dependency injection. It doesn't work on
-    // things like resolve or inject so those have to be done manually.
-    ngmin: {
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '.tmp/concat/scripts',
-          src: '*.js',
-          dest: '.tmp/concat/scripts'
-        }]
-      }
-    },
-
     // Copies remaining files to places other tasks can use
     copy: {
       dist: {
@@ -419,7 +416,7 @@ module.exports = function (grunt) {
     'concurrent:dist',
     'autoprefixer',
     'concat',
-    'ngmin',
+    'ngAnnotate',
     'copy:dist',
     'cssmin',
     'uglify',
