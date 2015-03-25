@@ -766,10 +766,15 @@ angular.module('zeppelinWebApp')
 
       // use datatables
       $('#p'+$scope.paragraph.id+'_table .table').DataTable( {
-        dom: 'T<"clear">lfrtip',
+        dom: 'Tt',
         tableTools: {
-            "sSwfPath": "images/copy_csv_xls.swf"
-        }
+            "sSwfPath": "images/copy_csv_xls.swf",
+            "aButtons": [ "csv", "xls" ]
+        },
+        lengthChange: false,
+        searching: false,
+        ordering:  false,
+	paging: false
       });
     };
 
