@@ -768,8 +768,8 @@ angular.module('zeppelinWebApp')
       $('#p'+$scope.paragraph.id+'_table .table').DataTable( {
         dom: 'Tt',
         tableTools: {
-            "sSwfPath": "images/copy_csv_xls.swf",
-            "aButtons": [ "csv", "xls" ]
+            "sSwfPath": "images/copy_csv_xls_pdf.swf",
+            "aButtons": [ "copy", "xls", "pdf" ]
         },
         lengthChange: false,
         searching: false,
