@@ -769,7 +769,7 @@ angular.module('zeppelinWebApp')
         dom: 'Tt',
         tableTools: {
             "sSwfPath": "images/copy_csv_xls_pdf.swf",
-            "aButtons": [ "copy", "xls", "pdf" ]
+            "aButtons": [ "csv", "pdf" ]
         },
         lengthChange: false,
         searching: false,
