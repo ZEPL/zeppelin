@@ -6,11 +6,15 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.tajo.conf.TajoConf;
 import org.apache.tajo.thrift.ThriftServerConstants;
 import org.apache.tajo.thrift.client.TajoThriftClient;
+import org.apache.tajo.thrift.generated.TColumn;
+import org.apache.tajo.thrift.generated.TSchema;
+import org.apache.tajo.thrift.generated.TTableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +73,148 @@ public class TajoInterpreter extends Interpreter {
     return Integer.parseInt(getProperty("tajo.maxResult"));
   }
 
+  private String getHelpMessage() {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("General\n");
+    builder.append("  \\version\t\tshow Tajo version\n");
+    builder.append("  \\?\t\tshow help\n");
+    builder.append("  \\help\t\talias of \\?\n");
+    builder.append("\n");
+    builder.append("Informational\n");
+    builder.append("  \\l\t\tlist databases\n");
+    builder.append("  \\c\t\tshow current database\n");
+    builder.append("  \\c [DBNAME]\t\tconnect to new database\n");
+    builder.append("  \\d\t\tlist tables\n");
+    builder.append("  \\d [TBNAME]\t\tdescribe tables\n");
+
+    return builder.toString();
+  }
+
+  private String listToOutput(List<String> list) {
+    return listToOutput(list, "");
+  }
+
+  private String listToOutput(List<String> list, String defaultValue) {
+    String out = "";
+    if (list == null || list.size() == 0) return defaultValue;
+    for (String l : list) {
+      out += l + "\n";
+    }
+    return out;
+  }
+
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     ResultSet result;
+
+    if (st != null && st.trim().startsWith("\\")) {
+      String tcmd = st.trim();
+      try {
+        if (tcmd.equals("\\l")) {       // list database
+          return new InterpreterResult(
+              Code.SUCCESS,
+              listToOutput(tajoClient.getAllDatabaseNames()));
+        } else if (tcmd.equals("\\c")) {  // show current database
+          return new InterpreterResult(
+              Code.SUCCESS,
+              tajoClient.getCurrentDatabase());
+        } else if (tcmd.startsWith("\\c")) {
+          String dbName = tcmd.split(" ")[1];
+          return new InterpreterResult(
+              Code.SUCCESS,
+              (tajoClient.selectDatabase(dbName) ?
+                  "connected to database " + dbName :
+                  "failed"));
+        } else if (tcmd.equals("\\d")) {  // list tables
+          return new InterpreterResult(
+              Code.SUCCESS,
+              listToOutput(
+                  tajoClient.getTableList(tajoClient.getCurrentDatabase()),
+                  "No Relation Found"));
+        } else if (tcmd.startsWith("\\d")) { // describe tables
+          String tableName = tcmd.split(" ")[1];
+          TTableDesc tdesc = tajoClient.getTableDesc(tableName);
+
+          if (tdesc == null) {
+            return new InterpreterResult(
+                Code.SUCCESS,
+                "no such a table:" + tableName);
+          }
+
+          String out = "";
+          out += "table name: " + tdesc.getTableName() + "\n";
+          out += "table path: " + tdesc.getPath() + "\n";
+          out += "store type: " + tdesc.getStoreType() + "\n";
+          out += "number of rows: " + tdesc.getStats().getNumRows() + "\n";
+          out += "volumne: " + tdesc.getStats().getNumBytes() + " B\n";
+          out += "Options:\n";
+          Map<String, String> meta = tdesc.getTableMeta();
+          if (meta != null) {
+            for (String k : meta.keySet()) {
+              out += k + "\t" + meta.get(k) + "\n";
+            }
+          }
+
+          out += "\n";
+          out += "schema:\n";
+          TSchema schema = tdesc.getSchema();
+          for (TColumn col : schema.getColumns()) {
+            out += col.getSimpleName() + "\t" + col.getDataTypeName() + "\n";
+          }
+          return new InterpreterResult(
+              Code.SUCCESS,
+              out);
+        } else if (tcmd.startsWith("\\set")) {
+          String[] set = tcmd.split(" ");
+          if (set.length != 3) {
+            return new InterpreterResult(
+                Code.SUCCESS,
+                "usage: \\set [[NAME] VALUE]");
+          }
+
+          String name = set[1];
+          String value = set[2];
+
+          if (tajoClient.updateSessionVariable(name, value)) {
+            return new InterpreterResult(
+                Code.SUCCESS,
+                name + " = " + value);
+          } else {
+            return new InterpreterResult(
+                Code.ERROR,
+                "Error");
+          }
+        } else if (tcmd.startsWith("\\unset")) {
+          String[] set = tcmd.split(" ");
+          if (set.length != 2) {
+            return new InterpreterResult(
+                Code.SUCCESS,
+                "usage: \\unset NAME");
+          }
+
+          String name = set[1];
+
+          if (tajoClient.unsetSessionVariable(name)) {
+            return new InterpreterResult(
+                Code.SUCCESS,
+                "unset " + name);
+          } else {
+            return new InterpreterResult(
+                Code.ERROR,
+                "Error");
+          }
+        } else {
+          return new InterpreterResult(
+              Code.SUCCESS,
+              getHelpMessage());
+        }
+      } catch (Exception e) {
+        throw new InterpreterException(e);
+      }
+    }
+
+
     try {
       result = tajoClient.executeQueryAndGetResult(st);
       // empty result
