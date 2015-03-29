@@ -214,7 +214,6 @@ public class TajoInterpreter extends Interpreter {
       }
     }
 
-
     try {
       result = tajoClient.executeQueryAndGetResult(st);
       // empty result
@@ -227,6 +226,11 @@ public class TajoInterpreter extends Interpreter {
       // extract column info
       ResultSetMetaData md = result.getMetaData();
       int numColumns = md.getColumnCount();
+
+      if (numColumns == 0) {
+        return new InterpreterResult(Code.SUCCESS, "");
+      }
+
       for (int i = 1; i <= numColumns; i++) {
         if (i != 1) {
           m += "\t";
