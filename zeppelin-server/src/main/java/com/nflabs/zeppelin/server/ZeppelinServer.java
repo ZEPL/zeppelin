@@ -11,6 +11,11 @@ import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
@@ -21,6 +26,7 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
@@ -46,6 +52,7 @@ import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
  */
 
 public class ZeppelinServer extends Application {
+
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
   private SchedulerFactory schedulerFactory;
@@ -61,6 +68,8 @@ public class ZeppelinServer extends Application {
 
     final Server jettyServer = setupJettyServer(conf);
     notebookServer = setupNotebookServer(conf);
+
+    SecurityHandler sch = basicAuth(conf.getRelativeDir("conf/realm.properties"));
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -79,6 +88,9 @@ public class ZeppelinServer extends Application {
     //contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
     contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
+    if (sch != null) {
+      webApp.setSecurityHandler(sch);
+    }
 
     notebookServer.start();
     LOG.info("Start zeppelin server");
@@ -135,6 +147,34 @@ public class ZeppelinServer extends Application {
     server.addConnector(connector);
 
     return server;
+  }
+
+  private static SecurityHandler basicAuth(String path) {
+    File realmFile = new File(path);
+    if (realmFile.isFile() == false) {
+      return null;
+    } else {
+      LOG.info("Read realm file " + path);
+    }
+
+    HashLoginService l = new HashLoginService("zeppelin realm", path);
+
+    Constraint constraint = new Constraint();
+    constraint.setName(Constraint.__BASIC_AUTH);
+    constraint.setRoles(new String[]{"user"});
+    constraint.setAuthenticate(true);
+
+    ConstraintMapping cm = new ConstraintMapping();
+    cm.setConstraint(constraint);
+    cm.setPathSpec("/*");
+
+    ConstraintSecurityHandler csh = new ConstraintSecurityHandler();
+    csh.setAuthenticator(new BasicAuthenticator());
+    csh.setRealmName("myrealm");
+    csh.addConstraintMapping(cm);
+    csh.setLoginService(l);
+
+    return csh;
   }
 
   private static NotebookServer setupNotebookServer(ZeppelinConfiguration conf)
