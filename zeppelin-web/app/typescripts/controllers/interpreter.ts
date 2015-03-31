@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -25,6 +24,9 @@
  */
 
 module zeppelin {
+
+'use strict';
+
   angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
 
     var remoteSettingToLocalSetting = function(settingId, setting) {
@@ -45,7 +47,7 @@ module zeppelin {
       $http.get(restApiBase() + '/interpreter/setting').
         success(function(data, status, headers, config) {
           var interpreterSettings = [];
-          //console.log('getInterpreterSettings=%o', data);
+          // console.log('getInterpreterSettings=%o', data);
 
           for (var settingId in data.body) {
             var setting = data.body[settingId];
@@ -77,7 +79,7 @@ module zeppelin {
           }
 
           $scope.availableInterpreters = groupedInfo;
-          //console.log('getAvailableInterpreters=%o', data);
+          // console.log('getAvailableInterpreters=%o', data);
         }).
         error(function(data, status, headers, config) {
           console.log('Error %o %o', status, data.message);
@@ -86,9 +88,9 @@ module zeppelin {
 
     $scope.copyOriginInterpreterSettingProperties = function(settingId) {
       $scope.interpreterSettingProperties = {};
-      for (var i=0; i < $scope.interpreterSettings.length; i++) {
+      for (var i = 0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];
-        if(setting.id === settingId) {
+        if (setting.id === settingId) {
           angular.copy(setting.properties, $scope.interpreterSettingProperties);
           break;
         }
@@ -105,9 +107,9 @@ module zeppelin {
       $scope.addNewInterpreterProperty(settingId);
 
       var properties = {};
-      for (var i=0; i < $scope.interpreterSettings.length; i++) {
+      for (var i = 0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];
-        if(setting.id === settingId) {
+        if (setting.id === settingId) {
           for (var p in setting.properties) {
             properties[p] = setting.properties[p].value;
           }
@@ -117,7 +119,7 @@ module zeppelin {
 
       $http.put(restApiBase() + '/interpreter/setting/' + settingId, properties).
         success(function(data, status, headers, config) {
-          for (var i=0; i < $scope.interpreterSettings.length; i++) {
+          for (var i = 0; i < $scope.interpreterSettings.length; i++) {
             var setting = $scope.interpreterSettings[i];
             if (setting.id === settingId) {
               $scope.interpreterSettings.splice(i, 1);
@@ -131,10 +133,10 @@ module zeppelin {
         });
     };
 
-    $scope.resetInterpreterSetting = function(settingId){
-      for (var i=0; i<$scope.interpreterSettings.length; i++) {
+    $scope.resetInterpreterSetting = function(settingId) {
+      for (var i = 0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];
-        if (setting.id ===settingId) {
+        if (setting.id === settingId) {
           angular.copy($scope.interpreterSettingProperties, setting.properties);
           break;
         }
@@ -150,7 +152,7 @@ module zeppelin {
       console.log('Delete setting %o', settingId);
       $http.delete(restApiBase() + '/interpreter/setting/' + settingId).
         success(function(data, status, headers, config) {
-          for (var i=0; i < $scope.interpreterSettings.length; i++) {
+          for (var i = 0; i < $scope.interpreterSettings.length; i++) {
             var setting = $scope.interpreterSettings[i];
             if (setting.id === settingId) {
               $scope.interpreterSettings.splice(i, 1);
@@ -166,7 +168,7 @@ module zeppelin {
     $scope.newInterpreterGroupChange = function() {
       var property = {};
       var intpGroupInfo = $scope.availableInterpreters[$scope.newInterpreterSetting.group];
-      for (var i=0; i<intpGroupInfo.length; i++) {
+      for (var i = 0; i < intpGroupInfo.length; i++) {
         var intpInfo = intpGroupInfo[i];
         for (var key in intpInfo.properties) {
           property[key] = {
@@ -186,7 +188,7 @@ module zeppelin {
 
       $http.put(restApiBase() + '/interpreter/setting/restart/' + settingId).
         success(function(data, status, headers, config) {
-          for (var i=0; i < $scope.interpreterSettings.length; i++) {
+          for (var i = 0; i < $scope.interpreterSettings.length; i++) {
             var setting = $scope.interpreterSettings[i];
             if (setting.id === settingId) {
               $scope.interpreterSettings.splice(i, 1);
@@ -207,7 +209,7 @@ module zeppelin {
         return;
       }
 
-      for (var i=0; i<$scope.interpreterSettings.length; i++) {
+      for (var i = 0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];
         if (setting.name === $scope.newInterpreterSetting.name) {
           alert('Name ' + setting.name + ' already exists');
@@ -247,17 +249,16 @@ module zeppelin {
       };
       $scope.newInterpreterSetting.propertyValue = '';
       $scope.newInterpreterSetting.propertyKey = '';
-    }
+    };
 
     $scope.removeInterpreterProperty = function(key, settingId) {
       if (settingId === undefined) {
         delete $scope.newInterpreterSetting.properties[key];
-      }
-      else {
-        for (var i=0; i < $scope.interpreterSettings.length; i++) {
+      } else {
+        for (var i = 0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
           if (setting.id === settingId) {
-            delete $scope.interpreterSettings[i].properties[key]
+            delete $scope.interpreterSettings[i].properties[key];
             break;
           }
         }
@@ -265,18 +266,18 @@ module zeppelin {
     };
 
     $scope.addNewInterpreterProperty = function(settingId) {
-      if(settingId === undefined) {
+      if (settingId === undefined) {
         if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
           return;
         }
-        $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
+        var property = { value : $scope.newInterpreterSetting.propertyValue };
+        $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = property;
         $scope.newInterpreterSetting.propertyValue = '';
         $scope.newInterpreterSetting.propertyKey = '';
-      }
-      else {
-        for (var i=0; i < $scope.interpreterSettings.length; i++) {
+      } else {
+        for (var i = 0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
-          if (setting.id === settingId){
+          if (setting.id === settingId) {
             if (!setting.propertyKey || setting.propertyKey === '') {
               return;
             }
@@ -290,7 +291,11 @@ module zeppelin {
     };
 
     var init = function() {
-      // when interpreter page opened after seeing non-default looknfeel note, the css remains unchanged. that's what interpreter page want. Force set default looknfeel.
+      /*
+      ** when interpreter page opened after seeing non-default looknfeel note,
+      ** the css remains unchanged. that's what interpreter page want. Force set default looknfeel.
+      */
+
       $rootScope.$emit('setLookAndFeel', 'default');
       $scope.interpreterSettings = [];
       $scope.availableInterpreters = {};

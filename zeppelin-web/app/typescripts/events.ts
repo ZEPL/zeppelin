@@ -23,8 +23,8 @@ module zeppelin {
   }
 
   export class ZEvent {
-    op:string;
-    data:any;
+    op: string;
+    data: any;
 
     toJson() {
       return {op: this.op, data: this.data};

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -24,7 +23,11 @@
  *
  * @author anthonycorbacho
  */
+
 module zeppelin {
+
+'use strict';
+
   interface INavCtrlScope extends ng.IScope {
     notes: Array<Notebook>;
 

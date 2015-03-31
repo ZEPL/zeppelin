@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -23,6 +22,8 @@
  */
 
 module zeppelin {
+
+'use strict';
 
   interface IParagraphResultCtrlScope extends ng.IScope {
     init: () => void;
@@ -51,7 +52,7 @@ module zeppelin {
     $rootScope: IZeppelinRootScope,
     $timeout: ng.ITimeoutService) {
 
-    // Controller init
+    // controller init
     $scope.init = function() {
       $scope.paragraph = $scope.$parent.paragraph;
       $scope.chart = {};
@@ -69,7 +70,9 @@ module zeppelin {
     $scope.$on('updateParagraph', function(event, data) {
       var updatedParagraph = new Paragraph(data.paragraph);
 
-      if (updatedParagraph.id !== $scope.paragraph.id) return;
+      if (updatedParagraph.id !== $scope.paragraph.id) {
+        return;
+      }
 
       var oldType = $scope.paragraph.result.type;
       var newType = updatedParagraph.result.type;
@@ -100,7 +103,7 @@ module zeppelin {
         if ($('#p' + $scope.paragraph.id + '_html').length) {
           try {
             $('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
-          } catch(err) {
+          } catch (err) {
             console.log('HTML rendering error %o', err);
           }
         } else {
@@ -144,7 +147,7 @@ module zeppelin {
               columnNames.push({name: col, index: j, aggr: 'sum'});
             } else {
               cols.push(col);
-              cols2.push({key: (columnNames[i]) ? columnNames[i].name: undefined, value: col});
+              cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value : col});
             }
           }
           if (i !== 0) {
@@ -175,11 +178,10 @@ module zeppelin {
 
       if (!type || type === GraphMode.table) {
         drawTable($scope.paragraph.result);
-      }
-      else {
+      } else {
         drawD3Chart(type, $scope.paragraph.result, refresh);
       }
-    }
+    };
 
     var drawTable = function(data) {
       var getTableContentFormat = function(d) {
@@ -206,7 +208,7 @@ module zeppelin {
           var dStr = d.toString();
           var splitted = dStr.split('.');
           var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-          if (splitted.length>1) {
+          if (splitted.length > 1) {
             formatted += '.' + splitted[1];
           }
           return formatted;
@@ -252,11 +254,11 @@ module zeppelin {
         if ($('#p' + $scope.paragraph.id + '_table').length) {
           try {
             renderTable();
-          } catch(err) {
+          } catch (err) {
             console.log('Chart drawing error %o', err);
           }
         } else {
-          $timeout(retryRenderer,10);
+          $timeout(retryRenderer, 10);
         }
       };
       $timeout(retryRenderer);
@@ -279,11 +281,11 @@ module zeppelin {
       if (type === GraphMode.pieChart) {
         var d = pivotDataToD3ChartFormat(p, true).d3g;
 
-        $scope.chart[type].x(function(d) { return d.label;})
-          .y(function(d) { return d.value;});
+        $scope.chart[type].x(function(d) { return d.label; })
+          .y(function(d) { return d.value; });
 
-        if ( d.length > 0 ) {
-          for ( var i=0; i<d[0].values.length ; i++) {
+        if (d.length > 0) {
+          for (var i = 0; i < d[0].values.length ; i++) {
             var e = d[0].values[i];
             d3g.push({
               label : e.x,
@@ -319,13 +321,15 @@ module zeppelin {
 
         var animationDuration = 300;
         var numberOfDataThreshold = 150;
+
         // turn off animation when dataset is too large. (for performance issue)
         // still, since dataset is large, the chart content sequentially appears like animated.
         try {
           if (d3g[0].values.length > numberOfDataThreshold) {
             animationDuration = 0;
           }
-        } catch(ignoreErr) {
+        } catch (ignoreErr) {
+            console.log('D3 animation error %o', ignoreErr);
         }
 
         var chartEl = d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
@@ -342,11 +346,11 @@ module zeppelin {
         if ($('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
           try {
             renderChart();
-          } catch(err) {
+          } catch (err) {
             console.log('Chart drawing error %o', err);
           }
         } else {
-          $timeout(retryRenderer,10);
+          $timeout(retryRenderer, 10);
         }
       };
       $timeout(retryRenderer);
@@ -462,27 +466,27 @@ module zeppelin {
       var values = graph.values;
 
       var aggrFunc = {
-        sum : function(a,b) {
+        sum : function(a, b) {
           var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
           var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
           return varA + varB;
         },
-        count : function(a,b) {
-          var varA = (a !== undefined) ? parseInt(a) : 0;
+        count : function(a, b) {
+          var varA = (a !== undefined) ? parseInt(a, 10) : 0;
           var varB = (b !== undefined) ? 1 : 0;
           return varA + varB;
         },
-        min : function(a,b) {
+        min : function(a, b) {
           var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
           var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-          return Math.min(varA,varB);
+          return Math.min(varA, varB);
         },
-        max : function(a,b) {
+        max : function(a, b) {
           var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
           var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-          return Math.max(varA,varB);
+          return Math.max(varA, varB);
         },
-        avg : function(a,b,c) {
+        avg : function(a, b, c) {
           var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
           var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
           return varA + varB;
@@ -500,13 +504,13 @@ module zeppelin {
       var schema = {};
       var rows = {};
 
-      for (var i=0; i < data.rows.length; i++) {
+      for (var i = 0; i < data.rows.length; i++) {
         var row = data.rows[i];
         var newRow = {};
         var s = schema;
         var p = rows;
 
-        for (var k=0; k < keys.length; k++) {
+        for (var k = 0; k < keys.length; k++) {
           var key = keys[k];
 
           // add key to schema
@@ -528,7 +532,7 @@ module zeppelin {
           p = p[keyKey];
         }
 
-        for (var g=0; g < groups.length; g++) {
+        for (var g = 0; g < groups.length; g++) {
           var group = groups[g];
           var groupKey = row[group.index];
 
@@ -550,7 +554,7 @@ module zeppelin {
           p = p[groupKey];
         }
 
-        for (var v=0; v < values.length; v++) {
+        for (var v = 0; v < values.length; v++) {
           var value = values[v];
           var valueKey = value.name + '(' + value.aggr + ')';
 
@@ -577,7 +581,7 @@ module zeppelin {
           }
         }
       }
-      //console.log('schema=%o, rows=%o', schema, rows);
+      // console.log('schema=%o, rows=%o', schema, rows);
 
       return {
         schema : schema,
@@ -609,7 +613,9 @@ module zeppelin {
       };
 
       var traverse = function(sKey, s, rKey, r, func, rowName?, rowValue?, colName?) {
-        //console.log('TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o', sKey, s, rKey, r, rowName, rowValue, colName);
+        /* console.log('TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o,
+        **             rowValue=%o, colName=%o', sKey, s, rKey, r, rowName, rowValue, colName);
+        */
 
         if (s.type === 'key') {
           rowName = concat(rowName, sKey);
@@ -655,7 +661,7 @@ module zeppelin {
 
       for (var k in rows) {
         traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
-          //console.log('RowName=%o, row=%o, col=%o, value=%o', rowName, rowValue, colName, value);
+          // console.log('RowName=%o, row=%o, col=%o, value=%o', rowName, rowValue, colName, value);
           if (rowNameIndex[rowValue] === undefined) {
             rowIndexValue[rowIdx] = rowValue;
             rowNameIndex[rowValue] = rowIdx++;
@@ -754,7 +760,7 @@ module zeppelin {
   });
 
   if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (str: string) : boolean {
+    String.prototype.startsWith = function (str: string): boolean {
       return this.indexOf(str) === 0;
     };
   }

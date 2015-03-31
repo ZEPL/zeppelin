@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -27,6 +26,8 @@
  */
 
 module zeppelin {
+
+'use strict';
 
   export class Paragraph {
     id: string;
@@ -65,7 +66,7 @@ module zeppelin {
       if (isNaN(timeMs)) {
         return '&nbsp;';
       }
-      return 'Took ' + (timeMs/1000) + ' seconds';
+      return 'Took ' + (timeMs / 1000) + ' seconds';
     }
 
     base64ImageSrc(): string {
@@ -242,7 +243,7 @@ module zeppelin {
     $scope.$on('updateParagraph', function(event, data) {
       var updatedParagraph = new Paragraph(data.paragraph);
 
-      if (updatedParagraph.id !== $scope.paragraph.id) return;
+      if (updatedParagraph.id !== $scope.paragraph.id) { return; }
       if (updatedParagraph.dateCreated !== $scope.paragraph.dateCreated ||
           updatedParagraph.dateFinished !== $scope.paragraph.dateFinished ||
           updatedParagraph.dateStarted !== $scope.paragraph.dateStarted ||
@@ -257,7 +258,10 @@ module zeppelin {
         $scope.lastData.settings = angular.copy(updatedParagraph.settings);
         $scope.lastData.config = angular.copy(updatedParagraph.config);
 
-        //console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o', $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+        /*
+        ** console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o',
+        **             $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+        */
 
         var updatedText = updatedParagraph.text;
         if ($scope.paragraph.text !== updatedText) {
@@ -368,7 +372,7 @@ module zeppelin {
 
     $scope.$on('focusParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId) {
-        $('body').scrollTo('#' + paragraphId + '_editor', 300, {offset:-60});
+        $('body').scrollTo('#' + paragraphId + '_editor', 300, {offset: -60});
       }
     });
 
@@ -415,7 +419,8 @@ module zeppelin {
 
     $scope.goToSingleParagraph = function () {
       var noteId = $route.current.pathParams.noteId;
-      var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id + '?asIframe';
+      var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/';
+      redirectToUrl += noteId + '/paragraph/' + $scope.paragraph.id + '?asIframe';
       $window.open(redirectToUrl);
     };
   });

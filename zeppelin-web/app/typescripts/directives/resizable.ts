@@ -5,7 +5,7 @@ angular.module('zeppelinWebApp').directive('resizable', function () {
         autoHide: true,
         handles: 'se',
         helper: 'resizable-helper',
-        minHeight:100,
+        minHeight: 100,
         grid: [10000, 10]  // allow only vertical
     };
 
@@ -14,7 +14,7 @@ angular.module('zeppelinWebApp').directive('resizable', function () {
         scope: {
             callback: '&onResize'
         },
-        link: function postLink(scope : any, elem, attrs) {
+        link: function postLink(scope: any, elem, attrs) {
             attrs.$observe('allowresize', function(isAllowed) {
                 if (isAllowed === 'true') {
                     elem.resizable(resizableConfig);

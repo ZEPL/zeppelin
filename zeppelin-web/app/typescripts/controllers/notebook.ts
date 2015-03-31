@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @ngdoc function
@@ -26,6 +25,8 @@
  */
 
 module zeppelin {
+
+'use strict';
 
   export class Notebook {
     id: string;
@@ -115,7 +116,7 @@ module zeppelin {
       }
 
       for (var o in $scope.cronOption) {
-        if ($scope.cronOption[o].value===value) {
+        if ($scope.cronOption[o].value === value) {
           return $scope.cronOption[o].name;
         }
       }
@@ -174,7 +175,7 @@ module zeppelin {
 
     $scope.isNoteRunning = function() {
       var running = false;
-      if(!$scope.note){ return false; }
+      if (!$scope.note) { return false; }
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if ( $scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
           running = true;
@@ -189,15 +190,15 @@ module zeppelin {
       $scope.setConfig();
     };
 
-    /** Set cron expression for this note **/
+    // Set cron expression for this note
     $scope.setCronScheduler = function(cronExpr) {
       $scope.note.config.cron = cronExpr;
       $scope.setConfig();
     };
 
-    /** Update note config **/
+    // Update note config
     $scope.setConfig = function(config) {
-      if(config) {
+      if (config) {
         $scope.note.config = config;
       }
       $rootScope.sendEventToServer(new ZNoteUpdateEvent($scope.note));
@@ -226,7 +227,7 @@ module zeppelin {
         updateNote(note);
       }
       initializeLookAndFeel();
-      //open interpreter binding setting when there're none selected
+      // open interpreter binding setting when there're none selected
       getInterpreterBindings(getInterpreterBindingsCallBack);
     });
 
@@ -240,7 +241,7 @@ module zeppelin {
     };
 
     var cleanParagraphExcept = function(paragraphId, note) {
-      var noteCopy : any = {};
+      var noteCopy: any = {};
       noteCopy.id = note.id;
       noteCopy.name = note.name;
       noteCopy.config = note.config;
@@ -304,7 +305,7 @@ module zeppelin {
         }
       }
 
-      if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      if (newIndex < 0 || newIndex >= $scope.note.paragraphs.length) {
         return;
       }
       $rootScope.sendEventToServer(new ZMoveParagraphEvent(paragraphId, newIndex));
@@ -330,7 +331,7 @@ module zeppelin {
 
     $scope.$on('moveFocusToNextParagraph', function(event, currentParagraphId){
       var focus = false;
-      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if (focus === false ) {
           if ($scope.note.paragraphs[i].id === currentParagraphId) {
               focus = true;
@@ -356,8 +357,8 @@ module zeppelin {
       $scope.note.config = note.config;
       $scope.note.info = note.info;
 
-      var newParagraphIds = note.paragraphs.map(function(x, i, arr) {return x.id;});
-      var oldParagraphIds = $scope.note.paragraphs.map(function(x, i, arr) {return x.id;});
+      var newParagraphIds = note.paragraphs.map(function(x, i, arr) { return x.id; });
+      var oldParagraphIds = $scope.note.paragraphs.map(function(x, i, arr) { return x.id; });
 
       var numNewParagraphs = newParagraphIds.length;
       var numOldParagraphs = oldParagraphIds.length;
@@ -384,7 +385,7 @@ module zeppelin {
             $scope.note.paragraphs.splice(oldIdx, 1);
             $scope.note.paragraphs.splice(idx, 0, newEntry);
             // rebuild id list since paragraph has moved.
-            oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
+            oldParagraphIds = $scope.note.paragraphs.map(function(x) { return x.id; });
           }
         }
       }
@@ -392,7 +393,7 @@ module zeppelin {
       /** remove paragraph */
       if (numNewParagraphs < numOldParagraphs) {
         for (var oldidx in oldParagraphIds) {
-          if(oldParagraphIds[oldidx] !== newParagraphIds[oldidx]) {
+          if (oldParagraphIds[oldidx] !== newParagraphIds[oldidx]) {
             $scope.note.paragraphs.splice(oldidx, 1);
             break;
           }
@@ -439,9 +440,9 @@ module zeppelin {
     };
 
     $scope.interpreterSelectionListeners = {
-      accept : function(sourceItemHandleScope, destSortableScope) {return true;},
-      itemMoved: function (event) {},
-      orderChanged: function(event) {}
+      accept : function(sourceItemHandleScope, destSortableScope) { return true; },
+      itemMoved: function (event) { console.log('itemMoved'); },
+      orderChanged: function(event) { console.log('orderChanged'); }
     };
 
     $scope.openSetting = function() {
