@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.nflabs.zeppelin.session.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,10 +47,13 @@ public class NotebookRestApi {
    * @throws IOException 
    */
   @PUT
-  @Path("interpreter/bind/{noteId}")
-  public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
+  @Path("interpreter/bind/{noteId}/{principal}/{ticket}")
+  public Response bind(@PathParam("noteId") String noteId, @PathParam("principal") String principal, @PathParam("ticket") String ticket, String req) throws Exception {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
-    notebook.bindInterpretersToNote(noteId, settingIdList);
+    if (!TicketContainer.instance.isValid(principal, ticket))
+      throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
+
+    notebook.bindInterpretersToNote(noteId, settingIdList, principal);
     return new JsonResponse(Status.OK).build();
   }
 
@@ -57,12 +61,15 @@ public class NotebookRestApi {
    * list binded setting
    */
   @GET
-  @Path("interpreter/bind/{noteId}")
-  public Response bind(@PathParam("noteId") String noteId) {
+  @Path("interpreter/bind/{noteId}/{principal}/{ticket}")
+  public Response bind(@PathParam("noteId") String noteId, @PathParam("principal") String principal, @PathParam("ticket") String ticket) throws Exception {
     List<InterpreterSettingListForNoteBind> settingList
-      = new LinkedList<InterpreterSettingListForNoteBind>();
+      = new LinkedList<>();
 
-    List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
+    if (!TicketContainer.instance.isValid(principal, ticket))
+      throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
+
+    List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId, principal);
     for (InterpreterSetting setting : selectedSettings) {
       settingList.add(new InterpreterSettingListForNoteBind(
           setting.id(),

@@ -10,6 +10,7 @@ import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
+import com.nflabs.zeppelin.rest.SecurityRestApi;
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -17,7 +18,6 @@ import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -198,7 +198,10 @@ public class ZeppelinServer extends Application {
     cxfContext.addServlet(cxfServletHolder, "/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
-        EnumSet.allOf(DispatcherType.class));
+            EnumSet.allOf(DispatcherType.class));
+    cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class,"/*",
+            EnumSet.allOf(DispatcherType.class));
+    cxfContext.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
     return cxfContext;
   }
 
@@ -250,6 +253,10 @@ public class ZeppelinServer extends Application {
       new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
       "/*"
     );
+    webApp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class,"/*",
+            EnumSet.allOf(DispatcherType.class));
+    webApp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+
     return webApp;
   }
 
@@ -304,6 +311,9 @@ public class ZeppelinServer extends Application {
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);
+
+    SecurityRestApi securityApi = new SecurityRestApi();
+    singletons.add(securityApi);
 
     return singletons;
   }

@@ -81,7 +81,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote();
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
 
     // check interpreter is bindded
     GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id());

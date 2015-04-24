@@ -101,6 +101,12 @@
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
       <version>1.4.01</version>
-    </dependency>    
+    </dependency>
+
+    <!-- shiro -->
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+    </dependency>
   </dependencies>
 </project>

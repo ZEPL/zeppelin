@@ -13,6 +13,7 @@ import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ public class Note implements Serializable, JobListener {
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
   private String name;
   private String id;
+  private String owner;
 
   private transient NoteInterpreterLoader replLoader;
   private transient ZeppelinConfiguration conf;
@@ -57,10 +59,11 @@ public class Note implements Serializable, JobListener {
   public Note() {}
 
   public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-      JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched) {
+      JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched, String owner) {
     this.conf = conf;
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
+    this.owner = owner;
     generateId();
   }
 
@@ -72,9 +75,9 @@ public class Note implements Serializable, JobListener {
     return id;
   }
 
-  public String getName() {
-    return name;
-  }
+  public String owner() { return this.owner; }
+
+  public String getName() { return name; }
 
   public void setName(String name) {
     this.name = name;
@@ -95,7 +98,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Add paragraph last.
    *
-   * @param p
    */
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, replLoader);
@@ -109,7 +111,6 @@ public class Note implements Serializable, JobListener {
    * Insert paragraph in given index.
    *
    * @param index
-   * @param p
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, replLoader);
@@ -208,7 +209,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Run all paragraphs sequentially.
    *
-   * @param jobListener
    */
   public void runAll() {
     synchronized (paragraphs) {
@@ -252,14 +252,14 @@ public class Note implements Serializable, JobListener {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
-    File dir = new File(conf.getNotebookDir() + "/" + id);
+    File dir = new File(conf.getNotebookDir() + File.separator + owner + File.separator + id);
     if (!dir.exists()) {
       dir.mkdirs();
     } else if (dir.isFile()) {
       throw new RuntimeException("File already exists" + dir.toString());
     }
 
-    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
+    File file = new File(dir, "note.json");
     logger().info("Persist note {} into {}", id, file.getAbsolutePath());
 
     String json = gson.toJson(this);
