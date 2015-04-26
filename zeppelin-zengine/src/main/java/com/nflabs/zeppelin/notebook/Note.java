@@ -275,13 +275,15 @@ public class Note implements Serializable, JobListener {
   }
 
   public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-      Scheduler scheduler, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched)
+                          Scheduler scheduler, JobListenerFactory jobListenerFactory,
+                          org.quartz.Scheduler quartzSched, String principal)
       throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
-    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
+    File file = new File(conf.getNotebookDir() + File.separator + principal +
+                          File.separator + id + File.separator + "note.json");
     logger().info("Load note {} from {}", id, file.getAbsolutePath());
 
     if (!file.isFile()) {
