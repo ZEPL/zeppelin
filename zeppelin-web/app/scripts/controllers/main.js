@@ -79,7 +79,9 @@ angular.module('zeppelinWebApp')
     $scope.connected = false;
   });
 
-  /** Send info to the websocket server */
+  /** Send info to the websocket server
+   * including the username & ticket
+   * */
   var send = function(data) {
     data.principal = $scope.ticket.principal;
     data.ticket = $scope.ticket.ticket;
