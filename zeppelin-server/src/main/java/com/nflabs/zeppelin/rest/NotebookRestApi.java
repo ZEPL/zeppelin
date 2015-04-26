@@ -44,11 +44,13 @@ public class NotebookRestApi {
 
   /**
    * bind a setting to note
-   * @throws IOException 
+   * @throws IOException
    */
   @PUT
   @Path("interpreter/bind/{noteId}/{principal}/{ticket}")
-  public Response bind(@PathParam("noteId") String noteId, @PathParam("principal") String principal, @PathParam("ticket") String ticket, String req) throws Exception {
+  public Response bind(@PathParam("noteId") String noteId,
+                       @PathParam("principal") String principal,
+                       @PathParam("ticket") String ticket, String req) throws Exception {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
     if (!TicketContainer.instance.isValid(principal, ticket))
       throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
@@ -62,14 +64,17 @@ public class NotebookRestApi {
    */
   @GET
   @Path("interpreter/bind/{noteId}/{principal}/{ticket}")
-  public Response bind(@PathParam("noteId") String noteId, @PathParam("principal") String principal, @PathParam("ticket") String ticket) throws Exception {
+  public Response bind(@PathParam("noteId") String noteId,
+                       @PathParam("principal") String principal,
+                       @PathParam("ticket") String ticket) throws Exception {
     List<InterpreterSettingListForNoteBind> settingList
       = new LinkedList<>();
 
     if (!TicketContainer.instance.isValid(principal, ticket))
       throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
 
-    List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId, principal);
+    List<InterpreterSetting> selectedSettings =
+      notebook.getBindedInterpreterSettings(noteId, principal);
     for (InterpreterSetting setting : selectedSettings) {
       settingList.add(new InterpreterSettingListForNoteBind(
           setting.id(),
