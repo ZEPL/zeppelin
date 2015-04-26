@@ -269,7 +269,7 @@ public class Note implements Serializable, JobListener {
   }
 
   public void unpersist() throws IOException {
-    File dir = new File(conf.getNotebookDir() + "/" + id);
+    File dir = new File(conf.getNotebookDir() + File.separator + owner + File.separator + id);
 
     FileUtils.deleteDirectory(dir);
   }
