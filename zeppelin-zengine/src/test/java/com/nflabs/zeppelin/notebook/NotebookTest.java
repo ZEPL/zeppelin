@@ -65,7 +65,7 @@ public class NotebookTest implements JobListenerFactory{
 
 	@Test
 	public void testSelectingReplImplementation() throws IOException {
-		Note note = notebook.createNote();
+		Note note = notebook.createNote("anonymous");
 		note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
 		// run with defatul repl
@@ -85,7 +85,7 @@ public class NotebookTest implements JobListenerFactory{
 
 	@Test
 	public void testPersist() throws IOException, SchedulerException{
-		Note note = notebook.createNote();
+		Note note = notebook.createNote("anonymous");
 
 		// run with default repl
 		Paragraph p1 = note.addParagraph();
@@ -93,12 +93,12 @@ public class NotebookTest implements JobListenerFactory{
 		note.persist();
 
 		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf), this);
-		assertEquals(1, notebook2.getAllNotes().size());
+		assertEquals(1, notebook2.getAllNotes("anonymous").size());
 	}
 
 	@Test
 	public void testRunAll() throws IOException {
-		Note note = notebook.createNote();
+		Note note = notebook.createNote("anonymous");
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
 		Paragraph p1 = note.addParagraph();
@@ -115,7 +115,7 @@ public class NotebookTest implements JobListenerFactory{
 	@Test
 	public void testSchedule() throws InterruptedException, IOException{
 		// create a note and a paragraph
-		Note note = notebook.createNote();
+		Note note = notebook.createNote("anonymous");
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
 		Paragraph p = note.addParagraph();
@@ -127,7 +127,7 @@ public class NotebookTest implements JobListenerFactory{
 		Map<String, Object> config = note.getConfig();
 		config.put("cron", "* * * * * ?");
 		note.setConfig(config);
-		notebook.refreshCron(note.id());
+		notebook.refreshCron(note.id(), "anonymous");
 		Thread.sleep(1*1000);
 		dateFinished = p.getDateFinished();
 		assertNotNull(dateFinished);
@@ -135,7 +135,7 @@ public class NotebookTest implements JobListenerFactory{
 		// remove cron scheduler.
 		config.put("cron", null);
 		note.setConfig(config);
-		notebook.refreshCron(note.id());
+		notebook.refreshCron(note.id(), "anonymous");
 		Thread.sleep(1*1000);
 		assertEquals(dateFinished, p.getDateFinished());
 	}

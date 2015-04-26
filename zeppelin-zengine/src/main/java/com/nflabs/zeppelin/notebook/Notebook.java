@@ -2,13 +2,7 @@ package com.nflabs.zeppelin.notebook;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -38,7 +32,7 @@ public class Notebook {
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   /** Keep the order. */
-  Map<String, Note> notes = new LinkedHashMap<String, Note>();
+  Map<String, Map<String, Note>> notes = new LinkedHashMap<>();
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
@@ -65,12 +59,24 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public Note createNote() throws IOException {
+  public Note createNote(String principal) throws IOException {
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      return createNote(replFactory.getDefaultInterpreterSettingList());
+      return createNote(replFactory.getDefaultInterpreterSettingList(), principal);
     } else {
-      return createNote(null);
+      return createNote(null, principal);
     }
+  }
+
+  private Map<String, Note> getUserNotes(String principal) {
+    synchronized (notes) {
+      Map<String, Note> userNotes = notes.get(principal);
+      if (userNotes == null)
+        userNotes = new HashMap<>();
+      notes.put(principal, userNotes);
+      return userNotes;
+    }
+
+
   }
 
   /**
@@ -79,31 +85,31 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public Note createNote(List<String> interpreterIds) throws IOException {
+  public Note createNote(List<String> interpreterIds, String principal) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
+    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched, principal);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
-      notes.put(note.id(), note);
+      getUserNotes(principal).put(note.id(), note);
     }
     if (interpreterIds != null) {
-      bindInterpretersToNote(note.id(), interpreterIds);
+      bindInterpretersToNote(note.id(), interpreterIds, principal);
     }
 
     return note;
   }
 
   public void bindInterpretersToNote(String id,
-      List<String> interpreterSettingIds) throws IOException {
-    Note note = getNote(id);
+      List<String> interpreterSettingIds, String principal) throws IOException {
+    Note note = getNote(id, principal);
     if (note != null) {
       note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
       replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
   }
 
-  public List<String> getBindedInterpreterSettingsIds(String id) {
-    Note note = getNote(id);
+  public List<String> getBindedInterpreterSettingsIds(String id, String principal) {
+    Note note = getNote(id, principal);
     if (note != null) {
       return note.getNoteReplLoader().getInterpreters();
     } else {
@@ -111,8 +117,8 @@ public class Notebook {
     }
   }
 
-  public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
-    Note note = getNote(id);
+  public List<InterpreterSetting> getBindedInterpreterSettings(String id, String principal) {
+    Note note = getNote(id, principal);
     if (note != null) {
       return note.getNoteReplLoader().getInterpreterSettings();
     } else {
@@ -120,16 +126,16 @@ public class Notebook {
     }
   }
 
-  public Note getNote(String id) {
+  public Note getNote(String id, String principal) {
     synchronized (notes) {
-      return notes.get(id);
+      return getUserNotes(principal).get(id);
     }
   }
 
-  public void removeNote(String id) {
+  public void removeNote(String id, String principal) {
     Note note;
     synchronized (notes) {
-      note = notes.remove(id);
+      note = getUserNotes(principal).remove(id);
     }
     try {
       note.unpersist();
@@ -140,35 +146,47 @@ public class Notebook {
 
   private void loadAllNotes() throws IOException {
     File notebookDir = new File(conf.getNotebookDir());
-    File[] dirs = notebookDir.listFiles();
-    if (dirs == null) {
+    logger.info("Notebook Directory " + notebookDir.getAbsolutePath());
+    File[] userdirs = notebookDir.listFiles();
+    if (userdirs == null) {
       return;
     }
-    for (File f : dirs) {
-      boolean isHidden = f.getName().startsWith(".");
-      if (f.isDirectory() && !isHidden) {
-        Scheduler scheduler =
-            schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
-        logger.info("Loading note from " + f.getName());
-        NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(replFactory);
-        Note note = Note.load(f.getName(),
-            conf,
-            noteInterpreterLoader,
-            scheduler,
-            jobListenerFactory, quartzSched);
-        noteInterpreterLoader.setNoteId(note.id());
+    for (File fuser : userdirs) {
+      String principal = fuser.getName();
+      boolean isHidden = principal.startsWith(".");
+      if (fuser.isDirectory() && !isHidden) {
+        File[] dirs = fuser.listFiles();
+        if (dirs != null) {
+          for (File f : dirs) {
+            boolean isHiddenFile = f.getName().startsWith(".");
+            if (f.isDirectory() && !isHiddenFile) {
+              String schedulerName = "note_" + System.currentTimeMillis();
+              Scheduler scheduler =
+                      schedulerFactory.createOrGetFIFOScheduler(schedulerName);
+              logger.info("Loading note from " + f.getName());
+              NoteInterpreterLoader noteInterpreterLoader =
+                      new NoteInterpreterLoader(replFactory);
+              Note note = Note.load(f.getName(),
+                      conf,
+                      noteInterpreterLoader,
+                      scheduler,
+                      jobListenerFactory, quartzSched, fuser.getName());
+              noteInterpreterLoader.setNoteId(note.id());
 
-        synchronized (notes) {
-          notes.put(note.id(), note);
-          refreshCron(note.id());
+              synchronized (notes) {
+                getUserNotes(principal).put(note.id(), note);
+                refreshCron(note.id(), principal);
+              }
+            }
+          }
         }
       }
     }
   }
 
-  public List<Note> getAllNotes() {
+  public List<Note> getAllNotes(String principal) {
     synchronized (notes) {
-      List<Note> noteList = new ArrayList<Note>(notes.values());
+      List<Note> noteList = new ArrayList<>(getUserNotes(principal).values());
       logger.info("" + noteList.size());
       Collections.sort(noteList, new Comparator() {
         @Override
@@ -211,18 +229,18 @@ public class Notebook {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-
+      String principal = context.getJobDetail().getJobDataMap().getString("principal");
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
-      Note note = notebook.getNote(noteId);
+      Note note = notebook.getNote(noteId, principal);
       note.runAll();
     }
   }
 
-  public void refreshCron(String id) {
+  public void refreshCron(String id, String principal) {
     removeCron(id);
     synchronized (notes) {
 
-      Note note = notes.get(id);
+      Note note = getUserNotes(principal).get(id);
       if (note == null) {
         return;
       }
@@ -238,8 +256,11 @@ public class Notebook {
 
 
       JobDetail newJob =
-          JobBuilder.newJob(CronJob.class).withIdentity(id, "note").usingJobData("noteId", id)
-          .build();
+              JobBuilder.newJob(CronJob.class)
+                        .withIdentity(id, "note")
+                        .usingJobData("noteId", id)
+                        .usingJobData("principal", principal)
+                        .build();
 
       Map<String, Object> info = note.getInfo();
       info.put("cron", null);

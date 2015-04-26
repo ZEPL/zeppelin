@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-<!-- 
+<!--
   This is commented because somehow this force zeppelin-webb to be build 2 times.
+
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
@@ -20,7 +21,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.20</version>
+        <version>0.0.23</version>
         <executions>
           <execution>
             <id>install node and npm</id>
@@ -43,7 +44,7 @@
               <arguments>install</arguments>
             </configuration>
           </execution>
-          
+
           <execution>
             <id>bower install</id>
             <goals>
@@ -66,7 +67,7 @@
               <arguments>--no-color --force</arguments>
             </configuration>
           </execution>
-          
+
         </executions>
       </plugin>
     </plugins>
