@@ -199,7 +199,7 @@ public class ZeppelinServer extends Application {
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
             EnumSet.allOf(DispatcherType.class));
-    cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class,"/*",
+    cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
             EnumSet.allOf(DispatcherType.class));
     cxfContext.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
     return cxfContext;
@@ -253,10 +253,6 @@ public class ZeppelinServer extends Application {
       new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
       "/*"
     );
-    webApp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class,"/*",
-            EnumSet.allOf(DispatcherType.class));
-    webApp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
-
     return webApp;
   }
 
