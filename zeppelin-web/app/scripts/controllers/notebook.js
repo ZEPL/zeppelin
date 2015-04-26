@@ -349,6 +349,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  /** user dependent*/
   var getInterpreterBindings = function(callback) {
     $http.get(getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id + "/" + $rootScope.ticket.principal+ "/" + $rootScope.ticket.ticket).
       success(function(data, status, headers, config) {
@@ -408,6 +409,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.showSetting = false;
   };
 
+  /** settings are user dependent */
   $scope.saveSetting = function() {
     var selectedSettingIds = [];
     for (var no in $scope.interpreterBindings) {
