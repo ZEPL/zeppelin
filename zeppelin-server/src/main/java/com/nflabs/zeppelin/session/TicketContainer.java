@@ -14,37 +14,35 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class TicketContainer {
-    private static class Entry {
-        public final String ticket;
-        public final long lastAccessTime;
-        Entry(String ticket) {
-            this.ticket = ticket;
-            this.lastAccessTime =Calendar.getInstance().getTimeInMillis();
-        }
+  private static class Entry {
+    public final String ticket;
+    // lastAccessTime still unused
+    public final long lastAccessTime;
+    Entry(String ticket) {
+      this.ticket = ticket;
+      this.lastAccessTime = Calendar.getInstance().getTimeInMillis();
     }
-    private Map<String, Entry> sessions = new ConcurrentHashMap<>();
+  }
+  private Map<String, Entry> sessions = new ConcurrentHashMap<>();
 
+  public static final TicketContainer instance = new TicketContainer();
 
-    public static final TicketContainer instance = new TicketContainer();
+  public boolean isValid(String principal, String ticket) {
+    Entry entry = sessions.get(principal);
+    return entry != null && entry.ticket.equals(ticket);
+  }
 
-
-    public boolean isValid(String principal, String ticket) {
-        Entry entry = sessions.get(principal);
-        return entry != null && entry.ticket.equals(ticket);
+  public synchronized String getTicket(String principal) {
+    Entry entry = sessions.get(principal);
+    String ticket;
+    if (entry == null) {
+      ticket = UUID.randomUUID().toString();
     }
-
-    public synchronized String getTicket(String principal) {
-        //
-        Entry entry = sessions.get(principal);
-        String ticket;
-        if (entry == null) {
-            ticket = UUID.randomUUID().toString();
-        }
-        else {
-            ticket = entry.ticket;
-        }
-        entry = new Entry(ticket);
-        sessions.put(principal, entry);
-        return ticket;
+    else {
+      ticket = entry.ticket;
     }
+    entry = new Entry(ticket);
+    sessions.put(principal, entry);
+    return ticket;
+  }
 }
