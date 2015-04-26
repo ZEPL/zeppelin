@@ -835,7 +835,7 @@
                 <version>${json4s.version}</version>
             </dependency>
 
-            <!-- shiro -->
+            <!-- Apache Shiro -->
             <dependency>
                 <groupId>org.apache.shiro</groupId>
                 <artifactId>shiro-core</artifactId>
@@ -897,7 +897,7 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <excludes>com/nflabs/zeppelin/interpreter/thrift/*</excludes>
                         </configuration>
                     </execution>
