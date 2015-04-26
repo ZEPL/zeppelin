@@ -37,10 +37,11 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   var loadNotes = function() {
     $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
   };
-  // store ticket locally
+  /** ask for a ticket for websocket access
+   * Shiro will require credentials here
+   * */
   $http.get('/api/security/ticket').
     success(function(ticket, status, headers, config) {
-      console.log("received ticket << %o", ticket);
       $rootScope.ticket = angular.fromJson(ticket).body;
       loadNotes();
     }).
