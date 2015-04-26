@@ -2,13 +2,7 @@ package com.nflabs.zeppelin.notebook;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -73,6 +67,18 @@ public class Notebook {
     }
   }
 
+  private Map<String, Note> getUserNotes(String principal) {
+    synchronized (notes) {
+      Map<String, Note> userNotes = notes.get(principal);
+      if (userNotes == null)
+        userNotes = new HashMap<>();
+      notes.put(principal, userNotes);
+      return userNotes;
+    }
+
+
+  }
+
   /**
    * Create new note.
    *
@@ -84,7 +90,7 @@ public class Notebook {
     Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched, principal);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
-      notes.get(principal).put(note.id(), note);
+      getUserNotes(principal).put(note.id(), note);
     }
     if (interpreterIds != null) {
       bindInterpretersToNote(note.id(), interpreterIds, principal);
@@ -122,14 +128,14 @@ public class Notebook {
 
   public Note getNote(String id, String principal) {
     synchronized (notes) {
-      return notes.get(principal).get(id);
+      return getUserNotes(principal).get(id);
     }
   }
 
   public void removeNote(String id, String principal) {
     Note note;
     synchronized (notes) {
-      note = notes.get(principal).remove(id);
+      note = getUserNotes(principal).remove(id);
     }
     try {
       note.unpersist();
@@ -139,45 +145,48 @@ public class Notebook {
   }
 
   private void loadAllNotes() throws IOException {
-      File notebookDir = new File(conf.getNotebookDir());
-      File[] userdirs = notebookDir.listFiles();
-      if (userdirs == null) {
-          return;
-      }
-      for (File fuser : userdirs) {
-          String principal = fuser.getName();
-          boolean isHidden = principal.startsWith(".");
-          if (fuser.isDirectory() && !isHidden) {
-              File[] dirs = fuser.listFiles();
-              if (dirs != null) {
-                  for (File f : dirs) {
-                      boolean isHiddenFile = f.getName().startsWith(".");
-                      if (f.isDirectory() && !isHiddenFile) {
-                          Scheduler scheduler =
-                                  schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
-                          logger.info("Loading note from " + f.getName());
-                          NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(replFactory);
-                          Note note = Note.load(f.getName(),
-                                  conf,
-                                  noteInterpreterLoader,
-                                  scheduler,
-                                  jobListenerFactory, quartzSched);
-                          noteInterpreterLoader.setNoteId(note.id());
+    File notebookDir = new File(conf.getNotebookDir());
+    logger.info("Notebook Directory " + notebookDir.getAbsolutePath());
+    File[] userdirs = notebookDir.listFiles();
+    if (userdirs == null) {
+      return;
+    }
+    for (File fuser : userdirs) {
+      String principal = fuser.getName();
+      boolean isHidden = principal.startsWith(".");
+      if (fuser.isDirectory() && !isHidden) {
+        File[] dirs = fuser.listFiles();
+        if (dirs != null) {
+          for (File f : dirs) {
+            boolean isHiddenFile = f.getName().startsWith(".");
+            if (f.isDirectory() && !isHiddenFile) {
+              String schedulerName = "note_" + System.currentTimeMillis();
+              Scheduler scheduler =
+                      schedulerFactory.createOrGetFIFOScheduler(schedulerName);
+              logger.info("Loading note from " + f.getName());
+              NoteInterpreterLoader noteInterpreterLoader =
+                      new NoteInterpreterLoader(replFactory);
+              Note note = Note.load(f.getName(),
+                      conf,
+                      noteInterpreterLoader,
+                      scheduler,
+                      jobListenerFactory, quartzSched, fuser.getName());
+              noteInterpreterLoader.setNoteId(note.id());
 
-                          synchronized (notes) {
-                              notes.get(principal).put(note.id(), note);
-                              refreshCron(note.id(), principal);
-                          }
-                      }
-                  }
+              synchronized (notes) {
+                getUserNotes(principal).put(note.id(), note);
+                refreshCron(note.id(), principal);
               }
+            }
           }
+        }
       }
+    }
   }
 
   public List<Note> getAllNotes(String principal) {
     synchronized (notes) {
-      List<Note> noteList = new ArrayList<Note>(notes.get(principal).values());
+      List<Note> noteList = new ArrayList<>(getUserNotes(principal).values());
       logger.info("" + noteList.size());
       Collections.sort(noteList, new Comparator() {
         @Override
@@ -231,7 +240,7 @@ public class Notebook {
     removeCron(id);
     synchronized (notes) {
 
-      Note note = notes.get(principal).get(id);
+      Note note = getUserNotes(principal).get(id);
       if (note == null) {
         return;
       }
@@ -247,8 +256,11 @@ public class Notebook {
 
 
       JobDetail newJob =
-          JobBuilder.newJob(CronJob.class).withIdentity(id, "note").usingJobData("noteId", id).usingJobData("principal", principal)
-          .build();
+              JobBuilder.newJob(CronJob.class)
+                        .withIdentity(id, "note")
+                        .usingJobData("noteId", id)
+                        .usingJobData("principal", principal)
+                        .build();
 
       Map<String, Object> info = note.getInfo();
       info.put("cron", null);
