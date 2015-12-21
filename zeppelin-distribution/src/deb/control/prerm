@@ -1,9 +1,0 @@
-#!/bin/sh
-
-set -e
-
-SERVICE=$(which service 2> /dev/null)
-RM=$(which rm 2> /dev/null)
-
-exec $SERVICE zeppelind stop
-exec $RM -rf [[deb.log.path]]/* [[deb.pid.path]]/*

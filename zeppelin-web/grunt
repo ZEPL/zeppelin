@@ -1,2 +1,0 @@
-"node/node" "./node_modules/.bin/grunt" "$@"
-
