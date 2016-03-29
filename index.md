@@ -47,7 +47,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                         <div style="font-size:20px;color:#555555"><b>ZeppelinHub</b></div>
                         <a href="https://www.zeppelinhub.com" target="_blank">Hub</a> |
                         <a href="https://www.zeppelinhub.com/viewer" target="_blank">Viewer</a> |
-                        <a href="https://www.zeppelinhub.com">Learn more</a>
+                        <a href="http://help.zeppelinhub.com" target="_blank">Learn more</a>
                     </div>                    
                 </div>
              </div>
