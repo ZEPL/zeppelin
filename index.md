@@ -12,7 +12,7 @@ tagline: Supporting tagline
              <!-- AWS Zeppelin Demo -->
              <div class="alert alert-info" style="text-align:center;margin:0 0 30px 0;padding-top:30px;">
                  <h3 class="post-title"><a>Try Zeppelin</a></h3>
-                 <div style="margin:10px 0 10px 0px" class="btn btn-info">Start</div>
+                 <div style="margin:10px 0 10px 0px" class="btn btn-info" onclick="location.href = '/demo.html';">Start</div>
                  <p>live demo powered by</p>
                  <p>Apache Spark and Zeppelin on Amazon EMR</p>
                  <a href="https://aws.amazon.com/" target="_blank"><img src="http://blink.ucsd.edu/_images/technology-tab/aws.jpg" style="width:140px"></img></a>
