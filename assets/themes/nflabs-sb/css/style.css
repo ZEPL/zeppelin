@@ -1,0 +1,365 @@
+/* Custom container */
+
+li {
+  list-style: none;
+}
+
+a {
+    color: rgb(48, 113, 169);
+}
+
+code {
+    margin: 0;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    max-width: 100%;
+    display: inline-block;
+    overflow: auto;
+    vertical-align: middle;
+    line-height: 1.3;
+    padding: 0;
+    color: rgba(78, 68, 60, 0.9);
+    padding: 2px;
+    padding-left:5px;
+    padding-right:5px;
+    font-size: 12px;
+}
+
+.btn-default.active {
+    background-color: #d2e3f2;
+}
+
+.btn-default:hover {
+    background-color: #e1edf7;
+}
+
+
+p strong {
+    color: rgba(78, 68, 60, 1);
+}
+
+pre {
+    background: #f8f8f8;
+    color: rgba(78, 68, 60, 0.9);
+}
+
+h1 {
+    color: rgba(78, 68, 60, 0.9);
+}
+
+h2 {
+    color: rgba(78, 68, 60, 0.8);
+}
+
+h3 {
+    color: #999;
+}
+
+h4 {
+    color: #999;
+}
+
+h5, h6 {
+    color: #999;
+}
+
+
+.jumpy {
+    margin-top:25px;
+}
+
+/* bs-docs-header */
+
+.bs-docs-header {
+    margin-bottom: 40px;
+    font-size: 20px;
+    text-align: left;
+}
+
+@media (min-width: 768px) {
+    .bs-docs-header {
+        padding-top: 60px;
+        padding-bottom: 60px;
+        font-size: 24px;
+        text-align: left;
+    }
+}
+
+.bs-docs-masthead, .bs-docs-header {
+    position: relative;
+    padding: 30px 15px;
+    color: #afc8df;
+    text-shadow: 0 1px 0 rgba(0,0,0,.1);
+    background-color: rgb(64, 130, 187);
+    background-image: -webkit-linear-gradient(top,rgb(48, 113, 169) 0,rgb(64, 130, 187) 100%);
+    background-image: linear-gradient(to bottom,rgb(48, 113, 169) 0,rgb(64, 130, 187) 100%);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#3071A9', endColorstr='#4082bb', GradientType=0);
+}
+
+/* bs-docs-header container */
+
+.bs-docs-header .container {
+    position: relative;
+}
+
+/* bs-docs-header p */
+
+.bs-docs-header p {
+    margin-bottom: 0;
+    font-weight: 300;
+    line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+    .bs-docs-header p {
+        text-align: center;
+    }
+}
+
+@media (min-width: 992px) {
+    .bs-docs-header p {
+        margin-right: 380px;
+        text-align: left;
+    }
+}
+
+/* bs-docs-header h1 */
+
+.bs-docs-header h1 {
+    margin-top: 0;
+    color: #fff;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .bs-docs-header h1 {
+        font-size: 50px;
+        line-height: 1;
+        text-align: center;
+    }
+}
+
+@media (min-width: 992px) {
+    .bs-docs-header h1 {
+        margin-right: 380px;
+        text-align: left;
+    }
+}
+
+/* docs-header-imgdiv */
+
+.docs-header-imgdiv {
+    width: auto!important;
+    overflow: hidden;
+    background: transparent!important;
+    text-align: center;
+    display: block;
+    height: 150px;
+    line-height: 15px;
+    overflow: hidden;
+    width: 300px;
+    margin: auto;
+}
+
+@media (min-width: 480px) {
+    .docs-header-imgdiv {
+        width: 330px!important;
+        margin: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    .docs-header-imgdiv {
+        margin: auto;
+    }
+}
+
+@media (min-width: 992px) {
+    .docs-header-imgdiv {
+        position: absolute;
+        top: 0;
+        right: 15px;
+        margin: 0!important;
+        width: 330px!important;
+    }
+}
+
+
+#shell {
+        display: block;
+        position: relative;
+        width: 200px;
+        height: 130px;
+        margin: auto;
+}
+
+/* Wheels */
+
+#wheel1 {
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        z-index: 3;
+}
+
+#wheel2 {
+        position: absolute;
+        top: 26px;
+        left: 135px;
+        z-index: 2;
+}
+
+#wheel3 {
+        position: absolute;
+        top: 30px;
+        left: 60px;
+        z-index: 4;
+}
+
+#wheel4 {
+        position: absolute;
+        top: 90px;
+        left: 130px;
+        z-index: 5;
+}
+
+.navbar {
+    min-height: 30px;
+}
+
+.navbar-brand,
+.navbar-nav li a {
+    line-height: 35px;
+    height: 35px;
+    padding-top: 0;
+}
+
+.navbar-brand {
+    color: rgb(48, 113, 169) !important;
+}
+
+.navbar-toggle {
+    margin-top: 6px;
+    margin-bottom: 6px;
+    padding: 6px 6px;
+}
+
+.post-li {
+    border-bottom: 1px solid #afc8df;
+    padding-bottom: 1.5em;
+    margin-bottom: 3em;
+}
+
+.featured-links ul li {
+
+}
+
+.featured-links row {
+    height: 70px;
+}
+
+aside ul li {
+    list-style: none;
+    font-weight: normal;
+    font-size: 13px;
+    color: #afc8df;
+}
+
+.fullpost-tags {
+    font-weight: normal;
+    font-size: 13px;
+    color: #afc8df;
+}
+
+aside ul li h4 {
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 15px;
+    color: rgb(48, 113, 169);
+}
+
+.date {
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 15px;
+    color: rgb(48, 113, 169) !important;
+}
+
+aside {
+    margin: auto;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+h3.post-title, .page-header{
+    margin-top: 0 !important;
+}
+
+.post-li:last-of-type {
+    border-bottom: none;
+    padding-botton: 0;
+}
+
+.navbar{
+    border-bottom: 2px solid #DEE6E6 !important;
+    margin-bottom: 0;
+}
+
+ul {
+    padding: 0px;
+}
+
+.page-header h1{
+    color: rgba(78, 68, 60, 0.9);
+  text-decoration: none;
+  font-size: 28px;
+  font-family: "Oswald", Helvetica, Arial, sans-serif;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+
+.post-title {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-style: normal;
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+  color: rgb(51, 51, 50);
+  margin-bottom: 20px;
+}
+
+.post-title a{
+  color: rgba(78, 68, 60, 0.9);
+  text-decoration: none;
+  font-size: 28px;
+  font-family: "Oswald", Helvetica, Arial, sans-serif;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+
+/*categories navigation*/
+.blog-sidebar {
+    margin-top:40px;
+}
+
+
+/*multi language*/
+#translation {
+    margin:0 auto;
+     float:none;
+}
+
+@media (min-width: 768px) {
+    #translation {
+        float:right;
+    }
+}
+
+.post-li h1 { /*hide from the main page*/
+    display: none;
+}

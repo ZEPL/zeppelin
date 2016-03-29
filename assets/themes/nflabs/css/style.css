@@ -1,0 +1,41 @@
+/* Custom container */
+
+li {
+  list-style: none;
+}
+
+.post-title-snip {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-style: normal;
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+  color: rgb(51, 51, 50);
+  margin-bottom: 4px;
+}
+
+.post-title-snip a {
+  color: rgb(51, 51, 50);
+  text-decoration: none;
+}
+
+.post-item-snip {
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1.2;
+  color: rgb(102, 102, 101);
+  margin-bottom: 4px;
+}
+
+.post-meta-snip {
+  color: rgb(179, 179, 177);
+  font-size: 14px;
+}
+
+/*categories navigation*/
+.blog-sidebar {
+    margin-top:40px;
+}
