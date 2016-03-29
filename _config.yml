@@ -103,7 +103,7 @@ JB :
   analytics :
     provider : google 
     google : 
-        tracking_id : 'UA-38575365-5'
+        tracking_id : 'UA-45176241-2'
     getclicky :
       site_id : 
     mixpanel :
