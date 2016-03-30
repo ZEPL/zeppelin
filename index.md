@@ -44,16 +44,24 @@ You can make beautiful data-driven, interactive and collaborative documents with
                               <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" width="80" height="80" id="wheel3"/>
                               <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" width="40" height="40" id="wheel4"/>
                         </div>
-                        <div style="font-size:20px;color:#555555"><b>ZeppelinHub</b></div>
+                        <div style="font-size:20px;color:#555555"><img src="https://www.zeppelinhub.com/images/fc8f120e62c77c44c31619bc40f097e2.png" style="width:30px;"/><b>ZeppelinHub</b></div>
                         <a href="https://www.zeppelinhub.com" target="_blank">Hub</a> |
                         <a href="https://www.zeppelinhub.com/viewer" target="_blank">Viewer</a> |
                         <a href="http://help.zeppelinhub.com" target="_blank">Learn more</a>
-                    </div>                    
+                    </div>
+                </div>
+             </div>
+             <br />
+             <!-- apache trademark -->
+             <div style="text-align:center">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div style="margin-top:10px;text-align:right;font-size:10px;color:gray">Apache Zeppelin and the Zeppelin logo are trademarks of the Apache Software Foundation</div>
+                    </div>
                 </div>
              </div>
          </div>
     </div>
-    <br />
     <hr>
     <div class="row">
         <!-- articles -->
