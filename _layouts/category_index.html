@@ -2,11 +2,28 @@
 layout: default
 ---
 
-<h1 class="category">{{ page.title }}</h1>
+<h2 class="category">{{ page.title }}</h2>
+<br />
 <ul class="posts">
 {% for post in site.categories[page.category] %}
-    <div>{{ post.date | date_to_html_string }}</div>
-    <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
-    <div class="categories">Filed under {{ post.categories | category_links }}</div>
+<li class="post-li">
+<div class="row">
+    <aside class="col-sm-2">
+            <ul>
+                <li><h4>{{ post.date | date_to_string }}</h4></li>
+                <li>{{ post.tags | array_to_sentence_string }}</li>
+            </ul>
+    </aside>
+    <div class="col-sm-10">
+    <h3 class="post-title"> <a href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a> </h3>
+            <span>{% if post.content contains "<!--more-->" %} {{ post.excerpt }} {% else %} {{ post.content | truncatewords:70 }} {% endif %}</span>
+            <span class="post-meta-snip">
+            <span style="float:right;"><a href="{{ BASE_PATH }}{{ post.url }}">Read More...</a></span>
+            </span>
+    </div>
+</div>
+
+
+</li>
 {% endfor %}
 </ul>

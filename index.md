@@ -5,7 +5,6 @@ tagline: Supporting tagline
 ---
 {% include JB/setup %}
 
-
 <ul class="posts">
     <div class="row">
          <div class="col-sm-4">
@@ -35,7 +34,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                         </div>
                         <div style="font-size:20px;color:#555555"><b>Download Zeppelin</b></div>
                         <a href="http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz" target="_blank">0.5.6 Official release</a> |
-                        <a href="http://home.apache.org/~moon/zeppelin/snapshots/zeppelin-0.6.0-incubating-SNAPSHOT-bin-all.tgz">0.6.0 Snaptshot</a>
+                        <a href="http://home.apache.org/~moon/zeppelin/snapshots/zeppelin-0.6.0-incubating-SNAPSHOT-bin-all.tgz">0.6.0 Snapshot</a>
                     </div>
                     <div class="col-sm-6">
                         <div id="shell">
@@ -44,7 +43,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                               <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="80" height="80" id="wheel3"/>
                               <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="40" height="40" id="wheel4"/>
                         </div>
-                        <div style="font-size:20px;color:#555555"><img src="{{ ASSET_PATH }}/img/zeppelinhub-logo.png" style="width:30px;"/><b>ZeppelinHub</b></div>
+                        <div style="font-size:20px;color:#555555"><img src="{{ ASSET_PATH }}/img/zeppelinhub-logo.png" style="margin-right:5px;width:30px;"/><b>ZeppelinHub</b></div>
                         <a href="https://www.zeppelinhub.com" target="_blank">Hub</a> |
                         <a href="https://www.zeppelinhub.com/viewer" target="_blank">Viewer</a> |
                         <a href="http://help.zeppelinhub.com" target="_blank">Learn more</a>
@@ -56,7 +55,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
              <div style="text-align:center">
                 <div class="row">
                     <div class="col-sm-12">
-                        <div style="margin-top:10px;text-align:right;font-size:10px;color:gray">Apache Zeppelin and the Zeppelin logo are trademarks of the Apache Software Foundation</div>
+                        <div style="margin-top:10px;text-align:right;font-size:10px;color:#777777">Apache Zeppelin and the Zeppelin logo are trademarks of the Apache Software Foundation</div>
                     </div>
                 </div>
              </div>
@@ -156,7 +155,6 @@ You can make beautiful data-driven, interactive and collaborative documents with
        </div>
     </div>
 </ul>
-
 
 
 
