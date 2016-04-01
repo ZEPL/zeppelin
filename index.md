@@ -14,7 +14,7 @@ tagline: Supporting tagline
                  <h3 class="post-title"><a>Try Zeppelin</a></h3>
                  <div style="margin:10px 0 10px 0px" class="btn btn-info" onclick="location.href = '/demo.html';">Start</div>
                  <p>Live demo powered by Apache Spark and Zeppelin on Amazon EMR</p>
-                 <a href="https://aws.amazon.com/" target="_blank"><img src="http://blink.ucsd.edu/_images/technology-tab/aws.jpg" style="width:140px"></img></a>
+                 <a href="https://aws.amazon.com/" target="_blank"><img src="{{ ASSET_PATH }}/img/aws-logo.jpg" style="width:140px"></img></a>
              </div>
          </div>
          <div class="col-sm-8">
@@ -31,7 +31,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                 <div class="row">
                     <div class="col-sm-6">
                         <div style="height:130px">
-                            <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" style="width:100px;margin-top:30px"></img>
+                            <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" style="width:100px;margin-top:30px"></img>
                         </div>
                         <div style="font-size:20px;color:#555555"><b>Download Zeppelin</b></div>
                         <a href="http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz" target="_blank">0.5.6 Official release</a> |
@@ -39,12 +39,12 @@ You can make beautiful data-driven, interactive and collaborative documents with
                     </div>
                     <div class="col-sm-6">
                         <div id="shell">
-                              <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" width="50" height="50" id="wheel1"/>
-                              <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" width="65" height="65" id="wheel2"/>
-                              <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" width="80" height="80" id="wheel3"/>
-                              <img src="https://zeppelin-project.atlassian.net/secure/attachment/10302/zeppelin-logo.svg" width="40" height="40" id="wheel4"/>
+                              <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="50" height="50" id="wheel1"/>
+                              <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="65" height="65" id="wheel2"/>
+                              <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="80" height="80" id="wheel3"/>
+                              <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="40" height="40" id="wheel4"/>
                         </div>
-                        <div style="font-size:20px;color:#555555"><img src="https://www.zeppelinhub.com/images/fc8f120e62c77c44c31619bc40f097e2.png" style="width:30px;"/><b>ZeppelinHub</b></div>
+                        <div style="font-size:20px;color:#555555"><img src="{{ ASSET_PATH }}/img/zeppelinhub-logo.png" style="width:30px;"/><b>ZeppelinHub</b></div>
                         <a href="https://www.zeppelinhub.com" target="_blank">Hub</a> |
                         <a href="https://www.zeppelinhub.com/viewer" target="_blank">Viewer</a> |
                         <a href="http://help.zeppelinhub.com" target="_blank">Learn more</a>
@@ -109,7 +109,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                        <br />
                        <div class="row">
                            <div class="col-md-4">
-                               <a href="http://hortonworks.com/hadoop/zeppelin/" target="_blank"><img width="100px" src="http://www.texata.com/wp-content/uploads/2014/07/Hortonworks.jpg" /></a>
+                               <a href="http://hortonworks.com/hadoop/zeppelin/" target="_blank"><img width="100px" src="{{ ASSET_PATH }}/img/hortonworks-logo.jpg" /></a>
                            </div>
                            <div class="col-md-8">
                                Zeppelin on HDP, blogs, tutorials, Presentations and more
@@ -120,7 +120,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                        <br />
                        <div class="row">
                            <div class="col-md-4">
-                               <a href="https://aws.amazon.com/elasticmapreduce/" target="_blank"><img width="100px" src="http://blink.ucsd.edu/_images/technology-tab/aws.jpg" /></a>
+                               <a href="https://aws.amazon.com/elasticmapreduce/" target="_blank"><img width="100px" src="{{ ASSET_PATH }}/img/aws-logo.jpg" /></a>
                            </div>
                            <div class="col-md-8">
                                Zeppelin and Spark on Amazon EMR, with blogs, tutorials, and more
