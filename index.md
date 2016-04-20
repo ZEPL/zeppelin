@@ -99,7 +99,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
         </div>
         <div class="col-sm-4">
            <div class="featured-links">
-               <div style="font-size:14px;font-weight:bold;color:#333333">Featured Links</div>
+               <h3 class="content-block-header">Featured Links</h3>
                <div id="featuredLinks">
                </div>
                <script>
@@ -152,6 +152,17 @@ You can make beautiful data-driven, interactive and collaborative documents with
                    }
                </script>
            </div>
+           <div>
+             <a class="twitter-timeline content-block-header"
+                data-dnt="true"
+                href="https://twitter.com/ApacheZeppelin"
+                data-widget-id="722722371057098752"
+                data-tweet-limit="2"
+                data-chrome="nofooter noscrollbar">
+             Tweets by @ApacheZeppelin
+             </a>
+             <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+          </div>
        </div>
     </div>
 </ul>
