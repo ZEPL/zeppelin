@@ -65,12 +65,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
     <div class="row">
         <!-- articles -->
         <div class="col-sm-8">
-            <div>|
-            {% for category in site.categories %}
-                <span>
-                    <a href="/categories/{{ category[0] }}">{{ category[0] }}</a> | 
-                </span>
-            {% endfor %}
+            <div>
             </div>
             <br /><br />
             <ul class="posts">
