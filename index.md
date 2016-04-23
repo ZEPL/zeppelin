@@ -11,7 +11,8 @@ tagline: Supporting tagline
              <!-- AWS Zeppelin Demo -->
              <div class="alert alert-info" style="text-align:center;margin:0 0 30px 0;padding-top:30px;">
                  <h3 class="post-title"><a>Try Zeppelin</a></h3>
-                 <div style="margin:10px 0 10px 0px" class="btn btn-info" onclick="location.href = '/demo.html';">Start</div>
+                 <div style="margin:10px 0 10px 0px" class="btn btn-info"
+                      onclick="ga('send', 'event', 'Zeppelin', 'Start', 'Homepage btn'); location.href='/demo.html';">Start</div>
                  <p>Live demo powered by Apache Spark and Zeppelin on Amazon EMR</p>
                  <a href="https://aws.amazon.com/" target="_blank"><img src="{{ ASSET_PATH }}/img/aws-logo.jpg" style="width:140px"></img></a>
              </div>
