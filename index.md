@@ -148,14 +148,16 @@ You can make beautiful data-driven, interactive and collaborative documents with
                </script>
            </div>
            <div>
-             <a class="twitter-timeline content-block-header"
-                data-dnt="true"
-                href="https://twitter.com/ApacheZeppelin"
-                data-widget-id="722722371057098752"
-                data-tweet-limit="2"
-                data-chrome="nofooter noscrollbar">
-             Tweets by @ApacheZeppelin
-             </a>
+              <a class="twitter-timeline"
+                  data-dnt="true"
+                  href="https://twitter.com/ApacheZeppelin/lists/people"
+                  data-widget-id="723760464891506688"
+                  data-tweet-limit="3"
+                  data-chrome="nofooter noscrollbar">
+
+              Tweets from https://twitter.com/ApacheZeppelin/lists/people
+              </a>
+
              <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
           </div>
        </div>
