@@ -363,3 +363,18 @@ ul {
 .post-li h1 { /*hide from the main page*/
     display: none;
 }
+
+.featured-links {
+    margin-bottom: 40px;
+}
+
+.content-block-header {
+/*    font-size:14px;
+    font-weight:bold;
+    color:#333333;
+*/
+  font-size: 21px;
+  font-weight: 300;
+  line-height: 24px;
+  color: rgb(41, 47, 51);
+}
