@@ -378,3 +378,11 @@ ul {
   line-height: 24px;
   color: rgb(41, 47, 51);
 }
+
+.btn-info a {
+  color: #fff;
+}
+
+.btn-info a:hover {
+    text-decoration: none;
+}
