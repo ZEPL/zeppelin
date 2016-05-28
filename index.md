@@ -21,11 +21,11 @@ tagline: Supporting tagline
          </div>
          <div class="col-sm-8">
              <!-- Intro -->
-             <p style="font-size:16px"><b>Apache Zeppelin (incubating)</b> is a web-based notebook that enables interactive data analytics. 
+             <p style="font-size:16px"><b>Apache Zeppelin</b> is a web-based notebook that enables interactive data analytics.
 You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
              </p>
              <p style="font-size:16px;">
-                 Official Website for Apache Zeppelin (incubating) is <a href="http://zeppelin.incubator.apache.org">http://zeppelin.incubator.apache.org</a>
+                 Official Website for Apache Zeppelin is <a href="http://zeppelin.apache.org">http://zeppelin.apache.org</a>
              </p>
 
              <!-- Download -->
