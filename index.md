@@ -10,12 +10,12 @@ tagline: Supporting tagline
          <div class="col-sm-4">
              <!-- AWS Zeppelin Demo -->
              <div class="alert alert-info" style="text-align:center;margin:0 0 30px 0;padding-top:30px;">
-                 <h3 class="post-title"><a>Try Zeppelin</a></h3>
+                 <h3 class="post-title"><a>Try Apache Zeppelin</a></h3>
                  <div style="margin:10px 0 10px 0px" class="btn btn-info"
                       onclick="ga('send', 'event', 'Zeppelin', 'Start', 'Homepage btn');">
                     <a href="/demo.html">Start</a>
                   </div>
-                 <p>Live demo powered by Apache Spark and Zeppelin on Amazon EMR</p>
+                 <p>Live demo powered by Apache Spark and Apache Zeppelin on Amazon EMR</p>
                  <a href="https://aws.amazon.com/" target="_blank"><img src="{{ ASSET_PATH }}/img/aws-logo.jpg" style="width:140px"></img></a>
              </div>
          </div>
@@ -35,18 +35,20 @@ You can make beautiful data-driven, interactive and collaborative documents with
                         <div style="height:130px">
                             <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" style="width:100px;margin-top:30px"></img>
                         </div>
-                        <div style="font-size:20px;color:#555555"><b>Download Zeppelin</b></div>
+                        <div style="font-size:20px;color:#555555"><b>Apache Zeppelin</b></div>
                         <a href="http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz" target="_blank">0.5.6 Official release</a> |
-                        <a href="http://home.apache.org/~moon/zeppelin/snapshots/zeppelin-0.6.0-incubating-SNAPSHOT-bin-all.tgz">0.6.0 Snapshot</a>
+                        <a href="http://home.apache.org/~moon/zeppelin/snapshots/zeppelin-0.6.0-SNAPSHOT-bin-all.tgz">0.6.0 Snapshot</a>
                     </div>
                     <div class="col-sm-6">
-                        <div id="shell">
+                        <!-- div id="shell">
                               <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="50" height="50" id="wheel1"/>
                               <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="65" height="65" id="wheel2"/>
                               <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="80" height="80" id="wheel3"/>
                               <img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" width="40" height="40" id="wheel4"/>
                         </div>
-                        <div style="font-size:20px;color:#555555"><img src="{{ ASSET_PATH }}/img/zeppelinhub-logo.png" style="margin-right:5px;width:30px;"/><b>ZeppelinHub</b></div>
+                        <div style="font-size:20px;color:#555555"><img src="{{ ASSET_PATH }}/img/zeppelinhub-logo.png" style="margin-right:5px;width:30px;"/><b>ZeppelinHub</b></div -->
+                        <img src="{{ ASSET_PATH }}/img/zeppelinhub-logo.png" style="margin:50px 0 35px 0;width:60px;"/>
+                        <div style="font-size:20px;color:#555555"><b>ZeppelinHub</b></div>
                         <a href="https://www.zeppelinhub.com" target="_blank">Hub</a> |
                         <a href="https://www.zeppelinhub.com/viewer" target="_blank">Viewer</a> |
                         <a href="http://help.zeppelinhub.com" target="_blank">Learn more</a>
@@ -58,7 +60,9 @@ You can make beautiful data-driven, interactive and collaborative documents with
              <div style="text-align:center">
                 <div class="row">
                     <div class="col-sm-12">
-                        <div style="margin-top:10px;text-align:right;font-size:10px;color:#777777">Apache Zeppelin and the Zeppelin logo are trademarks of the Apache Software Foundation</div>
+                        <div style="margin-top:10px;text-align:right;font-size:10px;color:#777777">Apache Zeppelin and the Zeppelin logo are trademarks of the Apache Software Foundation.</div>
+                        <div style="text-align:right;font-size:10px;color:#777777">Apache Zeppelin snapshot binary is provided for development and verification purpose only.</div>
+                        <div style="text-align:right;font-size:10px;color:#777777">ZeppelinHub is neither part of Apache Software Foundation nor Apache Zeppelin community work.</div>
                     </div>
                 </div>
              </div>
@@ -109,7 +113,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                                <a href="http://hortonworks.com/hadoop/zeppelin/" target="_blank"><img width="100px" src="{{ ASSET_PATH }}/img/hortonworks-logo.jpg" /></a>
                            </div>
                            <div class="col-md-8">
-                               Zeppelin on HDP, blogs, tutorials, Presentations and more
+                               Apache Zeppelin on HDP, blogs, tutorials, Presentations and more
                            </div>
                        </div>
                    `);
@@ -120,7 +124,7 @@ You can make beautiful data-driven, interactive and collaborative documents with
                                <a href="https://aws.amazon.com/elasticmapreduce/" target="_blank"><img width="100px" src="{{ ASSET_PATH }}/img/aws-logo.jpg" /></a>
                            </div>
                            <div class="col-md-8">
-                               Zeppelin and Spark on Amazon EMR, with blogs, tutorials, and more
+                               Apache Zeppelin and Apache Spark on Amazon EMR, with blogs, tutorials, and more
                            </div>
                        </div>
                    `);
