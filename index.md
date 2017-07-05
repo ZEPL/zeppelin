@@ -13,7 +13,7 @@ tagline: Supporting tagline
 
 2016-06-18, Zeppelin project graduated incubation and became a Top Level Project in Apache Software Foundation.
 
-Please visit [https://zeppelin.apache.org](https://zeppelin.apache.org) to visit official Apache Zeppelin website.
+Please visit [https://zeppelin.apache.org](https://zeppelin.apache.org) to see official Apache Zeppelin website.
 
 
 <a href="https://www.zepl.com"><img src="{{ ASSET_PATH }}/img/zepl-logo.png" style="width:100px;margin-top:30px;margin-bottom:10px;" /></a>
