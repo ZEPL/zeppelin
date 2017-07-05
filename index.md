@@ -5,7 +5,7 @@ tagline: Supporting tagline
 ---
 {% include JB/setup %}
 
-<a href="https://zeppelin.apache.org"><img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" style="width:80px;"></img></a>
+<a href="https://zeppelin.apache.org"><img src="{{ ASSET_PATH }}/img/zeppelin-logo.svg" style="width:80px;" /></a>
 
 2013, ZEPL (formerly known as NFLabs) started Zeppelin project here.
 
@@ -16,7 +16,7 @@ tagline: Supporting tagline
 Please visit [https://zeppelin.apache.org](https://zeppelin.apache.org) to visit official Apache Zeppelin website.
 
 
-<a href="https://www.zepl.com"><img src="{{ ASSET_PATH }}/img/zepl-logo.png" style="width:100px;margin-top:30px;margin-bottom:10px;"></img></a>
+<a href="https://www.zepl.com"><img src="{{ ASSET_PATH }}/img/zepl-logo.png" style="width:100px;margin-top:30px;margin-bottom:10px;" /></a>
 
 After Zeppelin project moved to Apache Software Foundation,
 
