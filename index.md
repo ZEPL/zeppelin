@@ -20,7 +20,7 @@ Please visit [https://zeppelin.apache.org](https://zeppelin.apache.org) to see o
 
 After Zeppelin project moved to Apache Software Foundation,
 
-ZEPL continues the contribution to the project and tries to build healthy business around of it.
+ZEPL continues the contribution to the project and tries to build healthy business around it.
 
 Please visit [https://www.zepl.com](https://www.zepl.com) to know more about ZEPL's recent work.
 
